@@ -17,7 +17,36 @@ Raspberry Pi
   └─ cloudflared → túnel HTTPS público
 ```
 
-Arquivos: `main.py`, `requirements.txt`, `phidro.service`.
+Arquivos: `main.py`, `requirements.txt`, `phidro.service` (Linux),
+`phidro.plist` (macOS).
+
+## A pasta de dados (`PHIDRO_DATA`)
+
+`PHIDRO_DATA` aponta para a pasta que guarda **todo o acervo** — é o estado
+do sistema, mantido de propósito separado do código. Deixe-a **fora do
+repositório** (ex.: `/home/pi/phidro-data`) e, de preferência, num SSD/HD
+USB, não no cartão SD (as fotos crescem e o SD se desgasta).
+
+Não precisa criá-la à mão — o `main.py` cria as subpastas no primeiro
+arranque. O conteúdo:
+
+```
+PHIDRO_DATA/
+├─ originals/         arquivos originais, como enviados (HEIC/JPEG):
+│                     o arquivo morto — nunca recomprimido
+├─ fotos/             ← é esta pasta que o serviço publica em /fotos/
+│  ├─ photos/         versão de exibição de cada foto  (JPEG ~1600 px)
+│  ├─ thumbs/         miniatura de cada foto           (JPEG ~400 px)
+│  └─ photos.jsonld   o manifesto que o app lê (recriado a cada mudança)
+└─ photos.db          índice SQLite de todas as fotos — a fonte da verdade
+```
+
+`photos.db` é o índice; o `photos.jsonld` é derivado dele a cada upload ou
+remoção. `originals/` o app não usa — é o arquivo bruto, de onde se
+regeneraria tudo se preciso.
+
+**Backup é copiar esta pasta.** Um `rsync` periódico de `PHIDRO_DATA` para
+outro disco é todo o seu backup — não há redundância em nuvem.
 
 ## 1. Sistema
 
@@ -108,8 +137,6 @@ navegador e fica no `localStorage`.
   confia na URL (contém um uuid imprevisível que só o `/sign-upload`
   entrega) — mesma lógica da URL assinada da nuvem. Como o endpoint é
   público, mantenha o token só com quem deve enviar/apagar.
-- **Backup:** todo o acervo é a pasta `PHIDRO_DATA` — fotos, originais e o
-  `photos.db`. Um `rsync` periódico dela para outro disco é o seu backup.
 - **HEIC:** decodificação em ARM é mais lenta que num PC, mas para o volume
   do coletivo (poucas fotos por pedal) é tranquilo.
 

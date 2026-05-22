@@ -1,0 +1,204 @@
+{
+  "@context": {
+    "ph": "https://pedalhidrografi.co/vocab/1.0/",
+    "schema": "https://schema.org/",
+    "prov": "http://www.w3.org/ns/prov#",
+    "qudt": "http://qudt.org/schema/qudt/",
+    "unit": {
+      "@id": "qudt:unit",
+      "@type": "@id"
+    },
+    "geo": "http://www.opengis.net/ont/geosparql#",
+    "dcterms": "http://purl.org/dc/terms/",
+    "skos": "http://www.w3.org/2004/02/skos/core#",
+    "owl": "http://www.w3.org/2002/07/owl#",
+    "xsd": "http://www.w3.org/2001/XMLSchema#",
+    "id": "@id",
+    "type": "@type",
+    "lang": "@language",
+    "Tour": "ph:Tour",
+    "Route": "ph:Route",
+    "PlannedRoute": "ph:PlannedRoute",
+    "ActualRoute": "ph:ActualRoute",
+    "RideMetrics": "ph:RideMetrics",
+    "Gathering": "ph:Gathering",
+    "TourNarrative": "ph:TourNarrative",
+    "Media": "ph:Media",
+    "Image": "ph:Image",
+    "Video": "ph:Video",
+    "InstagramPost": "ph:InstagramPost",
+    "InstagramStory": "ph:InstagramStory",
+    "Person": "ph:Person",
+    "Attendance": "ph:Attendance",
+    "Series": "ph:Series",
+    "GeoCoordinates": "schema:GeoCoordinates",
+    "Quantity": "qudt:Quantity",
+    "plannedRoute": {
+      "@id": "ph:hasPlannedRoute",
+      "@type": "@id"
+    },
+    "actualRoute": {
+      "@id": "ph:hasActualRoute",
+      "@type": "@id"
+    },
+    "narrative": {
+      "@id": "ph:hasNarrative",
+      "@type": "@id"
+    },
+    "gathering": {
+      "@id": "ph:hasGathering",
+      "@type": "@id"
+    },
+    "attendance": {
+      "@id": "ph:hasAttendance",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "documentedBy": {
+      "@id": "ph:documentedBy",
+      "@type": "@id",
+      "@container": "@set"
+    },
+    "executionOf": {
+      "@id": "ph:executionOf",
+      "@type": "@id"
+    },
+    "metrics": {
+      "@id": "ph:hasMetrics",
+      "@type": "@id"
+    },
+    "capturedAt": {
+      "@id": "ph:capturedAt",
+      "@type": "@id"
+    },
+    "capturedDuring": {
+      "@id": "ph:capturedDuring",
+      "@type": "@id"
+    },
+    "captureTime": {
+      "@id": "schema:dateCreated",
+      "@type": "xsd:dateTime"
+    },
+    "derivedFromNarrative": {
+      "@id": "ph:derivedFromNarrative",
+      "@type": "@id"
+    },
+    "derivedFromMedia": {
+      "@id": "ph:derivedFromMedia",
+      "@type": "@id"
+    },
+    "wasDerivedFrom": {
+      "@id": "prov:wasDerivedFrom",
+      "@type": "@id"
+    },
+    "attendee": {
+      "@id": "ph:attendee",
+      "@type": "@id"
+    },
+    "atTour": {
+      "@id": "ph:atTour",
+      "@type": "@id"
+    },
+    "role": {
+      "@id": "ph:role",
+      "@type": "@id"
+    },
+    "series": {
+      "@id": "ph:inSeries",
+      "@type": "@id"
+    },
+    "editionNumber": {
+      "@id": "ph:editionNumber",
+      "@type": "xsd:integer"
+    },
+    "rideCode": "ph:rideCode",
+    "displayPrecedence": {
+      "@id": "ph:displayPrecedence",
+      "@type": "xsd:integer"
+    },
+    "instagramHandle": "ph:instagramHandle",
+    "gatheringTime": {
+      "@id": "ph:gatheringTime",
+      "@type": "xsd:dateTime"
+    },
+    "distance": {
+      "@id": "ph:distance",
+      "@type": "@id"
+    },
+    "totalAscent": {
+      "@id": "ph:totalAscent",
+      "@type": "@id"
+    },
+    "totalDescent": {
+      "@id": "ph:totalDescent",
+      "@type": "@id"
+    },
+    "energyExpenditure": {
+      "@id": "ph:energyExpenditure",
+      "@type": "@id"
+    },
+    "movingDuration": {
+      "@id": "ph:movingDuration",
+      "@type": "@id"
+    },
+    "numericValue": {
+      "@id": "qudt:numericValue",
+      "@type": "xsd:double"
+    },
+    "title": "dcterms:title",
+    "description": "dcterms:description",
+    "date": {
+      "@id": "schema:startDate",
+      "@type": "xsd:date"
+    },
+    "startTime": {
+      "@id": "schema:startTime",
+      "@type": "xsd:dateTime"
+    },
+    "text": "schema:text",
+    "name": "schema:name",
+    "url": {
+      "@id": "schema:url",
+      "@type": "@id"
+    },
+    "contentUrl": {
+      "@id": "schema:contentUrl",
+      "@type": "@id"
+    },
+    "datePublished": {
+      "@id": "schema:datePublished",
+      "@type": "xsd:dateTime"
+    },
+    "location": {
+      "@id": "schema:location",
+      "@type": "@id"
+    },
+    "place": "schema:Place",
+    "address": "schema:address",
+    "latitude": {
+      "@id": "schema:latitude",
+      "@type": "xsd:double"
+    },
+    "longitude": {
+      "@id": "schema:longitude",
+      "@type": "xsd:double"
+    },
+    "elevation": "schema:elevation",
+    "prefLabel": "skos:prefLabel",
+    "notation": "skos:notation",
+    "sameAs": {
+      "@id": "owl:sameAs",
+      "@type": "@id"
+    },
+    "seeAlso": {
+      "@id": "schema:sameAs",
+      "@type": "@id"
+    },
+    "SeriesEntry": "ph:SeriesEntry",
+    "seriesEntry": {
+      "@id": "ph:hasSeriesEntry",
+      "@type": "@id",
+      "@container": "@set"
+    }
+  }
+}
