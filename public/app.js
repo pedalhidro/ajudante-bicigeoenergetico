@@ -471,6 +471,28 @@ function detectRide(dateObj, lat, lng) {
   return ride;
 }
 
+// Funde as vozes do manifesto numa lista única de fotos. Hoje o manifesto
+// traz uma voz só, então a fold é praticamente a identidade — mas o app
+// passa a renderizar SEMPRE por aqui. É a costura onde, nos próximos passos,
+// entram a pilha de precedência e a reconciliação por divergência.
+function foldVoices(data) {
+  // Tolera o formato novo (voices) e o antigo (photos plano).
+  const voices =
+    data && Array.isArray(data.voices)
+      ? data.voices
+      : [{ id: 'voice/local', photos: (data && data.photos) || [] }];
+  const byId = new Map();
+  let n = 0;
+  for (const v of voices) {
+    for (const ph of v.photos || []) {
+      // Fotos são set-valued: união por id; a última voz vence em conflito.
+      const key = ph.id || `${v.id}#${n++}`;
+      byId.set(key, { ...ph, _voice: v.id });
+    }
+  }
+  return [...byId.values()];
+}
+
 async function loadPhotos() {
   if (photosLoaded) return;
   if (photosLoading) {
@@ -492,7 +514,7 @@ async function loadPhotos() {
         }
       }
       if (!data) throw new Error('nenhum manifesto de fotos acessível');
-      for (const ph of data.photos || []) {
+      for (const ph of foldVoices(data)) {
         if (!Number.isFinite(ph.lat) || !Number.isFinite(ph.lng)) continue;
         // Cada foto é um pequeno círculo com o próprio thumbnail dentro.
         const icon = photoDivIcon(ph.thumb || ph.file, ph.bearing, ph.fov, '');

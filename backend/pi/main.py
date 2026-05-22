@@ -47,7 +47,7 @@ DATA = Path(os.environ.get("PHIDRO_DATA", "data")).resolve()
 PUBLIC = Path(os.environ.get(
     "PHIDRO_PUBLIC",
     Path(__file__).resolve().parents[2] / "public")).resolve()
-SECRET = os.environ.get("UPLOAD_SECRET", "-")
+SECRET = os.environ.get("UPLOAD_SECRET", "")
 PUBLIC_BASE = os.environ.get("PUBLIC_BASE", "/fotos").rstrip("/")
 
 FOTOS = DATA / "fotos"
@@ -188,16 +188,25 @@ def _rebuild_manifest():
     con.close()
     photos = [json.loads(r[0]) for r in rows]
     photos.sort(key=lambda p: p.get("datetime") or "")
+    now = datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z"
+    # Dataset de vozes (grafos nomeados). Hoje há uma só — voice/censo, a voz
+    # do operador deste backend. A estrutura já comporta várias: o app sempre
+    # renderiza por uma "fold" que funde as vozes numa visão única.
     manifest = {
         "@context": CONTEXT,
-        "generatedAt": datetime.datetime.utcnow().isoformat(
-            timespec="seconds") + "Z",
-        "count": len(photos),
-        "photos": photos,
+        "generatedAt": now,
+        "voices": [
+            {
+                "id": "voice/censo",
+                "label": "Censo Hidrográfico",
+                "generatedAt": now,
+                "photos": photos,
+            }
+        ],
     }
     (FOTOS / "photos.jsonld").write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"[manifest] {len(photos)} fotos")
+    print(f"[manifest] {len(photos)} fotos em 1 voz")
 
 
 # ── Servir o app e as fotos ──────────────────────────────────────────────
