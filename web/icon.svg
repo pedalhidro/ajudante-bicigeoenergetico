@@ -1,11 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <!--
-    Pedal Hidrográfico — app icon (v3, "wild watershed").
-    Sem coroa central. Bacias hidrográficas assimétricas: rios em ciano
-    (com elos de corrente) descendo em vários ângulos, cumeadas em marrom
-    tracejado dividindo as bacias, selas amarelas marcando os pontos onde
-    a cumeada baixa e a água troca de bacia, mais piquetes de pico nos
-    cantos. Sem simetria — o caos lembra uma carta topográfica de campo.
+    Pedal Hidrográfico — app icon (v5).
+    Fractal watershed:
+      • cumeadas (ridges)  — laranja tracejado, com sub-espinhaços em N níveis
+      • rios     (streams) — gradiente verde-lima → amarelo, elos claros,
+                              ramificações até twigs minúsculos
+      • selas               — magenta (eixo cumeada × eixo vale)
+      • picos               — pequenos cones côncavos (curvas pra dentro)
+    Sem curvas de nível no fundo (mais limpo).
   -->
   <defs>
     <linearGradient id="earth" x1="0" y1="0" x2="0" y2="1">
@@ -13,14 +15,15 @@
       <stop offset="55%"  stop-color="#c08c5d"/>
       <stop offset="100%" stop-color="#e6b889"/>
     </linearGradient>
-    <radialGradient id="sun" cx="0.28" cy="0.22" r="0.42">
+    <radialGradient id="sun" cx="0.72" cy="0.2" r="0.55">
       <stop offset="0%"   stop-color="#ffe066" stop-opacity="0.55"/>
       <stop offset="55%"  stop-color="#ffa730" stop-opacity="0.15"/>
       <stop offset="100%" stop-color="#ffa730" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"   stop-color="#3aa3d8"/>
-      <stop offset="100%" stop-color="#1d6a9c"/>
+    <linearGradient id="river" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%"   stop-color="#a8d62a"/>
+      <stop offset="60%"  stop-color="#d9d83a"/>
+      <stop offset="100%" stop-color="#f5d028"/>
     </linearGradient>
     <clipPath id="round">
       <rect width="512" height="512" rx="96" ry="96"/>
@@ -28,116 +31,186 @@
   </defs>
 
   <g clip-path="url(#round)">
-    <!-- Fundo terra -->
-    <rect width="512" height="512" fill="url(#earth)"/>
+    <!-- Fundo preto sólido — terreno noturno, rios e cumeadas brilham. -->
+    <rect width="512" height="512" fill="#000000"/>
 
-    <!-- Curvas de nível "tortas" — heterogêneas, sugerem relevo irregular -->
-    <g fill="none" stroke="#5e3b1f" stroke-opacity="0.17" stroke-width="2.5">
-      <path d="M -20 40  Q 90 30  180 60  Q 280 90  380 50  T 540 60"/>
-      <path d="M -20 95  Q 80 80  200 100 Q 320 120 430 90  T 540 100"/>
-      <path d="M -20 150 Q 100 140 220 155 Q 340 175 460 145 T 540 150"/>
-      <path d="M -20 360 Q 80 345 200 380 Q 320 400 430 365 T 540 375"/>
-      <path d="M -20 420 Q 100 405 220 435 Q 340 450 460 425 T 540 435"/>
-      <path d="M -20 478 Q 90 470 200 485 Q 320 495 430 478 T 540 482"/>
+    <!-- ── CUMEADAS — anti-rios. Cada path foi traçado pelo MEIO de uma
+         cunha inter-fluvial e VERIFICADO geometricamente pra não cruzar
+         nenhum rio. Endpoints offset >= 15px de qualquer rio. -->
+    <g fill="none" stroke="#d24e15" stroke-width="14"
+       stroke-linecap="round" stroke-dasharray="20 14">
+      <!-- Cumeada A: divisor entre galho NW e galho NE do rio principal.
+           Sobe pela cunha entre os dois ramos, do confluence (offset 15px)
+           até o topo. -->
+      <path d="M 200 268 Q 190 200 180 130 Q 160 60 142 18"/>
+      <!-- Spur leste de A: penetra na cunha entre o galho NE e seus
+           sub-trib mais altos. -->
+      <path d="M 180 130 Q 222 108 260 82"/>
+      <!-- Spur oeste de A: curto, na cunha entre o galho NW e os twigs
+           extras que sobem por (132 172)→(88 72)→(35 22). -->
+      <path d="M 160 60 Q 125 45 92 55"/>
+
+      <!-- Cumeada B: separa os twigs altos do NE do basin secundário.
+           Curta, entre x=470 e x=510, ao longo da margem direita. -->
+      <path d="M 506 256 Q 480 200 472 138"/>
+
+      <!-- Cumeada C: dentro do cunhão SE, divide os dois trunks do basin
+           secundário (que saem pela margem inferior). -->
+      <path d="M 430 365 Q 418 432 400 512"/>
+    </g>
+    <!-- Highlights cor de areia clara sobre as cumeadas principais -->
+    <g fill="none" stroke="#ffba80" stroke-width="4"
+       stroke-linecap="round" stroke-dasharray="3 30">
+      <path d="M 200 268 Q 190 200 180 130 Q 160 60 142 18"/>
+      <path d="M 506 256 Q 480 200 472 138"/>
+      <path d="M 430 365 Q 418 432 400 512"/>
     </g>
 
-    <!-- Halo solar no canto sup. esq. — energia descentrada -->
-    <circle cx="140" cy="115" r="200" fill="url(#sun)"/>
-
-    <!-- ── CUMEADAS (ridges) ──────────────────────────────────────────────
-         Três cumeadas em ângulos e comprimentos diferentes, marrom escuro
-         tracejado. Dividem o mapa em sub-bacias irregulares. -->
-    <g fill="none" stroke="#4a230f" stroke-width="15"
-       stroke-linecap="round" stroke-dasharray="22 15">
-      <!-- Cumeada principal — diagonal NO → SE, "Serra" do mapa -->
-      <path d="M 30 90 Q 180 105 290 200 Q 380 290 488 360"/>
-      <!-- Cumeada secundária — pé da serra subindo do SO -->
-      <path d="M 40 480 Q 110 410 175 365 Q 215 340 250 320"/>
-      <!-- Cumeada lateral — encosta nordeste -->
-      <path d="M 480 60 Q 430 160 420 240"/>
-    </g>
-    <!-- Highlight terra-claro nas cristas (suga luz no topo do dorso) -->
-    <g fill="none" stroke="#e6b889" stroke-width="4"
-       stroke-linecap="round" stroke-dasharray="3 33">
-      <path d="M 30 90 Q 180 105 290 200 Q 380 290 488 360"/>
-      <path d="M 40 480 Q 110 410 175 365 Q 215 340 250 320"/>
-      <path d="M 480 60 Q 430 160 420 240"/>
-    </g>
-
-    <!-- ── RIOS / corrente ────────────────────────────────────────────────
-         Múltiplos sistemas, ângulos diversos, tributários longos e curtos.
-         Cruzam as cumeadas só nas selas (boas práticas topo) — mas sem
-         purismo geométrico. -->
-    <g fill="none" stroke="url(#water)" stroke-width="22"
+    <!-- ── RIOS — multi-nível fractal ──────────────────────────────────── -->
+    <g fill="none" stroke="url(#river)" stroke-width="22"
        stroke-linecap="round" stroke-linejoin="round">
-      <!-- Rio principal: nasce no NE, desce em SW através do "alvéolo"
-           entre as duas cumeadas. -->
-      <path d="M 470 30 Q 425 80 395 145 Q 370 210 335 270 Q 295 340 230 395 Q 165 445 80 488"/>
-      <!-- Tributário grande do norte -->
-      <path d="M 290 40 Q 320 90 360 130 Q 380 145 395 145"/>
-      <!-- Tributário do leste -->
-      <path d="M 510 200 Q 460 215 415 230 Q 385 240 370 230 Q 360 220 335 270"/>
-      <!-- Tributário curto do interior -->
-      <path d="M 200 230 Q 260 250 295 270 Q 320 285 335 270"/>
-      <!-- Tributário do oeste, vindo de muito longe -->
-      <path d="M 20 260 Q 90 290 160 305 Q 200 315 230 395"/>
-      <!-- Sub-tributário do oeste, curto -->
-      <path d="M 30 380 Q 90 405 140 420 Q 170 435 165 445"/>
+      <!-- Tronco principal (saída SW) -->
+      <path d="M -20 512 Q 60 472 122 422 Q 182 362 205 282"/>
+      <!-- Bifurcação NE -->
+      <path d="M 205 282 Q 245 220 275 152 Q 295 100 325 58"/>
+      <!-- Bifurcação NW -->
+      <path d="M 205 282 Q 165 220 132 172"/>
 
-      <!-- Segundo sistema, no canto SE — bacia menor independente -->
-      <path d="M 360 510 Q 395 460 425 415 Q 450 370 470 320"/>
-      <!-- Tributário do segundo sistema -->
-      <path d="M 480 500 Q 450 460 425 415"/>
+      <!-- Tributários do tronco -->
+      <path d="M 122 422 Q 55 402 -20 384"/>
+      <path d="M 182 362 Q 130 342 80 342"/>
+      <path d="M 80 342 Q 35 352 -20 348"/>
+      <!-- Sub-twig do tributário -->
+      <path d="M 55 402 Q 28 414  -5 408"/>
+
+      <!-- Galho NW: sub-trib + twigs nível 3 -->
+      <path d="M 165 220 Q 105 200 65 232"/>
+      <path d="M 132 172 Q 82 142 32 132"/>
+      <path d="M 65 232  Q 30 240 -10 222"/>
+      <path d="M 82 142  Q 50 120 10 110"/>
+      <!-- Nível 4 (twigs minúsculos) -->
+      <path d="M 32 132  Q 12 120  -8 105"/>
+      <path d="M 30 240  Q 8 252  -10 268"/>
+
+      <!-- Galho NE: sub-trib + twigs nível 3 -->
+      <path d="M 245 220 Q 295 240 345 202"/>
+      <path d="M 275 152 Q 325 132 385 132"/>
+      <path d="M 325 58  Q 365 38  415 28"/>
+      <path d="M 385 132 Q 415 102 432 60"/>
+      <path d="M 345 202 Q 375 178 405 180"/>
+      <!-- Nível 4 -->
+      <path d="M 415 28  Q 445 18  475 8"/>
+      <path d="M 432 60  Q 462 48  485 30"/>
+      <path d="M 405 180 Q 432 168 460 180"/>
+
+      <!-- Segundo sistema (saída E) -->
+      <path d="M 540 282 Q 482 282 442 312 Q 402 342 382 380"/>
+      <path d="M 442 312 Q 462 382 472 462"/>
+      <path d="M 382 380 Q 362 442 352 512"/>
+      <path d="M 472 462 Q 500 482 512 512"/>
+      <!-- Sub-twigs -->
+      <path d="M 472 462 Q 460 488 446 510"/>
+      <path d="M 352 512 Q 332 522 308 528"/>
+      <path d="M 442 312 Q 482 302 512 290"/>
+
+      <!-- Tributários extras pra densidade fractal -->
+      <path d="M 132 172 Q 110 112  88  72"/>
+      <path d="M  88  72 Q  60  48  35  22"/>
+      <path d="M 245 220 Q 220 170 198 132"/>
+      <path d="M 295 240 Q 312 280 305 320"/>
+      <path d="M 305 320 Q 320 358 312 392"/>
     </g>
-    <!-- Elos da corrente (pinos claros) sobre os leitos -->
-    <g fill="none" stroke="#bde6ff" stroke-width="8"
+
+    <!-- Pinos claros (elos) — replica dos paths -->
+    <g fill="none" stroke="#fff8c8" stroke-width="7"
        stroke-linecap="round" stroke-dasharray="3 20">
-      <path d="M 470 30 Q 425 80 395 145 Q 370 210 335 270 Q 295 340 230 395 Q 165 445 80 488"/>
-      <path d="M 290 40 Q 320 90 360 130 Q 380 145 395 145"/>
-      <path d="M 510 200 Q 460 215 415 230 Q 385 240 370 230 Q 360 220 335 270"/>
-      <path d="M 200 230 Q 260 250 295 270 Q 320 285 335 270"/>
-      <path d="M 20 260 Q 90 290 160 305 Q 200 315 230 395"/>
-      <path d="M 30 380 Q 90 405 140 420 Q 170 435 165 445"/>
-      <path d="M 360 510 Q 395 460 425 415 Q 450 370 470 320"/>
-      <path d="M 480 500 Q 450 460 425 415"/>
+      <path d="M -20 512 Q 60 472 122 422 Q 182 362 205 282"/>
+      <path d="M 205 282 Q 245 220 275 152 Q 295 100 325 58"/>
+      <path d="M 205 282 Q 165 220 132 172"/>
+      <path d="M 122 422 Q 55 402 -20 384"/>
+      <path d="M 182 362 Q 130 342 80 342"/>
+      <path d="M 80 342 Q 35 352 -20 348"/>
+      <path d="M 55 402 Q 28 414  -5 408"/>
+      <path d="M 165 220 Q 105 200 65 232"/>
+      <path d="M 132 172 Q 82 142 32 132"/>
+      <path d="M 65 232  Q 30 240 -10 222"/>
+      <path d="M 82 142  Q 50 120 10 110"/>
+      <path d="M 32 132  Q 12 120  -8 105"/>
+      <path d="M 30 240  Q 8 252  -10 268"/>
+      <path d="M 245 220 Q 295 240 345 202"/>
+      <path d="M 275 152 Q 325 132 385 132"/>
+      <path d="M 325 58  Q 365 38  415 28"/>
+      <path d="M 385 132 Q 415 102 432 60"/>
+      <path d="M 345 202 Q 375 178 405 180"/>
+      <path d="M 415 28  Q 445 18  475 8"/>
+      <path d="M 432 60  Q 462 48  485 30"/>
+      <path d="M 405 180 Q 432 168 460 180"/>
+      <path d="M 540 282 Q 482 282 442 312 Q 402 342 382 380"/>
+      <path d="M 442 312 Q 462 382 472 462"/>
+      <path d="M 382 380 Q 362 442 352 512"/>
+      <path d="M 472 462 Q 500 482 512 512"/>
+      <path d="M 472 462 Q 460 488 446 510"/>
+      <path d="M 352 512 Q 332 522 308 528"/>
+      <path d="M 442 312 Q 482 302 512 290"/>
+      <path d="M 132 172 Q 110 112  88  72"/>
+      <path d="M  88  72 Q  60  48  35  22"/>
+      <path d="M 245 220 Q 220 170 198 132"/>
+      <path d="M 295 240 Q 312 280 305 320"/>
+      <path d="M 305 320 Q 320 358 312 392"/>
     </g>
 
-    <!-- ── SELAS (saddle points) ──────────────────────────────────────────
-         Onde a cumeada baixa e o rio cruza: pequena cruz amarela (eixo
-         da cumeada) × cruz azul (eixo do vale) + losango central. -->
+    <!-- ── SELAS (magenta) — agora nos pontos onde cumeadas se bifurcam
+         (col entre dois espinhaços). Geograficamente: o col é a passagem
+         baixa em uma cumeada, onde se troca de bacia. -->
     <g>
-      <!-- Sela sobre a cumeada principal, na altura da curva NE -->
-      <g transform="translate(175, 110) rotate(15)">
-        <line x1="-22" y1="0" x2="22" y2="0" stroke="#ffd03a" stroke-width="5" stroke-linecap="round"/>
+      <!-- Bifurcação cumeada A: spur leste sai de (180, 130) -->
+      <g transform="translate(180, 130) rotate(15)">
+        <line x1="-22" y1="0" x2="22" y2="0" stroke="#ff4d7c" stroke-width="5" stroke-linecap="round"/>
         <line x1="0" y1="-22" x2="0" y2="22" stroke="#1d6a9c" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
-        <polygon points="0,-12 12,0 0,12 -12,0" fill="#ffd03a" stroke="#4a230f" stroke-width="2"/>
+        <polygon points="0,-12 12,0 0,12 -12,0" fill="#ff4d7c" stroke="#4a230f" stroke-width="2"/>
       </g>
-      <!-- Sela onde rio principal cruza a cumeada principal -->
-      <g transform="translate(305, 245) rotate(-35)">
-        <line x1="-22" y1="0" x2="22" y2="0" stroke="#ffd03a" stroke-width="5" stroke-linecap="round"/>
+      <!-- Bifurcação cumeada A: spur oeste sai de (160, 60) -->
+      <g transform="translate(160, 60) rotate(-25)">
+        <line x1="-22" y1="0" x2="22" y2="0" stroke="#ff4d7c" stroke-width="5" stroke-linecap="round"/>
         <line x1="0" y1="-22" x2="0" y2="22" stroke="#1d6a9c" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
-        <polygon points="0,-12 12,0 0,12 -12,0" fill="#ffd03a" stroke="#4a230f" stroke-width="2"/>
+        <polygon points="0,-12 12,0 0,12 -12,0" fill="#ff4d7c" stroke="#4a230f" stroke-width="2"/>
       </g>
-      <!-- Sela na cumeada lateral NE -->
-      <g transform="translate(434, 195) rotate(70)">
-        <line x1="-20" y1="0" x2="20" y2="0" stroke="#ffd03a" stroke-width="5" stroke-linecap="round"/>
+      <!-- Base da cumeada A (col junto à confluência) -->
+      <g transform="translate(200, 268) rotate(-5)">
+        <line x1="-20" y1="0" x2="20" y2="0" stroke="#ff4d7c" stroke-width="5" stroke-linecap="round"/>
         <line x1="0" y1="-20" x2="0" y2="20" stroke="#1d6a9c" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
-        <polygon points="0,-10 10,0 0,10 -10,0" fill="#ffd03a" stroke="#4a230f" stroke-width="2"/>
-      </g>
-      <!-- Sela na cumeada secundária SO -->
-      <g transform="translate(140, 400) rotate(50)">
-        <line x1="-20" y1="0" x2="20" y2="0" stroke="#ffd03a" stroke-width="5" stroke-linecap="round"/>
-        <line x1="0" y1="-20" x2="0" y2="20" stroke="#1d6a9c" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
-        <polygon points="0,-10 10,0 0,10 -10,0" fill="#ffd03a" stroke="#4a230f" stroke-width="2"/>
+        <polygon points="0,-11 11,0 0,11 -11,0" fill="#ff4d7c" stroke="#4a230f" stroke-width="2"/>
       </g>
     </g>
 
-    <!-- ── PICOS — triangulinhos nos cantos altos (peak benchmarks) ─────── -->
-    <g fill="#4a230f" stroke="#e6b889" stroke-width="2.5" stroke-linejoin="round">
-      <polygon points="35,80  20,110 56,110"/>
-      <polygon points="495,55 478,90 514,90"/>
-      <polygon points="495,360 478,395 514,395"/>
-      <polygon points="232,308 215,340 252,340"/>
+    <!-- ── MORROS — sempre em cima das cumeadas. Cada morro é um
+         "D rotacionado": base reta, topo arqueado, preenchido em laranja
+         (mesma cor das cumeadas), com brilho cor de areia clara.
+         A sequência forma o "sea of hills" de SP, ao longo dos divisores. -->
+    <g fill="#d24e15" stroke="#ffba80" stroke-width="2" stroke-linejoin="round">
+      <!-- Cumeada A: NW-NE divide (5 morros ao longo da espinha) -->
+      <path d="M 184 260 C 184 238 210 238 210 260 Z"/>
+      <path d="M 178 200 C 178 178 204 178 204 200 Z"/>
+      <path d="M 168 140 C 168 118 194 118 194 140 Z"/>
+      <path d="M 152 78  C 152 56  178 56  178 78  Z"/>
+      <path d="M 132 30  C 132 8   158 8   158 30  Z"/>
+      <!-- Spur leste de A -->
+      <path d="M 196 124 C 196 102 222 102 222 124 Z"/>
+      <path d="M 234 102 C 234 80  258 80  258 102 Z"/>
+      <path d="M 266 84  C 266 62  290 62  290 84  Z"/>
+      <!-- Spur oeste de A -->
+      <path d="M 138 56  C 138 36  160 36  160 56  Z"/>
+      <path d="M 110 50  C 110 30  132 30  132 50  Z"/>
+      <path d="M 80 60   C 80 40   102 40  102 60  Z"/>
+      <!-- Cumeada B: margem direita -->
+      <path d="M 490 240 C 490 218 514 218 514 240 Z"/>
+      <path d="M 478 192 C 478 170 502 170 502 192 Z"/>
+      <path d="M 468 148 C 468 126 492 126 492 148 Z"/>
+      <!-- Cumeada C: cunhão SE -->
+      <path d="M 422 380 C 422 358 446 358 446 380 Z"/>
+      <path d="M 414 430 C 414 408 438 408 438 430 Z"/>
+      <path d="M 404 478 C 404 456 428 456 428 478 Z"/>
+      <path d="M 394 514 C 394 492 416 492 416 514 Z"/>
     </g>
   </g>
 </svg>

@@ -33,7 +33,7 @@
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="icon" href="icon-192.png" sizes="192x192" type="image/png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-    <title>Ajudante cartográfica-energética de passeios topohidrográficos</title>
+    <title>ajudante bicigeoenergético sampa</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -49,24 +49,25 @@
   <body class="rotas-page">
     <header class="topbar">
       <div class="title">
-        <h1>Ajudante cartográfica-energética de passeios topohidrográficos</h1>
+        <h1>ajudante bicigeoenergético sampa</h1>
       </div>
       <nav class="topbar-actions">
-      <button id="layers-btn" type="button" class="secondary-btn" title="Mostrar/ocultar camadas" aria-label="Mostrar/ocultar camadas" aria-pressed="true">⧉</button>
-      <button id="photo-anim-btn" type="button" class="secondary-btn" title="Ligar/desligar animação dos marcadores de foto" aria-label="Animação dos marcadores" aria-pressed="false">✨</button>
-      <button id="menu-btn" type="button" class="menu-btn secondary-btn" title="Mostrar rotas" aria-label="Mostrar rotas">☰</button>
+      <button id="photo-anim-btn" type="button" class="secondary-btn" title="Ligar/desligar animação dos marcadores de foto" aria-label="Animação dos marcadores" aria-pressed="false">✨ Animação</button>
       <input type="file" id="photos-import-input" accept=".ttl,.zip,text/turtle,application/zip" hidden />
-      <button id="upload-btn" type="button" class="secondary-btn" title="Enviar imagens ao acervo" aria-label="Enviar imagens">⬆🖼︎</button>
+      <button id="upload-btn" type="button" class="secondary-btn" title="Enviar imagens ao acervo" aria-label="Enviar imagens">⬆🖼︎ Enviar</button>
       <input type="file" id="edit-gpx-input" accept=".gpx,application/gpx+xml" hidden />
-      <button id="edit-gpx-btn" type="button" class="secondary-btn" title="Editar GPX — carregar um arquivo .gpx" aria-label="Editar GPX">✎🗺︎</button>
-      <button id="trace-btn" type="button" class="secondary-btn" title="Traçar GPX" aria-label="Traçar GPX">＋🗺︎</button>
-      <button id="help-btn" type="button" class="secondary-btn" title="Como usar" aria-label="Instruções">?</button>
-      <button id="settings-btn" type="button" class="secondary-btn" title="Configurações" aria-label="Configurações">⚙</button>
+      <button id="edit-gpx-btn" type="button" class="secondary-btn" title="Editar GPX — carregar um arquivo .gpx" aria-label="Editar GPX">✎🗺︎ Editar</button>
+      <button id="trace-btn" type="button" class="secondary-btn" title="Traçar GPX" aria-label="Traçar GPX">＋🗺︎ Traçar</button>
+      <span class="topbar-break" aria-hidden="true"></span>
+      <button id="help-btn" type="button" class="secondary-btn" title="Como usar" aria-label="Instruções">? Ajuda</button>
+      <button id="settings-btn" type="button" class="secondary-btn" title="Configurações" aria-label="Configurações">⚙ Ajustes</button>
+      <button id="layers-btn" type="button" class="secondary-btn" title="Mostrar/ocultar camadas" aria-label="Mostrar/ocultar camadas" aria-pressed="true">⧉ Camadas</button>
+      <button id="menu-btn" type="button" class="menu-btn secondary-btn" title="Mostrar rotas" aria-label="Mostrar rotas">☰ Rotas</button>
       </nav>
     </header>
 
     <main id="map">
-      <button id="header-toggle" type="button" class="header-toggle leaflet-bar leaflet-control" title="Ocultar cabeçalho" aria-label="Ocultar cabeçalho" aria-pressed="false">▲</button>
+      <button id="header-toggle" type="button" class="header-toggle leaflet-bar leaflet-control" title="Ocultar cabeçalho" aria-label="Ocultar cabeçalho" aria-pressed="false">☰▲</button>
       <div id="trace-controls" class="trace-controls" hidden>
         <button type="button" id="trace-undo" disabled title="Desfazer (Cmd/Ctrl+Z)" aria-label="Desfazer">↶</button>
         <button type="button" id="trace-redo" disabled title="Refazer (Cmd/Ctrl+Shift+Z)" aria-label="Refazer">↷</button>
@@ -80,7 +81,7 @@
           </select>
         </label>
         <button type="button" id="params-btn" class="params-btn" title="Parâmetros da simulação" aria-label="Parâmetros">⚙</button>
-        <button type="button" id="trace-save" class="trace-save" title="Salvar GPX" aria-label="Salvar GPX">⤓🗺︎</button>
+        <button type="button" id="trace-save" class="trace-save" title="Salvar GPX" aria-label="Salvar GPX">⤓🗺︎ Salvar</button>
         <span class="trace-break" aria-hidden="true"></span>
         <span class="trace-metrics" id="trace-metrics">0,00 km · 0,0 kJ</span>
       </div>
@@ -91,20 +92,13 @@
       <div id="routes-status" class="status">Loading…</div>
 
       <section class="date-filter" id="date-filter" hidden>
-        <div class="date-filter-header">
-          <span>Date filter</span>
-          <button type="button" id="date-reset" class="linkbtn">reset</button>
+        <span class="range-value" id="range-from-value"></span>
+        <div class="dual-range">
+          <input type="range" id="range-from" aria-label="Data inicial" />
+          <input type="range" id="range-to" aria-label="Data final" />
         </div>
-        <label class="range-row">
-          <span class="range-label">From</span>
-          <input type="range" id="range-from" />
-          <span class="range-value" id="range-from-value"></span>
-        </label>
-        <label class="range-row">
-          <span class="range-label">To</span>
-          <input type="range" id="range-to" />
-          <span class="range-value" id="range-to-value"></span>
-        </label>
+        <span class="range-value" id="range-to-value"></span>
+        <button type="button" id="date-reset" class="linkbtn" title="Resetar filtro" aria-label="Resetar filtro">↺</button>
       </section>
 
       <ul id="routes-list"></ul>
@@ -204,7 +198,7 @@
             <button type="button" id="save-cancel">Cancelar</button>
             <button type="button" id="save-copy-link">Copiar link</button>
             <button type="button" id="save-qr">QR</button>
-            <button type="button" id="save-confirm" class="primary-btn" title="Salvar GPX" aria-label="Salvar GPX">⤓🗺︎</button>
+            <button type="button" id="save-confirm" class="primary-btn" title="Salvar GPX" aria-label="Salvar GPX">⤓🗺︎ Salvar</button>
           </div>
         </div>
       </div>

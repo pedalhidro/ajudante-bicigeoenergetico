@@ -208,7 +208,7 @@ const OVERLAY_LAYERS = [
   // because routes are a Map of polylines + markers, not a single tileLayer.
   {
     id: 'routes',
-    label: 'Rotas (planilha)',
+    label: 'Rotas cadastradas',
     defaultVisible: true,
     defaultPct: 100,
     show: () => setRoutesGloballyVisible(true),
@@ -218,7 +218,7 @@ const OVERLAY_LAYERS = [
   // Live OSM hydrography + ridges via Overpass. Re-queries on pan/zoom.
   {
     id: 'osm-overpass',
-    label: 'Mapa de morros e águas OSM',
+    label: 'Morros e Águas',
     defaultVisible: false,
     defaultPct: 100,
     show: () => showOverpass(),
@@ -240,7 +240,7 @@ const OVERLAY_LAYERS = [
   // o thumbnail num popup ao clicar.
   {
     id: 'photos',
-    label: 'Imagens geo',
+    label: 'Imagens contribuídas',
     defaultVisible: true,
     defaultPct: 100,
     show: () => showPhotos(),
@@ -477,6 +477,9 @@ let photosVisible  = false;
 let photosOpacity  = 1;
 // Quando setado ({date, label}), só as fotos daquele pedal ficam visíveis.
 let photoRideFilter = null;
+// Janela de data herdada do filtro da sidebar — {from, to} em ms, ou null.
+// Quando setada, fotos cujo datetime cai fora da janela ficam ocultas.
+let photoDateWindow = null;
 // Conteúdo bruto da última .ttl carregada (para o "Baixar .ttl").
 let lastTtlText  = '';
 let lastTtlOrigin = '';   // URL / nome de arquivo de origem (para debug + status)
@@ -1368,10 +1371,21 @@ async function downloadKit() {
 // Visibilidade efetiva: camada ligada E (sem filtro OU foto do pedal filtrado).
 function applyPhotoVisibility() {
   for (const m of photoMarkers) {
-    const matches =
+    const ph = m._photo;
+    const matchesRide =
       !photoRideFilter ||
-      (m._photo.ride && m._photo.ride.date === photoRideFilter.date);
-    const shouldShow = photosVisible && matches;
+      (ph.ride && ph.ride.date === photoRideFilter.date);
+    // Foto com datetime ausente é tratada como "sempre visível" (mesma
+    // política que routes sem dateMs), pra não esconder fotos antigas
+    // sem metadado por causa do filtro.
+    let matchesDate = true;
+    if (photoDateWindow && ph.datetime) {
+      const t = Date.parse(ph.datetime);
+      if (Number.isFinite(t)) {
+        matchesDate = t >= photoDateWindow.from && t <= photoDateWindow.to;
+      }
+    }
+    const shouldShow = photosVisible && matchesRide && matchesDate;
     if (shouldShow && !map.hasLayer(m)) m.addTo(map);
     else if (!shouldShow && map.hasLayer(m)) map.removeLayer(m);
   }
@@ -1769,6 +1783,7 @@ const uploadModalClose = document.getElementById('upload-modal-close');
 const uploadIframe     = document.getElementById('upload-iframe');
 function openUploadModal() {
   if (!uploadModal) return;
+  closeOtherMobileDialogs('upload');
   // Lazy-load: só seta o src na 1ª abertura (depois mantém o estado do form).
   // NB: `iframe.src` (IDL) é truthy mesmo quando o atributo está vazio
   // (devolve a URL da página pai/`about:blank`). Checamos o atributo cru.
@@ -1776,9 +1791,11 @@ function openUploadModal() {
     uploadIframe.src = './upload_images.html';
   }
   uploadModal.hidden = false;
+  uploadBtn?.setAttribute('aria-pressed', 'true');
 }
 function closeUploadModal() {
   if (uploadModal) uploadModal.hidden = true;
+  uploadBtn?.setAttribute('aria-pressed', 'false');
   // Pega o manifesto + tiles novos sem dance de hard-refresh.
   reloadPhotos();
 }
@@ -1859,6 +1876,7 @@ function wireSettingsControls() {
 
 function openSettings() {
   if (!settingsModal) return;
+  closeOtherMobileDialogs('settings');
   // Radios da fonte de imagens (não usam data-setting porque setPhotoSource
   // faz mais que só mexer no objeto).
   for (const r of settingsModal.querySelectorAll('input[name="photos-source"]')) {
@@ -1869,12 +1887,20 @@ function openSettings() {
     syncSettingsControl(el);
   }
   settingsModal.hidden = false;
+  settingsBtn?.setAttribute('aria-pressed', 'true');
 }
 function closeSettings() {
   if (settingsModal) settingsModal.hidden = true;
+  settingsBtn?.setAttribute('aria-pressed', 'false');
 }
 
-settingsBtn?.addEventListener('click', openSettings);
+settingsBtn?.addEventListener('click', () => {
+  if (settingsModal && !settingsModal.hidden) {
+    closeSettings();
+    return;
+  }
+  openSettings();
+});
 settingsClose?.addEventListener('click', closeSettings);
 settingsModal?.addEventListener('click', (e) => {
   if (e.target === settingsModal) closeSettings();
@@ -2406,6 +2432,7 @@ function defaultLayersHiddenByArea() {
 }
 layersBtn?.addEventListener('click', () => {
   const nowHidden = !document.body.classList.contains('layers-hidden');
+  if (!nowHidden) closeOtherMobileDialogs('layers');
   applyLayersVisibility(nowHidden);
   try { localStorage.setItem(LAYERS_HIDDEN_KEY, nowHidden ? '1' : '0'); } catch {}
 });
@@ -2423,7 +2450,7 @@ if (headerToggle && leafletTopLeft) {
 function applyHeaderVisibility(hidden) {
   document.body.classList.toggle('header-hidden', hidden);
   if (headerToggle) {
-    headerToggle.textContent = hidden ? '▼' : '▲';
+    headerToggle.textContent = hidden ? '☰▼' : '☰▲';
     headerToggle.setAttribute('aria-pressed', String(hidden));
     headerToggle.setAttribute('aria-label', hidden ? 'Mostrar cabeçalho' : 'Ocultar cabeçalho');
     headerToggle.setAttribute('title', hidden ? 'Mostrar cabeçalho' : 'Ocultar cabeçalho');
@@ -2443,6 +2470,34 @@ headerToggle?.addEventListener('click', () => {
 const menuBtn = document.getElementById('menu-btn');
 const SIDEBAR_HIDDEN_KEY = 'phidro:sidebarHidden';
 const isMobileViewport = () => window.matchMedia('(max-width: 760px)').matches;
+
+// No mobile, cada diálogo (Camadas, Rotas, Enviar, Ajustes, Ajuda) é um
+// bottom-sheet — e só um pode ficar aberto por vez. Antes de abrir um,
+// pedimos pros outros se recolherem. (No desktop é no-op, pra não atrapalhar
+// quem quer ver dois painéis lado a lado.)
+function closeOtherMobileDialogs(except) {
+  if (!isMobileViewport()) return;
+  if (except !== 'sidebar' && document.body.classList.contains('sidebar-open')) {
+    document.body.classList.remove('sidebar-open');
+    if (typeof updateMenuBtnPressed === 'function') updateMenuBtnPressed();
+  }
+  if (except !== 'layers' && !document.body.classList.contains('layers-hidden')) {
+    // applyLayersVisibility só altera DOM/aria — não persiste no localStorage.
+    applyLayersVisibility(true);
+  }
+  if (except !== 'help' && helpModal && !helpModal.hidden) {
+    helpModal.hidden = true;
+    helpBtn?.setAttribute('aria-pressed', 'false');
+  }
+  if (except !== 'settings' && settingsModal && !settingsModal.hidden) {
+    settingsModal.hidden = true;
+    settingsBtn?.setAttribute('aria-pressed', 'false');
+  }
+  if (except !== 'upload' && uploadModal && !uploadModal.hidden) {
+    uploadModal.hidden = true;
+    uploadBtn?.setAttribute('aria-pressed', 'false');
+  }
+}
 
 // Boot defaults para a sidebar no desktop:
 //   - Se existir preferência persistida, ela manda (1 = oculta, 0 = visível).
@@ -2469,6 +2524,8 @@ updateMenuBtnPressed();
 menuBtn?.addEventListener('click', (e) => {
   e.stopPropagation();
   if (isMobileViewport()) {
+    const willOpen = !document.body.classList.contains('sidebar-open');
+    if (willOpen) closeOtherMobileDialogs('sidebar');
     document.body.classList.toggle('sidebar-open');
   } else {
     const nowHidden = !document.body.classList.contains('sidebar-hidden');
@@ -2627,8 +2684,10 @@ async function boot() {
   // Default view stays at São Paulo (set above) — don't auto-fit to all routes.
   // Click a sidebar entry to zoom to a specific route.
   setupDateFilter(all);
+  // Status oculto no sucesso — só aparece pra "Loading…" e mensagens de erro.
   routesStatus.classList.remove('error');
-  routesStatus.textContent = renderStatus(drawn, all.length, data.generatedAt);
+  routesStatus.textContent = '';
+  routesStatus.hidden = true;
 }
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
@@ -2740,13 +2799,6 @@ function formatNumbersHtml(entry, sep = '<br>') {
     .join(sep);
 }
 
-function renderStatus(drawn, total, generatedAt) {
-  const generated = generatedAt
-    ? ` · built ${new Date(generatedAt).toLocaleDateString()}`
-    : '';
-  return `${drawn}/${total} routes${generated}`;
-}
-
 function focusRoute(id) {
   const r = routes.get(id);
   if (!r || !r.bounds) return;
@@ -2783,8 +2835,65 @@ function setupDateFilter(entries) {
     onRangeChange();
   });
 
+  // Clicar nos rótulos `from`/`to` abre um date-picker nativo. Mantemos um
+  // <input type="date"> oculto por par só pra invocar `showPicker()`; o span
+  // continua sendo o que o usuário lê.
+  const fromPicker = makeHiddenDatePicker(dateMin, dateMax, (ms) => {
+    rangeFrom.value = String(Math.max(dateMin, Math.min(ms, Number(rangeTo.value))));
+    onRangeChange();
+  });
+  const toPicker = makeHiddenDatePicker(dateMin, dateMax, (ms) => {
+    rangeTo.value = String(Math.max(Number(rangeFrom.value), Math.min(ms, dateMax)));
+    onRangeChange();
+  });
+  dateFilter.appendChild(fromPicker);
+  dateFilter.appendChild(toPicker);
+  rangeFromValue.classList.add('clickable-date');
+  rangeFromValue.setAttribute('role', 'button');
+  rangeFromValue.setAttribute('tabindex', '0');
+  rangeToValue.classList.add('clickable-date');
+  rangeToValue.setAttribute('role', 'button');
+  rangeToValue.setAttribute('tabindex', '0');
+  const triggerPicker = (picker, currentMs) => {
+    picker.value = toIsoDate(currentMs);
+    if (typeof picker.showPicker === 'function') picker.showPicker();
+    else picker.focus();   // fallback navegadores antigos: o input fica focável
+  };
+  rangeFromValue.addEventListener('click', () =>
+    triggerPicker(fromPicker, Number(rangeFrom.value)));
+  rangeToValue.addEventListener('click', () =>
+    triggerPicker(toPicker, Number(rangeTo.value)));
+
   dateFilter.hidden = false;
   applyDateWindow(dateMin, dateMax);
+}
+
+function makeHiddenDatePicker(minMs, maxMs, onPicked) {
+  const el = document.createElement('input');
+  el.type = 'date';
+  el.className = 'date-picker-hidden';
+  el.min = toIsoDate(minMs);
+  el.max = toIsoDate(maxMs);
+  el.addEventListener('change', () => {
+    if (!el.value) return;
+    const ms = fromIsoDate(el.value);
+    if (Number.isFinite(ms)) onPicked(ms);
+  });
+  return el;
+}
+// Date <-> "YYYY-MM-DD" em horário local — o input type=date trabalha em
+// strings ISO sem timezone, então não usamos toISOString() (que é UTC e
+// causaria off-by-one no fuso de SP).
+function toIsoDate(ms) {
+  const d = new Date(ms);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+function fromIsoDate(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d).getTime();
 }
 
 function onRangeChange() {
@@ -2818,9 +2927,11 @@ function applyDateWindow(from, to) {
     if (inRange) visible++;
   }
 
-  // Keep the existing routesStatus text (count of total drawn) — add a window line.
-  const baseStatus = routesStatus.textContent.split(' · in window')[0];
-  routesStatus.textContent = `${baseStatus} · in window: ${visible}`;
+  // Propaga a mesma janela pras fotos. `to + DAY_MS - 1` inclui o dia
+  // inteiro do limite superior (mesma convenção das rotas).
+  photoDateWindow = { from, to: to + DAY_MS - 1 };
+  applyPhotoVisibility();
+
 }
 
 // ─── Loaded-routes pseudo-layer (visibility + opacity from layer panel) ──────
@@ -3135,9 +3246,10 @@ function enterDrawingMode() {
     document.body.classList.add('layers-hidden');
     if (layersBtn) layersBtn.setAttribute('aria-pressed', 'false');
   }
-  traceBtn.textContent = '✕🗺︎';
+  traceBtn.textContent = '✕🗺︎ Cancelar';
   traceBtn.setAttribute('aria-label', 'Cancelar');
   traceBtn.setAttribute('title', 'Cancelar (Esc)');
+  traceBtn.setAttribute('aria-pressed', 'true');
   traceControls.hidden = false;
   updateTraceControls();
   updateMetrics();
@@ -3181,9 +3293,10 @@ function exitDrawingMode() {
     if (layersBtn) layersBtn.setAttribute('aria-pressed', 'true');
     layersWasVisible = false;
   }
-  traceBtn.textContent = '＋🗺︎';
+  traceBtn.textContent = '＋🗺︎ Traçar';
   traceBtn.setAttribute('aria-label', 'Traçar GPX');
   traceBtn.setAttribute('title', 'Traçar GPX');
+  traceBtn.removeAttribute('aria-pressed');
   traceControls.hidden = true;
   defaultSaveName = '';
 }
@@ -4467,7 +4580,7 @@ function paramsToJsonLd(p) {
     },
     '@type': 'CyclingSimulationParameters',
     'schema:dateCreated': new Date().toISOString(),
-    'schema:creator': 'Cláudio · Ajudante cartográfica-energética',
+    'schema:creator': 'Cláudio · ajudante bicigeoenergético sampa',
   };
   for (const [key, prof] of Object.entries(QUDT_PROFILE)) {
     doc[prof.iri] = {
@@ -5059,10 +5172,22 @@ function doSave() {
 const helpBtn = document.getElementById('help-btn');
 const helpModal = document.getElementById('help-modal');
 const helpClose = document.getElementById('help-close');
-helpBtn?.addEventListener('click', () => (helpModal.hidden = false));
-helpClose?.addEventListener('click', () => (helpModal.hidden = true));
+function setHelpOpen(open) {
+  if (!helpModal) return;
+  helpModal.hidden = !open;
+  helpBtn?.setAttribute('aria-pressed', String(open));
+}
+helpBtn?.addEventListener('click', () => {
+  if (helpModal && !helpModal.hidden) {
+    setHelpOpen(false);
+    return;
+  }
+  closeOtherMobileDialogs('help');
+  setHelpOpen(true);
+});
+helpClose?.addEventListener('click', () => setHelpOpen(false));
 helpModal?.addEventListener('click', (e) => {
-  if (e.target === helpModal) helpModal.hidden = true;
+  if (e.target === helpModal) setHelpOpen(false);
 });
 
 // ─── Edit GPX (load a .gpx into the drawing tool) ────────────────────────────

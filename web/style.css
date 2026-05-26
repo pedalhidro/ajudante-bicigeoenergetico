@@ -1,10 +1,11 @@
 :root {
   --bg: #0f1721;
   --panel: #15202b;
+  --surface: #0c1722;        /* fundo de inputs/botões — mais escuro que --panel */
   --text: #e7eef5;
   --muted: #97a3b1;
-  --accent: #2da9ff;
-  --accent-hover: #1f8fdd;
+  --accent: #ff8c2e;
+  --accent-hover: #e07320;
   --border: #243240;
   --route: #ff5b3a;
   --route-hover: #ffd03a;
@@ -43,17 +44,19 @@ body {
 }
 
 .header-toggle {
-  width: 30px;
+  width: auto;
+  min-width: 30px;
   height: 30px;
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 1px;
   background: #fff;
   color: #333;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   cursor: pointer;
-  padding: 0;
+  padding: 0 6px;
 }
 .header-toggle:hover { background: #f4f4f4; }
 body.header-hidden .topbar { display: none; }
@@ -85,6 +88,7 @@ body.header-hidden .topbar { display: none; }
   letter-spacing: 0.2px;
   font-weight: 600;
   line-height: 1.25;
+  text-align: center;
 }
 .topbar .title {
   flex: 1 1 auto;
@@ -102,6 +106,10 @@ body.header-hidden .topbar { display: none; }
   min-width: 0;
   overflow-x: auto;
   scrollbar-width: none;
+  /* Quando a faixa de botões ocupa uma linha própria (caso wrap), os botões
+     ficam centralizados; em layouts inline com o título, não há sobra
+     pra distribuir e isso é no-op. */
+  justify-content: center;
   /* Não encolher na linha do título — assim os botões nunca somem atrás de
      rolagem horizontal só porque o h1 quis mais espaço. */
   flex-shrink: 0;
@@ -129,19 +137,41 @@ body.header-hidden .topbar { display: none; }
   flex: 0 0 auto;
 }
 
-/* Em telas estreitas (celular em retrato), o .topbar-actions ocupa a largura
-   inteira da linha e distribui os botões em space-between — o gap cresce
-   junto com a largura disponível, evitando ficar tudo amontoado à esquerda
-   com sobra de espaço à direita. Padding um pouco menor pra caber. */
-@media (max-width: 600px) {
+/* Em telas estreitas (celular em retrato e similares), o .topbar-actions ocupa
+   a largura inteira da linha e deixa os botões quebrarem em múltiplas linhas
+   em vez de rolar horizontalmente — assim todos ficam acessíveis sem scroll. */
+@media (max-width: 760px) {
+  /* Topbar com padding horizontal menor pra ganhar largura útil — caber
+     mais botões inline no iPhone SE em paisagem (667px) e em duas linhas
+     no retrato (375px). */
+  .topbar { padding-left: 6px; padding-right: 6px; }
   .topbar-actions {
     flex: 1 1 100%;
-    justify-content: space-between;
-    gap: 4px;
+    flex-wrap: wrap;
+    overflow-x: visible;
+    gap: 3px;
   }
   .topbar-actions .secondary-btn {
+    /* Largura natural pelo texto; a faixa centraliza os botões via
+       `justify-content: center` em vez de esticá-los. */
     margin-right: 0;
-    padding: 6px 9px;
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+}
+/* Espaçador zero-altura entre `Traçar` e `Ajuda` — em viewports estreitos
+   onde os 8 botões não cabem inline, força a quebra exatamente aqui pra
+   garantir 4+4 ao invés de uma divisão desigual. Acima do threshold, o
+   elemento some via `display: none` e a barra vira linha única. */
+.topbar-break { display: none; }
+@media (max-width: 560px) {
+  .topbar-break {
+    display: block;
+    flex-basis: 100%;
+    width: 100%;
+    height: 0;
+    margin: 0;
+    padding: 0;
   }
 }
 
@@ -348,7 +378,7 @@ body.header-hidden .topbar { display: none; }
 
 #publish-form input[type="text"],
 #publish-form textarea {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -385,22 +415,17 @@ body.header-hidden .topbar { display: none; }
 .leaflet-popup-content a { color: var(--accent); }
 
 /* ─── Date filter (rotas page) ─────────────────────────────────────────────── */
+/* Filtro de data: linha única e enxuta. Slider duplo (dois thumbs sobre
+   um único track) ladeado pelos valores e por um botão de reset. */
 .date-filter {
-  margin: 12px 0 16px;
-  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0 10px;
+  padding: 6px 8px;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--border);
-  border-radius: 8px;
-}
-.date-filter-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--muted);
-  margin-bottom: 10px;
+  border-radius: 6px;
 }
 .linkbtn {
   background: none;
@@ -408,30 +433,95 @@ body.header-hidden .topbar { display: none; }
   color: var(--accent);
   cursor: pointer;
   padding: 0;
-  font-size: 12px;
-  text-transform: none;
-  letter-spacing: 0;
+  font-size: 14px;
+  line-height: 1;
 }
 .linkbtn:hover { color: var(--accent-hover); }
-.range-row {
-  display: grid;
-  grid-template-columns: 36px 1fr auto;
-  align-items: center;
-  gap: 8px;
-  margin: 6px 0;
-  font-size: 12px;
-}
-.range-label { color: var(--muted); }
 .range-value {
   color: var(--text);
   font-variant-numeric: tabular-nums;
-  font-size: 12px;
-  min-width: 90px;
-  text-align: right;
+  font-size: 11px;
+  white-space: nowrap;
 }
-.range-row input[type="range"] {
+.range-value.clickable-date {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+  text-decoration-color: var(--muted);
+}
+.range-value.clickable-date:hover { color: var(--accent); }
+/* Date-picker oculto: só serve pra disparar `showPicker()` quando o usuário
+   clica no rótulo de data. Mantemos no DOM (não display:none) pra alguns
+   navegadores antigos que abrem o picker via focus do input. */
+.date-picker-hidden {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: 0;
+}
+/* Dual-range: dois `<input type="range">` empilhados sobre o mesmo eixo;
+   o track real fica invisível e a barra cinza atrás vem do ::before. Só os
+   thumbs são interativos (pointer-events: auto) — clicar no track não move
+   os thumbs, mas pra slider duplo isso é o trade-off padrão. */
+.dual-range {
+  position: relative;
+  flex: 1;
+  height: 22px;
+  min-width: 80px;
+}
+.dual-range::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 3px;
+  transform: translateY(-50%);
+  background: var(--border);
+  border-radius: 2px;
+}
+.dual-range input[type="range"] {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
   width: 100%;
-  accent-color: var(--accent);
+  height: 100%;
+  margin: 0;
+  background: transparent;
+  pointer-events: none;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.dual-range input[type="range"]::-webkit-slider-thumb {
+  pointer-events: auto;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--panel);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.dual-range input[type="range"]::-moz-range-thumb {
+  pointer-events: auto;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--panel);
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+.dual-range input[type="range"]::-webkit-slider-runnable-track {
+  background: transparent;
+}
+.dual-range input[type="range"]::-moz-range-track {
+  background: transparent;
 }
 
 /* Routes hidden by the date filter — drop from sidebar entirely
@@ -464,7 +554,7 @@ body.header-hidden .topbar { display: none; }
   height: 580px;
   border: 1px solid var(--border);
   border-radius: 6px;
-  background: #000;
+  background: var(--surface);
 }
 .ig-link {
   display: flex;
@@ -484,28 +574,29 @@ body.header-hidden .topbar { display: none; }
       "map";
   }
 
-  /* The sidebar slides in from the right as a drawer. */
+  /* Sidebar como bottom-sheet no mobile: sobe do rodapé do mapa em vez de
+     entrar pela direita, ocupando até 40vh — assim a maior parte do mapa
+     continua visível e o usuário pode contextualizar a rota selecionada
+     enquanto a barra está aberta. Sem backdrop (segue o padrão da barra
+     flutuante de traçado); o handler de clique-fora fecha o drawer. */
   .sidebar {
     position: fixed;
-    top: 0;
+    left: 0;
     right: 0;
     bottom: 0;
-    width: min(360px, 90vw);
-    transform: translateX(100%);
+    top: auto;
+    width: auto;
+    max-height: 40vh;
+    transform: translateY(100%);
     transition: transform 0.22s ease;
     z-index: 5500;
-    box-shadow: -2px 0 18px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 -2px 18px rgba(0, 0, 0, 0.5);
+    border-left: none;
+    border-top: 1px solid var(--border);
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
   }
-  body.sidebar-open .sidebar { transform: translateX(0); }
-  /* Backdrop */
-  body.sidebar-open::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 5400;
-    backdrop-filter: blur(2px);
-  }
+  body.sidebar-open .sidebar { transform: translateY(0); }
 
   .menu-btn { display: inline-block; }
 
@@ -546,8 +637,13 @@ body.header-hidden .topbar { display: none; }
     margin: 0;
     padding: 0;
   }
-  .trace-controls button { min-height: 32px; }
-  .trace-controls .trace-toggle { padding: 0 4px; }
+  .trace-controls button {
+    min-height: 28px;
+    padding: 3px 6px;
+    font-size: 11px;
+  }
+  .trace-controls .trace-toggle { padding: 0 2px; }
+  .trace-controls .trace-toggle select { font-size: 11px; padding: 2px 4px; }
   .trace-toggle {
     border-left: none !important;
     margin-left: 0;
@@ -559,14 +655,66 @@ body.header-hidden .topbar { display: none; }
   }
   .trace-metrics { border-left: none; padding-left: 0; flex: 1 1 0; min-width: 0; text-align: center; }
 
-  /* Layer panel: keep it compact and not too tall on mobile. */
+  /* Layer panel no mobile: bottom-sheet em vez do controle topright nativo
+     do Leaflet. Quando `body.layers-hidden` está presente, fica fora da tela
+     via transform; sem ela, sobe pra ocupar até 40vh. */
   .layer-panel {
-    min-width: 240px;
-    max-height: calc(100vh - 100px);
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    max-height: 40vh;
     overflow-y: auto;
+    margin: 0 !important;          /* sobrescreve spacing do .leaflet-bar */
     font-size: 11px;
+    border-radius: 12px 12px 0 0;
+    border: 1px solid var(--border);
+    border-bottom: none;
+    transform: translateY(100%);
+    transition: transform 0.22s ease;
+    z-index: 5500;
+  }
+  body:not(.layers-hidden) .layer-panel { transform: translateY(0); }
+  body.layers-hidden .layer-panel {
+    /* mantém no DOM pra preservar a animação; só desloca pra fora da tela */
+    display: block !important;
+    transform: translateY(100%);
   }
   .layer-row { grid-template-columns: minmax(110px, max-content) 1fr 32px; }
+
+  /* Modais (Enviar, Ajustes, Ajuda, photo-fallback) viram bottom-sheet —
+     slidam de baixo, com overlay transparente que ainda recebe cliques pra
+     habilitar fechar-clicando-fora. O mapa fica inativo enquanto aberto
+     (padrão típico de bottom-sheet). */
+  .modal {
+    align-items: flex-end;
+    background: rgba(0, 0, 0, 0.10);
+  }
+  .modal-content {
+    width: 100%;
+    max-width: 100%;
+    max-height: 40vh;
+    border-radius: 12px 12px 0 0;
+    border-bottom: none;
+    box-shadow: 0 -2px 18px rgba(0, 0, 0, 0.5);
+  }
+  /* Ajuda, Ajustes e Enviar têm conteúdo mais longo — permitem cobrir até
+     70vh pra dar espaço de leitura/uso sem virar tela cheia. */
+  #help-modal .modal-content,
+  #settings-modal .modal-content {
+    max-height: 70vh;
+  }
+  /* Upload é o único com altura própria. */
+  .upload-modal-content {
+    width: 100%;
+    height: 70vh;
+    max-height: 70vh;
+    border-radius: 12px 12px 0 0;
+  }
 
   /* Modals scale with the viewport. */
   .modal-content { max-height: 88vh; }
@@ -699,7 +847,7 @@ body.header-hidden .topbar { display: none; }
 }
 .primary-btn:hover { background: var(--accent-hover); }
 .secondary-btn {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   padding: 7px 12px;
@@ -710,13 +858,20 @@ body.header-hidden .topbar { display: none; }
   margin-right: 6px;
 }
 .secondary-btn:hover {
-  background: rgba(45, 169, 255, 0.18);
+  background: rgba(255, 140, 46, 0.18);
   border-color: var(--accent);
 }
 .secondary-btn[aria-pressed="false"] {
   opacity: 0.55;
 }
 .secondary-btn[aria-pressed="false"]:hover { opacity: 1; }
+/* Botões de toggle (Animação, Camadas, Rotas, Traçar GPX/Cancelar) acendem
+   em laranja quando estão ativos. */
+.topbar-actions .secondary-btn[aria-pressed="true"] {
+  background: rgba(255, 140, 46, 0.18);
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
 /* Layer panel hide toggle (driven by body.layers-hidden). */
 body.layers-hidden .layer-panel { display: none; }
@@ -751,7 +906,7 @@ body.layers-hidden .layer-panel { display: none; }
 .qr-url-row { display: grid; gap: 4px; font-size: 12px; }
 .qr-url-row span { color: var(--muted); font-size: 11px; }
 .qr-url-row input[type="text"] {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -767,7 +922,7 @@ body.layers-hidden .layer-panel { display: none; }
   justify-content: flex-end;
 }
 .qr-actions button {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -787,7 +942,7 @@ body.layers-hidden .layer-panel { display: none; }
 .save-row { display: grid; gap: 6px; font-size: 13px; }
 .save-row span { color: var(--muted); font-size: 12px; }
 .save-row input[type="text"] {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -796,7 +951,7 @@ body.layers-hidden .layer-panel { display: none; }
 }
 .save-body .muted { color: var(--muted); font-size: 12px; margin: 0; }
 .save-body .muted code {
-  background: #0c1722;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 3px;
   padding: 1px 5px;
@@ -850,7 +1005,7 @@ body.drawing .trackpoint-marker:active { cursor: grabbing !important; }
 .trace-controls[hidden] { display: none; }
 .trace-controls .trace-break { display: none; }
 .trace-controls button {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -875,15 +1030,9 @@ body.drawing .trackpoint-marker:active { cursor: grabbing !important; }
   background: rgba(90, 255, 90, 0.18);
   border-color: #7bff7b;
 }
-body.drawing #trace-btn {
-  background: #0c1722;
-  color: #ffb1b1;
-  border: 1px solid #6b3a3a;
-}
-body.drawing #trace-btn:hover {
-  background: rgba(255, 90, 90, 0.18);
-  border-color: #ff7b7b;
-}
+/* O highlight do trace-btn em modo Cancelar vem do `aria-pressed="true"`
+   genérico (laranja), junto dos outros toggles (Animação, Camadas, Rotas).
+   Veja a regra `.topbar-actions .secondary-btn[aria-pressed="true"]`. */
 .trace-count {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
@@ -914,7 +1063,7 @@ body.drawing #trace-btn:hover {
 .trace-toggle input[type="checkbox"] { accent-color: var(--accent); }
 .trace-toggle:hover { color: var(--text); }
 .trace-toggle select {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -924,7 +1073,7 @@ body.drawing #trace-btn:hover {
 }
 
 .params-btn {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--muted);
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -969,7 +1118,7 @@ body.drawing #trace-btn:hover {
 }
 .param-input input[type="number"] {
   width: 80px;
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -993,7 +1142,7 @@ body.drawing #trace-btn:hover {
   flex-wrap: wrap;
 }
 .params-actions button:not(.linkbtn) {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -1101,7 +1250,7 @@ body.drawing #trace-btn:hover {
 .help-body ul { padding-left: 20px; }
 .help-body li { margin: 3px 0; }
 .help-body code {
-  background: #0c1722;
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 3px;
   padding: 1px 5px;
@@ -1205,7 +1354,7 @@ body.drawing #trace-btn:hover {
 .tp-popup-body .tp-checkbox > span { color: var(--text); font-size: 12px; }
 .tp-popup-body input[type="text"],
 .tp-popup-body select {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -1330,7 +1479,7 @@ body.drawing #trace-btn:hover {
   max-height: 60vh;
   object-fit: cover;
   border-radius: 6px 0 0 6px;
-  background: #000;
+  background: var(--surface);
   image-orientation: none;
 }
 .photo-popup > :not(img) { grid-column: 2; min-width: 0; }
@@ -1475,7 +1624,7 @@ body.drawing #trace-btn:hover {
   object-fit: cover;
   border-radius: 6px;
   cursor: pointer;
-  background: #000;
+  background: var(--surface);
   transition: transform 0.12s ease;
   image-orientation: none;
 }
@@ -1607,7 +1756,7 @@ body.drawing #trace-btn:hover {
 }
 .settings-row > select {
   grid-column: 1 / 3;
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 4px;
@@ -1626,7 +1775,7 @@ body.drawing #trace-btn:hover {
   margin-top: 4px;
 }
 .settings-actions button {
-  background: #0c1722;
+  background: var(--surface);
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 5px;
@@ -1795,7 +1944,7 @@ body.drawing #trace-btn:hover {
   object-fit: cover;
   border-radius: 5px;
   flex-shrink: 0;
-  background: #000;
+  background: var(--surface);
 }
 .div-item-body {
   display: flex;
