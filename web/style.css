@@ -38,7 +38,11 @@ body {
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 6px;
-  padding: 6px 14px;
+  /* Em PWAs iOS o status bar (com hora/bateria) é transparente e fica em
+     cima do conteúdo. env(safe-area-inset-top) é a altura desse "notch"
+     superior; aplicamos como padding-top extra pra empurrar os botões
+     pra baixo dele. Em desktop env() é 0, comportamento idêntico ao antes. */
+  padding: max(6px, env(safe-area-inset-top, 6px)) 14px 6px;
   background: var(--panel);
   border-bottom: 1px solid var(--border);
 }
@@ -57,6 +61,9 @@ body {
   font-weight: 700;
   cursor: pointer;
   padding: 0 6px;
+  /* Quando a topbar está oculta, o header-toggle vira o único controle
+     visível no topo do mapa. Empurra ele abaixo da safe-area também. */
+  margin-top: env(safe-area-inset-top, 0);
 }
 .header-toggle:hover { background: #f4f4f4; }
 body.header-hidden .topbar { display: none; }

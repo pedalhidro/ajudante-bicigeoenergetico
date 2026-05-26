@@ -32,12 +32,12 @@ const SETTINGS_DEFAULTS = {
   photoSource: 'pi',                    // 'pi' | 'cdn' | 'auto' | 'local'
   spotlight: {
     enabled: false,
-    boost: 5.0,
-    peakSec: 2,
+    boost: 10.0,
+    peakSec: 1,
     peakCount: 1,
     pulseShape: 7,
-    echoAmp: 0.4,
-    echoOffset: 0.5,
+    echoAmp: 0.7,
+    echoOffset: 0.7,
     tickMs: 200,
   },
   markerLayout: {
@@ -565,9 +565,21 @@ function cameraFromExif(meta) {
 
 // divIcon da foto. Com bússola → cone translúcido + thumbnail no vértice;
 // sem bússola → o círculo simples.
-function photoDivIcon(thumbUrl, bearing, fov, extraClass) {
+function photoDivIcon(thumbUrl, bearing, fov, extraClass, largeUrl) {
   const dotClass = 'photo-dot' + (extraClass ? ' ' + extraClass : '');
-  const dot = `<div class="${dotClass}" style="background-image:url('${thumbUrl}')"></div>`;
+  // image-set: navegadores em telas HiDPI (devicePixelRatio >= 2) pegam o
+  // large (~2400px) em vez do thumb (~256px), eliminando o borrão de
+  // upscaling durante a animação (peak ~150px CSS = 300 device-pixels em 2x).
+  // Em telas 1x a banda fica preservada (só thumb baixa).
+  const url1x = thumbUrl;
+  const url2x = largeUrl || thumbUrl;
+  // Ordem: fallback primeiro, image-set depois — navegadores aceitam o
+  // último declaração válida; quem não entende image-set fica com url() simples.
+  const bg =
+    `background-image: url('${url1x}'); ` +
+    `background-image: -webkit-image-set(url('${url1x}') 1x, url('${url2x}') 2x); ` +
+    `background-image: image-set(url('${url1x}') 1x, url('${url2x}') 2x);`;
+  const dot = `<div class="${dotClass}" style="${bg}"></div>`;
   if (!Number.isFinite(bearing)) {
     return L.divIcon({
       className: 'photo-dot-wrap',
@@ -1224,7 +1236,7 @@ function buildPhotoMarkers(photos) {
   photoMarkers = [];
   for (const ph of photos) {
     if (!Number.isFinite(ph.lat) || !Number.isFinite(ph.lng)) continue;
-    const icon = photoDivIcon(ph.thumb || ph.file, ph.bearing, ph.fov, '');
+    const icon = photoDivIcon(ph.thumb || ph.file, ph.bearing, ph.fov, '', ph.file);
     const m = L.marker([ph.lat, ph.lng], { icon, opacity: photosOpacity });
     m._photo = ph;
     const rows = _photoDetailRows(ph)
@@ -1689,7 +1701,7 @@ async function handlePhotoUpload(fileList) {
 }
 
 function addUploadedPhoto(p) {
-  const icon = photoDivIcon(p.url, p.bearing, p.fov, 'photo-dot-upload');
+  const icon = photoDivIcon(p.url, p.bearing, p.fov, 'photo-dot-upload', p.url);
   const m = L.marker([p.lat, p.lng], { icon });
   const when = p.datetime ? new Date(p.datetime).toLocaleString('pt-BR') : '';
   const rideText = p.ride
