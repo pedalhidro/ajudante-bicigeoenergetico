@@ -50,20 +50,23 @@
     <header class="topbar">
       <div class="title">
         <h1>Ajudante cartográfica-energética para passeios topo hidrográficos na Grande São Paulo</h1>
-        <span class="credit">feito por Cláudio · pedido e dirigido pelos neogeógrafos hidrográficos<button id="help-btn" type="button" class="help-btn" title="Como usar" aria-label="Instruções">?</button><button id="photos-source-btn" type="button" class="help-btn" title="Fonte do acervo de imagens (Pi / CDN / Local)" aria-label="Fonte do acervo de imagens">⚙</button></span>
       </div>
       <nav class="topbar-actions">
-      <button id="layers-btn" type="button" class="secondary-btn" title="Mostrar/ocultar camadas" aria-pressed="true">Camadas</button>
-      <input type="file" id="edit-gpx-input" accept=".gpx,application/gpx+xml" hidden />
-      <button id="edit-gpx-btn" type="button" class="secondary-btn" title="Carregar um arquivo .gpx para editar">Editar GPX…</button>
+      <button id="layers-btn" type="button" class="secondary-btn" title="Mostrar/ocultar camadas" aria-label="Mostrar/ocultar camadas" aria-pressed="true">⧉</button>
+      <button id="photo-anim-btn" type="button" class="secondary-btn" title="Ligar/desligar animação dos marcadores de foto" aria-label="Animação dos marcadores" aria-pressed="true">✨</button>
+      <button id="menu-btn" type="button" class="menu-btn secondary-btn" title="Mostrar rotas" aria-label="Mostrar rotas">☰</button>
       <input type="file" id="photos-import-input" accept=".ttl,.zip,text/turtle,application/zip" hidden />
-      <button id="upload-btn" type="button" class="secondary-btn" title="Enviar imagens ao acervo">📷 Enviar imagens</button>
-      <button id="trace-btn" type="button" class="primary-btn">Traçar GPX</button>
-      <button id="menu-btn" type="button" class="menu-btn secondary-btn" title="Mostrar rotas">Rotas</button>
+      <button id="upload-btn" type="button" class="secondary-btn" title="Enviar imagens ao acervo" aria-label="Enviar imagens">⬆🖼︎</button>
+      <input type="file" id="edit-gpx-input" accept=".gpx,application/gpx+xml" hidden />
+      <button id="edit-gpx-btn" type="button" class="secondary-btn" title="Editar GPX — carregar um arquivo .gpx" aria-label="Editar GPX">✎🗺︎</button>
+      <button id="trace-btn" type="button" class="secondary-btn" title="Traçar GPX" aria-label="Traçar GPX">＋🗺︎</button>
+      <button id="help-btn" type="button" class="secondary-btn" title="Como usar" aria-label="Instruções">?</button>
+      <button id="photos-source-btn" type="button" class="secondary-btn" title="Fonte do acervo de imagens (Pi / CDN / Local)" aria-label="Fonte do acervo de imagens">⚙</button>
       </nav>
     </header>
 
     <main id="map">
+      <button id="header-toggle" type="button" class="header-toggle leaflet-bar leaflet-control" title="Ocultar cabeçalho" aria-label="Ocultar cabeçalho" aria-pressed="false">▲</button>
       <div id="trace-controls" class="trace-controls" hidden>
         <button type="button" id="trace-undo" disabled title="Desfazer (Cmd/Ctrl+Z)">↶ Undo</button>
         <button type="button" id="trace-redo" disabled title="Refazer (Cmd/Ctrl+Shift+Z)">↷ Redo</button>
@@ -79,7 +82,7 @@
         </label>
         <button type="button" id="params-btn" class="params-btn" title="Parâmetros da simulação" aria-label="Parâmetros">⚙</button>
         <span class="trace-metrics" id="trace-metrics">0,00 km · 0,0 kJ</span>
-        <button type="button" id="trace-cancel" class="trace-cancel">Cancelar</button>
+        <button type="button" id="trace-save" class="trace-save" title="Salvar GPX" aria-label="Salvar GPX">⤓🗺︎</button>
       </div>
     </main>
 
@@ -144,6 +147,8 @@
             <li>Roteamento usa o servidor público do OSRM, com limite de requisições. Pode falhar — nesse caso o segmento vira linha reta.</li>
             <li>A elevação vem do Open-Meteo, com cache local. Pontos sem elevação são tratados como plano.</li>
           </ul>
+
+          <p class="help-credit">feito por Cláudio · pedido e dirigido pelos neogeógrafos hidrográficos</p>
         </div>
       </div>
     </div>
@@ -188,7 +193,7 @@
             <button type="button" id="save-cancel">Cancelar</button>
             <button type="button" id="save-copy-link">Copiar link</button>
             <button type="button" id="save-qr">QR</button>
-            <button type="button" id="save-confirm" class="primary-btn">Salvar GPX</button>
+            <button type="button" id="save-confirm" class="primary-btn" title="Salvar GPX" aria-label="Salvar GPX">⤓🗺︎</button>
           </div>
         </div>
       </div>

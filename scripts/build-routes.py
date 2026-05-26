@@ -102,17 +102,34 @@ def series_label(iri: str) -> str:
 
 
 def pick_primary_number(assocs: list[dict]) -> dict:
-    """Dado os ph:Association de um passeio, retorna {source, value} do
-    primeiro match segundo SERIES_PRIORITY; se nenhum bate, devolve o primeiro
-    encontrado; se vazio, devolve placeholders."""
+    """Primeiro item de `order_numbers(assocs)`, ou placeholders se vazio.
+    Mantido por compatibilidade — o consumidor moderno usa `order_numbers`."""
+    nums = order_numbers(assocs)
+    return nums[0] if nums else {"source": "", "value": ""}
+
+
+def order_numbers(assocs: list[dict]) -> list[dict]:
+    """Retorna [{source, value}, …] ordenados por SERIES_PRIORITY.
+    Tours pertencendo a múltiplas séries (ex.: PH 79 + BP 4) preservam todas
+    as associações para a UI exibir."""
     if not assocs:
-        return {"source": "", "value": ""}
+        return []
+    ordered: list[dict] = []
+    seen_iris: set[str] = set()
     for s in SERIES_PRIORITY:
         for a in assocs:
+            if a["series_iri"] in seen_iris:
+                continue
             if series_slug(a["series_iri"]) == s:
-                return {"source": series_label(a["series_iri"]), "value": str(a["seq"])}
-    a = assocs[0]
-    return {"source": series_label(a["series_iri"]), "value": str(a["seq"])}
+                ordered.append({"source": series_label(a["series_iri"]), "value": str(a["seq"])})
+                seen_iris.add(a["series_iri"])
+    # Séries fora da priority list ficam no final, ordem de aparição.
+    for a in assocs:
+        if a["series_iri"] in seen_iris:
+            continue
+        ordered.append({"source": series_label(a["series_iri"]), "value": str(a["seq"])})
+        seen_iris.add(a["series_iri"])
+    return ordered
 
 
 def parse_tours(ttl_path: Path) -> list[dict]:
@@ -158,6 +175,7 @@ def parse_tours(ttl_path: Path) -> list[dict]:
                 continue
             assocs.append({"series_iri": str(seriesIri), "seq": seq})
 
+        nums = order_numbers(assocs)
         entries.append({
             "id":      rid,
             "tourIri": str(tour),
@@ -165,20 +183,15 @@ def parse_tours(ttl_path: Path) -> list[dict]:
             "dateMs":  date_ms,
             "name":    title,
             "igPost":  ig,
-            "number":  pick_primary_number(assocs),
+            "number":  nums[0] if nums else {"source": "", "value": ""},
+            "numbers": nums,
         })
 
-    # Dedup por route ID — mantém o primeiro (passeios reaproveitam rotas).
-    seen = set()
-    deduped = []
-    for e in entries:
-        if e["id"] in seen:
-            continue
-        seen.add(e["id"])
-        deduped.append(e)
-    # Ordena por data desc — primeiro mais recente.
-    deduped.sort(key=lambda e: e["dateMs"] or 0, reverse=True)
-    return deduped
+    # Cada passeio (tour) é um evento distinto, mesmo quando dois passeios
+    # reaproveitam a mesma rota do RideWithGPS (ex.: aniversários). Mantemos
+    # uma entrada por tour; o fetch da GPX é deduplicado no main().
+    entries.sort(key=lambda e: e["dateMs"] or 0, reverse=True)
+    return entries
 
 
 def parse_iso_date_ms(s: str) -> int | None:
@@ -380,24 +393,6 @@ def downsample_and_round(points):
 
 
 # ─── Main ─────────────────────────────────────────────────────────────────────
-def process_entry(entry: dict, idx: int, total: int) -> dict:
-    try:
-        data = fetch_route_data(entry["id"])
-        result = {
-            **entry,
-            "latlngs": downsample_and_round(data["latlngs"]),
-            "pois":    data["pois"],
-        }
-        pts_tag = f'{len(result["latlngs"])}pts' if result["latlngs"] else "FAIL"
-        poi_tag = f'{len(result["pois"])} POIs' if result["pois"] else ""
-        tag = f"ok ({pts_tag}{', ' + poi_tag if poi_tag else ''})"
-    except Exception as err:
-        result = {**entry, "latlngs": None, "pois": [], "error": str(err)}
-        tag = f"FAIL ({err})"
-    print(f"  [{idx}/{total}] {entry['id']} — {tag}", flush=True)
-    return result
-
-
 def main() -> int:
     if not RWGPS_API_KEY or not RWGPS_AUTH_TOKEN:
         print("Warning: RWGPS_API_KEY/RWGPS_AUTH_TOKEN are not set. "
@@ -412,21 +407,45 @@ def main() -> int:
     if not entries:
         raise RuntimeError("nenhum passeio com `ph:linkRoute` encontrado")
 
-    print(f"Fetching GPX (concurrency={CONCURRENCY})…")
-    results = [None] * len(entries)
+    # Fetch each unique RWGPS id once; passeios diferentes podem compartilhar
+    # uma rota (aniversários, rerides). Cada entry permanece como evento próprio.
+    unique_ids = sorted({e["id"] for e in entries})
+    print(f"Fetching {len(unique_ids)} GPX único(s) (concurrency={CONCURRENCY})…")
     counter = {"done": 0}
-    total = len(entries)
+    total_ids = len(unique_ids)
 
-    def worker(i: int):
-        r = process_entry(entries[i], counter["done"] + 1, total)
+    def fetch_worker(rid: str):
+        try:
+            data = fetch_route_data(rid)
+            pts_tag = f'{len(data["latlngs"])}pts' if data["latlngs"] else "FAIL"
+            poi_tag = f', {len(data["pois"])} POIs' if data["pois"] else ""
+            tag = f"ok ({pts_tag}{poi_tag})"
+            err = None
+        except Exception as e:
+            data, err, tag = None, str(e), f"FAIL ({e})"
         counter["done"] += 1
-        results[i] = r
+        print(f"  [{counter['done']}/{total_ids}] {rid} — {tag}", flush=True)
+        return rid, data, err
 
+    fetched: dict[str, tuple[dict | None, str | None]] = {}
     with ThreadPoolExecutor(max_workers=CONCURRENCY) as pool:
-        list(pool.map(worker, range(total)))
+        for rid, data, err in pool.map(fetch_worker, unique_ids):
+            fetched[rid] = (data, err)
 
-    ok = sum(1 for r in results if r and r.get("latlngs"))
-    print(f"Done: {ok} ok, {total - ok} failed")
+    results = []
+    for entry in entries:
+        data, err = fetched[entry["id"]]
+        if data:
+            results.append({
+                **entry,
+                "latlngs": downsample_and_round(data["latlngs"]),
+                "pois":    data["pois"],
+            })
+        else:
+            results.append({**entry, "latlngs": None, "pois": [], "error": err})
+
+    ok = sum(1 for r in results if r.get("latlngs"))
+    print(f"Done: {ok} ok, {len(results) - ok} failed")
 
     OUTPUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     payload = {

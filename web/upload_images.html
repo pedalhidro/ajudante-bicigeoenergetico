@@ -24,13 +24,12 @@
   .err { color: #c00; }
   code { background: #eee; padding: 0 .25rem; border-radius: 2px; font-size: .9em; }
 
-  /* Upload zone (arquivos + padrões lado a lado, dentro do mesmo fieldset) */
+  /* Upload zone (padrões em cima, seletor de arquivos embaixo) */
   .upload-row {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
     gap: 1rem;
   }
-  @media (max-width: 760px) { .upload-row { grid-template-columns: 1fr; } }
   #upload-zone { margin-top: 1rem; }
 
   /* Painel de "Opções de saída" (anonimizar/comprimir) */
@@ -100,17 +99,6 @@
     <legend>Adicionar imagens</legend>
     <div class="upload-row">
       <div>
-        <label for="files">Arquivos</label>
-        <input type="file" id="files" accept="image/*" multiple>
-        <small id="filesStatus">Selecione imagens — pHash e EXIF são extraídos; duplicatas (pHash ≤ 5) são rejeitadas.</small>
-        <small id="catalogStatus">Carregando catálogo…</small>
-        <div id="notices" style="margin: .5rem 0;"></div>
-        <div style="margin-top: .5rem">
-          <button type="button" id="clearAll" disabled>Limpar todas as imagens</button>
-        </div>
-      </div>
-
-      <div>
         <label style="font-weight:600;margin-top:0">Padrões da Atribuição</label>
         <small>Aplicados a cada imagem adicionada daqui em diante (edite por card depois).</small>
 
@@ -136,6 +124,17 @@
         <div class="opts">
           <label><input type="checkbox" id="d-anon"> Anonimizar (remover metadados)</label>
           <label><input type="checkbox" id="d-comp"> Comprimir imagem para 500 kB máx.</label>
+        </div>
+      </div>
+
+      <div>
+        <label for="files">Arquivos</label>
+        <input type="file" id="files" accept="image/*" multiple>
+        <small id="filesStatus">Selecione imagens — pHash e EXIF são extraídos; duplicatas (pHash ≤ 5) são rejeitadas.</small>
+        <small id="catalogStatus">Carregando catálogo…</small>
+        <div id="notices" style="margin: .5rem 0;"></div>
+        <div style="margin-top: .5rem">
+          <button type="button" id="clearAll" disabled>Limpar todas as imagens</button>
         </div>
       </div>
     </div>
@@ -326,6 +325,36 @@ async function anonymizeJpeg(bitmap, q = 0.92) {
   return await encodeJpeg(drawToCanvas(bitmap, Math.max(bitmap.width, bitmap.height)), q);
 }
 
+// Reescreve a tag Orientation (0x0112) do IFD0 para 1 ("normal"). O canvas
+// produz pixels já na orientação visual (createImageBitmap aplica EXIF), então
+// manter a Orientation original faria o browser rotacionar de novo na exibição.
+function normalizeExifOrientation(exifSeg) {
+  if (exifSeg.length < 18) return;
+  // exifSeg: FFE1 <len:2> "Exif\0\0" <tiff…>  → TIFF começa no offset 10
+  const t = 10;
+  const le = exifSeg[t] === 0x49 && exifSeg[t+1] === 0x49;
+  const be = exifSeg[t] === 0x4D && exifSeg[t+1] === 0x4D;
+  if (!le && !be) return;
+  const u16 = (o) => le ? exifSeg[o] | (exifSeg[o+1] << 8)
+                        : (exifSeg[o] << 8) | exifSeg[o+1];
+  const u32 = (o) => le ? ((exifSeg[o]) | (exifSeg[o+1] << 8) | (exifSeg[o+2] << 16) | (exifSeg[o+3] << 24)) >>> 0
+                        : ((exifSeg[o] << 24) | (exifSeg[o+1] << 16) | (exifSeg[o+2] << 8) | exifSeg[o+3]) >>> 0;
+  if (u16(t + 2) !== 0x002A) return;
+  const ifd0 = t + u32(t + 4);
+  if (ifd0 + 2 > exifSeg.length) return;
+  const n = u16(ifd0);
+  for (let e = 0; e < n; e++) {
+    const entry = ifd0 + 2 + e * 12;
+    if (entry + 12 > exifSeg.length) break;
+    if (u16(entry) === 0x0112) {
+      // tipo SHORT(3), count 1 → valor fica nos 2 primeiros bytes de [entry+8..]
+      exifSeg[entry + 8] = le ? 0x01 : 0x00;
+      exifSeg[entry + 9] = le ? 0x00 : 0x01;
+      return;
+    }
+  }
+}
+
 // Copia o APP1/Exif do JPEG de origem para um blob JPEG já re-encodado pelo
 // canvas (que sempre nasce sem metadados). Se a origem não for JPEG ou não
 // tiver Exif, devolve o blob alvo intacto.
@@ -350,6 +379,7 @@ async function copyExifSegment(sourceFile, targetBlob) {
     i += 2 + segLen;
   }
   if (!exifSeg) return targetBlob;
+  normalizeExifOrientation(exifSeg);
 
   const tgt = new Uint8Array(await targetBlob.arrayBuffer());
   if (tgt[0] !== 0xFF || tgt[1] !== 0xD8) return targetBlob;
@@ -536,6 +566,17 @@ function initPersonSelect(selectEl) {
     sortField: { field: 'text', direction: 'asc' },
     maxOptions: 500,
   });
+  // Tom Select prepende o item "+ adicionar" no topo (insertBefore firstChild
+  // em refreshOptions, sem opção de config). Reposicionamos no fim a cada
+  // refresh para que matches reais apareçam primeiro.
+  const origRefresh = ts.refreshOptions.bind(ts);
+  ts.refreshOptions = function (triggerDropdown) {
+    origRefresh(triggerDropdown);
+    const create = this.dropdown_content.querySelector('.create');
+    if (create && create !== this.dropdown_content.lastElementChild) {
+      this.dropdown_content.appendChild(create);
+    }
+  };
   personSelects.push(ts);
   return ts;
 }
@@ -617,7 +658,7 @@ function buildCardElem(displayIdx, file) {
         </div>
         <div>
           <label>Focal eq. 35 mm</label>
-          <input type="number" data-field="focal" step="any" min="0.001" max="180">
+          <input type="number" data-field="focal" step="any" min="0.001" max="100000">
         </div>
       </div>
     </div>
@@ -738,7 +779,10 @@ async function createCard(file, defaults) {
   //    para podermos rejeitar duplicatas barato.
   let bitmap, phash;
   try {
-    bitmap = await createImageBitmap(file);
+    // imageOrientation: 'from-image' garante que o bitmap nasce com EXIF
+    // Orientation aplicado. Caso contrário, em browsers que ainda default-aram
+    // 'none', os pixels ficam crus e o canvas grava errado.
+    bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
     phash  = computePHash(bitmap);
   } catch (e) {
     notify(`<strong>${file.name}</strong>: não consegui ler (${e.message}).`, 'err');

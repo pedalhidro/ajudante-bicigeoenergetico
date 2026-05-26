@@ -10,7 +10,7 @@ Cada upload contém:
   - `large`      : foto reduzida (~500 KB). Opcional.
   - `thumb`      : miniatura. Opcional.
 
-O backend valida o TTL contra `research/photos-rdf/shapes.ttl` + a ontologia,
+O backend valida o TTL contra `web/data/shapes.ttl` + a ontologia,
 grava as variantes em `web/photos/<phash>/{original|large|thumb}.<ext>` e
 anexa as triples ao catálogo único em `web/data/photos.ttl` (deduplicando
 por IRI da imagem).
@@ -39,11 +39,9 @@ from flask import Flask, abort, jsonify, request, send_from_directory
 WEB = Path(os.environ.get(
     "PHIDRO_WEB",
     Path(__file__).resolve().parents[2] / "web")).resolve()
-REPO_ROOT     = Path(__file__).resolve().parents[2]
-SHACL_DIR     = REPO_ROOT / "research" / "photos-rdf"
-SHAPES_PATH   = SHACL_DIR / "shapes.ttl"
-ONTOLOGY_PATH = SHACL_DIR / "ontology.ttl"
 DATA_DIR      = WEB / "data"
+SHAPES_PATH   = DATA_DIR / "shapes.ttl"
+ONTOLOGY_PATH = DATA_DIR / "ontology.ttl"
 MANIFEST_PATH = DATA_DIR / "data_graphs.ttl"
 UPLOADS_TTL   = DATA_DIR / "uploads.ttl"
 PHOTOS_DIR    = WEB / "photos"

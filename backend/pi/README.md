@@ -34,14 +34,15 @@ web/
 ├─ lib/                        utils.js + n3.min.js (parser de Turtle vendored)
 ├─ data/
 │   ├─ photos.ttl              catálogo único; gerado/mantido pelo /upload-image
-│   ├─ tours.ttl               símbolo para research/photos-rdf/data/tours.ttl
-│   └─ initial-data.ttl        idem (pessoas declaradas)
+│   ├─ tours.ttl               catálogo de passeios (gerado por build-tours.py)
+│   ├─ shapes.ttl              SHACL — validação do /upload-image
+│   └─ ontology.ttl            vocabulário ph:
 └─ photos/<phash>/             { original.jpg | large.jpg | thumb.jpg }
 ```
 
-A validação SHACL acontece contra `research/photos-rdf/shapes.ttl` mesclado
-com `research/photos-rdf/ontology.ttl`. O Pi descobre esses arquivos pelo
-caminho relativo ao próprio repositório.
+A validação SHACL acontece contra `web/data/shapes.ttl` mesclado com
+`web/data/ontology.ttl`. O Pi lê esses arquivos do próprio diretório web/
+que serve.
 
 **Backup é copiar `web/data/` + `web/photos/`** — não há mais nada de
 estado. (`web/routes.json` é regenerado por `scripts/build-routes.py`.)

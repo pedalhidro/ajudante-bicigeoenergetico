@@ -43,6 +43,9 @@ const satellite = L.tileLayer(
 
 const rmsampa = L.tileLayer('https://telhas.pedalhidrografi.co/rmsampa-v2/{z}/{x}/{y}.png', {
   maxZoom: 19,
+  // O servidor só tem tiles até z=16; acima disso o Leaflet escala o tile do
+  // z=16 (interpolado) em vez de pedir z≥17 e levar 404.
+  maxNativeZoom: 16,
   opacity: 0.85,
   attribution: 'Topografia: Pedal Hidrográfico',
 }).addTo(map);
@@ -323,7 +326,7 @@ function setOverpassOpacity(frac) {
 // ─── Fotos geotag­geadas (TTL → web/data/photos.ttl) ──────────────────────
 // Cada foto com GPS vira um pequeno círculo no mapa; clicar abre um popup
 // com o thumbnail. O acervo é descrito em RDF/Turtle conforme
-// `research/photos-rdf/shapes.ttl` (ph:ImageShape). N3.js parseia o TTL no
+// `data/shapes.ttl` (ph:ImageShape). N3.js parseia o TTL no
 // browser; a fonte pode ser o Pi, a CDN, ou um kit local (.zip).
 const PHOTOS_TTL_REL    = 'data/photos.ttl';
 const PHOTOS_DIR_REL    = 'photos/';                       // <phash>/{original,large,thumb}.jpg
@@ -450,13 +453,264 @@ function photoDivIcon(thumbUrl, bearing, fov, extraClass) {
     html:
       `<div class="photo-aim" style="width:${SZ}px;height:${SZ}px">` +
       `<svg width="${SZ}" height="${SZ}" viewBox="0 0 ${SZ} ${SZ}">` +
-      `<path d="${conePath(C, C, 50, bearing, f)}" class="photo-cone"/>` +
+      `<path d="${conePath(C, C, 38, bearing, f)}" class="photo-cone"/>` +
       `</svg>${dot}</div>`,
     iconSize: [SZ, SZ],
     iconAnchor: [C, C],
     popupAnchor: [0, -C],
   });
 }
+
+// Encolhe os círculos/cones de foto fora do zoom 16+ via custom property
+// CSS (--photo-scale). 2/3 a cada tick a partir do 15.
+function updatePhotoScale() {
+  const reductions = Math.max(0, 12 - map.getZoom());
+  const scale = Math.pow(2 / 3, reductions);
+  document.body.style.setProperty('--photo-scale', scale.toFixed(3));
+}
+
+// Encolhe + nudge por densidade local: marcadores em vizinhanças com muitas
+// fotos ficam menores (1/sqrt(1+n), piso 0.4) e se afastam uns dos outros
+// (deslocamento em px, capado em ~1 raio do dot). Custom properties por ícone:
+//   --photo-density-scale  multiplica --photo-scale
+//   --photo-dx / --photo-dy  translação CSS sem mexer no LatLng real
+const PHOTO_BASE_RADIUS = 20;   // metade do diâmetro nominal do .photo-dot (40px)
+const PHOTO_RELAX_ITERS = 8;
+
+// Piso da escala por densidade dependente do zoom: em zooms altos sobra
+// espaço na tela, então clusters não precisam encolher tanto; em zooms
+// baixos o aperto é maior. Rampa linear entre RAMP_START..RAMP_END,
+// saturando em FLOOR antes e CEIL depois.
+const PHOTO_MIN_SCALE_FLOOR      = 0.4;   // piso em zooms baixos (z ≤ RAMP_START)
+const PHOTO_MIN_SCALE_CEIL       = 0.9;   // teto em zooms altos  (z ≥ RAMP_END)
+const PHOTO_MIN_SCALE_RAMP_START = 13;    // zoom onde começa a soltar
+const PHOTO_MIN_SCALE_RAMP_END   = 18;    // zoom onde bate no teto
+
+function photoMinScaleForZoom(z) {
+  const span = PHOTO_MIN_SCALE_RAMP_END - PHOTO_MIN_SCALE_RAMP_START;
+  const t = (z - PHOTO_MIN_SCALE_RAMP_START) / span;
+  const ramp = PHOTO_MIN_SCALE_FLOOR
+    + (PHOTO_MIN_SCALE_CEIL - PHOTO_MIN_SCALE_FLOOR) * t;
+  return Math.max(PHOTO_MIN_SCALE_FLOOR, Math.min(PHOTO_MIN_SCALE_CEIL, ramp));
+}
+
+function relaxPhotoMarkers() {
+  const zoomScale = parseFloat(
+    document.body.style.getPropertyValue('--photo-scale')) || 1;
+  const bounds = map.getBounds();
+  const items = [];
+  for (const m of photoMarkers) {
+    if (!m._icon) continue;                     // ainda não adicionado ao mapa
+    if (!bounds.contains(m.getLatLng())) {
+      // Limpa override em quem caiu da viewport, evita herdar valor stale.
+      m._icon.style.removeProperty('--photo-density-scale');
+      m._icon.style.removeProperty('--photo-dx');
+      m._icon.style.removeProperty('--photo-dy');
+      continue;
+    }
+    const pt = map.latLngToContainerPoint(m.getLatLng());
+    items.push({ marker: m, x: pt.x, y: pt.y, dx: 0, dy: 0, scale: 1 });
+  }
+
+  const baseR = PHOTO_BASE_RADIUS * zoomScale;
+  const neighborWindow2 = (2 * baseR) ** 2;
+  const minScale = photoMinScaleForZoom(map.getZoom());
+
+  // 1) escala por densidade local
+  for (const a of items) {
+    let n = 0;
+    for (const b of items) {
+      if (a === b) continue;
+      const dx = a.x - b.x, dy = a.y - b.y;
+      if (dx * dx + dy * dy < neighborWindow2) n++;
+    }
+    a.scale = Math.max(minScale, 1 / Math.sqrt(1 + n));
+    // 1.1) spotlight contínuo: intensidade por marcador (0..1, atualizada
+    // pelo loop em photoSpotlightTick) modula um boost no scale. Raio
+    // efetivo cresce junto, então a relaxação empurra vizinhos suavemente.
+    const intensity = a.marker._spotIntensity || 0;
+    a.scale *= 1 + (PHOTO_SPOTLIGHT_BOOST - 1) * intensity;
+  }
+
+  // 1.5) pré-dispersão de fotos exatamente co-localizadas (mesmo GPS).
+  // Sem isto, dist=0 entre pares "duplicados" zera a força de repulsão e elas
+  // ficam empilhadas — só a de cima recebe clique, as de baixo ficam inacessíveis.
+  const groups = new Map();
+  for (const item of items) {
+    const key = Math.round(item.x) + ',' + Math.round(item.y);
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  }
+  for (const group of groups.values()) {
+    if (group.length < 2) continue;
+    for (let k = 0; k < group.length; k++) {
+      const angle = (k / group.length) * Math.PI * 2;
+      group[k].dx = Math.cos(angle) * baseR;
+      group[k].dy = Math.sin(angle) * baseR;
+    }
+  }
+
+  // 2) relaxação iterativa: empurra pares que ainda colidem; cap maior para
+  //    grupos co-localizados (até 2 raios) para deixar espaço para espalhar.
+  const maxJitter = baseR * 2;
+  for (let iter = 0; iter < PHOTO_RELAX_ITERS; iter++) {
+    let moved = false;
+    for (let i = 0; i < items.length; i++) {
+      for (let j = i + 1; j < items.length; j++) {
+        const a = items[i], b = items[j];
+        const ra = baseR * a.scale, rb = baseR * b.scale;
+        const minDist = ra + rb;
+        const dx = (b.x + b.dx) - (a.x + a.dx);
+        const dy = (b.y + b.dy) - (a.y + a.dy);
+        const dist = Math.hypot(dx, dy);
+        if (dist < minDist && dist > 1e-3) {
+          const push = (minDist - dist) / 2;
+          const nx = dx / dist, ny = dy / dist;
+          a.dx -= nx * push; a.dy -= ny * push;
+          b.dx += nx * push; b.dy += ny * push;
+          a.dx = Math.max(-maxJitter, Math.min(maxJitter, a.dx));
+          a.dy = Math.max(-maxJitter, Math.min(maxJitter, a.dy));
+          b.dx = Math.max(-maxJitter, Math.min(maxJitter, b.dx));
+          b.dy = Math.max(-maxJitter, Math.min(maxJitter, b.dy));
+          moved = true;
+        }
+      }
+    }
+    if (!moved) break;
+  }
+
+  // 3) commit nas custom properties do ícone
+  for (const a of items) {
+    const el = a.marker._icon;
+    el.style.setProperty('--photo-density-scale', a.scale.toFixed(3));
+    el.style.setProperty('--photo-dx', a.dx.toFixed(1) + 'px');
+    el.style.setProperty('--photo-dy', a.dy.toFixed(1) + 'px');
+  }
+}
+
+function refreshPhotoLayout() {
+  updatePhotoScale();
+  relaxPhotoMarkers();
+}
+map.on('zoomend moveend', refreshPhotoLayout);
+updatePhotoScale();
+
+// ── Spotlight contínuo ───────────────────────────────────────────────────
+// Cada marcador tem uma fase φ ∈ [0,1) constante; ao longo do tempo, sua
+// intensidade segue um pulso gaussiano periódico. As fases são distribuídas
+// aleatoriamente, então em qualquer instante alguns marcadores estão perto
+// do pico (boost ~ PHOTO_SPOTLIGHT_BOOST) e outros em repouso. O loop atualiza
+// _spotIntensity e re-chama relaxPhotoMarkers, que ajusta tamanhos e nudges
+// — as transições CSS suavizam tudo. Pausa durante pan pra não brigar com
+// o gesto.
+// Tunables independentes:
+//   PEAK_SEC    duração aproximada de cada pico em segundos reais — controla
+//               a velocidade da transição (maior = subida/descida mais
+//               arrastadas). Não depende da quantidade de marcadores visíveis.
+//   PEAK_COUNT  alvo de quantos marcadores ficam perto do pico ao mesmo tempo.
+//   BOOST       multiplicador de escala no pico.
+//   PULSE_SHAPE expoente do super-gaussiano: 2 = gaussiana suave (sobe/desce
+//               cedo), valores maiores ficam mais "topo plano com bordas
+//               íngremes" (∞ vira onda quadrada). 4–6 é um meio-termo bom.
+//   TICK_MS     5Hz — entre ticks, transições CSS interpolam suavemente.
+//
+// O período de cada marcador é derivado: cada um passa PEAK_SEC perto do pico
+// por ciclo, e com fases uniformes isso põe ~PEAK_COUNT ativos por vez —
+// então period = N × PEAK_SEC / PEAK_COUNT.
+const PHOTO_SPOTLIGHT_BOOST        = 5.0;
+const PHOTO_SPOTLIGHT_PEAK_SEC     = 2;
+const PHOTO_SPOTLIGHT_PEAK_COUNT   = 1;
+const PHOTO_SPOTLIGHT_PULSE_SHAPE  = 7;
+// "Echo": cada marcador ganha um segundo pico menor a ECHO_OFFSET do pico
+// principal — encurta o vale percebido sem levantar o baseline (entre os
+// dois picos a intensidade ainda cai a zero, então o tamanho de repouso fica
+// no default 1×).
+//   ECHO_AMP    altura do echo relativa ao principal (0 = desliga, 1 = igual)
+//   ECHO_OFFSET posição do echo no ciclo (0.5 = lado oposto do principal)
+const PHOTO_SPOTLIGHT_ECHO_AMP     = 0.4;
+const PHOTO_SPOTLIGHT_ECHO_OFFSET  = 0.5;
+const PHOTO_SPOTLIGHT_TICK_MS      = 200;
+
+let photoSpotlightPaused = false;
+map.on('movestart', () => { photoSpotlightPaused = true; });
+map.on('moveend',   () => { photoSpotlightPaused = false; });
+
+function photoSpotlightTick() {
+  if (photoSpotlightPaused) return;
+  const bounds = map.getBounds();
+  const visible = [];
+  for (const m of photoMarkers) {
+    if (!m._icon) continue;
+    if (!bounds.contains(m.getLatLng())) {
+      m._spotIntensity = 0;
+      continue;
+    }
+    // Atribui fase preguiçosa na primeira visita.
+    if (m._spotPhase === undefined) m._spotPhase = Math.random();
+    visible.push(m);
+  }
+  if (visible.length === 0) return;
+
+  // Período derivado: cada pico dura ≈PEAK_SEC, e queremos ~PEAK_COUNT
+  // marcadores ativos simultaneamente. Com fases uniformes:
+  //   active ≈ N × PEAK_SEC / period   →   period = N × PEAK_SEC / PEAK_COUNT
+  // Floor em PEAK_SEC pra evitar período < pico (acontece se N ≤ PEAK_COUNT).
+  const period = Math.max(
+    PHOTO_SPOTLIGHT_PEAK_SEC,
+    visible.length * PHOTO_SPOTLIGHT_PEAK_SEC / PHOTO_SPOTLIGHT_PEAK_COUNT);
+  const peakFrac = Math.min(0.5, PHOTO_SPOTLIGHT_PEAK_SEC / period);
+  const halfWidth = peakFrac / 2;
+
+  const t = performance.now() / 1000 / period;
+  for (const m of visible) {
+    const x = ((t + m._spotPhase) % 1 + 1) % 1;     // posição na onda [0,1)
+    const d = Math.min(x, 1 - x);                    // distância circular ao pico
+    // Super-gaussiana: exp(-(d/half)^p). p=2 = gaussiana; p grande → quadrado.
+    const main = Math.exp(-Math.pow(d / halfWidth, PHOTO_SPOTLIGHT_PULSE_SHAPE));
+    // Echo: mesma forma, deslocado por ECHO_OFFSET no ciclo, amplitude menor.
+    // max(main, echo) combina — cada marcador tem 2 momentos visíveis por ciclo.
+    const xEcho = ((x - PHOTO_SPOTLIGHT_ECHO_OFFSET) % 1 + 1) % 1;
+    const dEcho = Math.min(xEcho, 1 - xEcho);
+    const echo = PHOTO_SPOTLIGHT_ECHO_AMP *
+      Math.exp(-Math.pow(dEcho / halfWidth, PHOTO_SPOTLIGHT_PULSE_SHAPE));
+    m._spotIntensity = Math.max(main, echo);
+  }
+  relaxPhotoMarkers();
+}
+
+// Toggle persistente no topbar: ✨ liga/desliga o spotlight contínuo.
+// Quando desliga: para o timer, zera intensidades e re-relaxa pra que os
+// marcadores voltem ao tamanho/posição que a relaxação por densidade definiria.
+const PHOTO_ANIM_KEY = 'phidro:photoAnim';
+let photoAnimEnabled = localStorage.getItem(PHOTO_ANIM_KEY) !== 'off';
+let photoSpotlightTimer = null;
+
+function applyPhotoAnim() {
+  if (photoAnimEnabled) {
+    if (!photoSpotlightTimer) {
+      photoSpotlightTimer = setInterval(photoSpotlightTick, PHOTO_SPOTLIGHT_TICK_MS);
+    }
+  } else {
+    if (photoSpotlightTimer) {
+      clearInterval(photoSpotlightTimer);
+      photoSpotlightTimer = null;
+    }
+    for (const m of photoMarkers) m._spotIntensity = 0;
+    relaxPhotoMarkers();
+  }
+}
+
+const photoAnimBtn = document.getElementById('photo-anim-btn');
+if (photoAnimBtn) {
+  photoAnimBtn.setAttribute('aria-pressed', String(photoAnimEnabled));
+  photoAnimBtn.addEventListener('click', () => {
+    photoAnimEnabled = !photoAnimEnabled;
+    localStorage.setItem(PHOTO_ANIM_KEY, photoAnimEnabled ? 'on' : 'off');
+    photoAnimBtn.setAttribute('aria-pressed', String(photoAnimEnabled));
+    applyPhotoAnim();
+  });
+}
+applyPhotoAnim();
 
 // ── Detecção automática do pedal de uma foto ─────────────────────────────
 // Usa as rotas já carregadas na barra lateral: casa pela data (chave quase
@@ -695,7 +949,7 @@ function buildModelFromQuads(quads) {
     const tourIri = tours.get(s);
     const t = tourIri ? tourCatalog.get(tourIri) : null;
     const ride = t
-      ? { date: t.date, name: t.title, code: t.code || null, routeId: t.routeId || null }
+      ? { date: t.date, name: t.title, code: t.code || null, tourIri: tourIri || null, routeId: t.routeId || null }
       : null;
     const personName = (iri) => personCatalog.get(iri)?.name || iri.split(/[/#]/).pop();
     const authorIris = [...(authors.get(s) || [])];
@@ -834,8 +1088,9 @@ function _photoDetailRows(ph) {
       : (ph.ride.code || ph.ride.name || ph.ride.date);
     // Se o passeio tem rota associada (RWGPS), vira link que abre o modal
     // da rota correspondente na barra lateral.
-    const html = ph.ride.routeId
-      ? `<a href="#" class="ride-link" data-route-id="${escapeHtml(ph.ride.routeId)}">${escapeHtml(label)}</a>`
+    const rideKey = ph.ride.tourIri || ph.ride.routeId;
+    const html = rideKey
+      ? `<a href="#" class="ride-link" data-route-id="${escapeHtml(rideKey)}">${escapeHtml(label)}</a>`
       : escapeHtml(label);
     rows.push(['Passeio', html]);
   }
@@ -1029,6 +1284,7 @@ function applyPhotoVisibility() {
     else if (!shouldShow && map.hasLayer(m)) map.removeLayer(m);
   }
   renderPhotoFilterChip();
+  relaxPhotoMarkers();
 }
 
 function showPhotos() {
@@ -1200,8 +1456,8 @@ const HEIC2ANY_URL =
   'https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js';
 const JSZIP_URL =
   'https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js';
-// Envio ao acervo agora acontece pela research/photos-rdf/upload-form-live.html
-// (POST /upload-image no Pi). Aqui no app o upload é apenas preview de sessão.
+// Envio ao acervo agora acontece pela upload_images.html (POST /upload-image
+// no Pi). Aqui no app o upload é apenas preview de sessão.
 let uploadedMarkers = [];
 let uploadedData = [];
 
@@ -1900,7 +2156,9 @@ const rangeFromValue = document.getElementById('range-from-value');
 const rangeToValue = document.getElementById('range-to-value');
 const dateReset = document.getElementById('date-reset');
 
-// id → { entry, layer, casing, badge, listEl, bounds, dateMs, visible }
+// tourIri → { entry, layer, casing, badge, listEl, bounds, dateMs, visible }
+// Vários passeios podem compartilhar uma rota do RWGPS (entry.id), mas cada
+// um é um evento próprio — chaveamos por tourIri pra preservar essa identidade.
 const routes = new Map();
 let dateMin = null;
 let dateMax = null;
@@ -1917,6 +2175,32 @@ layersBtn?.addEventListener('click', () => {
   const nowHidden = !document.body.classList.contains('layers-hidden');
   applyLayersVisibility(nowHidden);
   try { localStorage.setItem(LAYERS_HIDDEN_KEY, nowHidden ? '1' : '0'); } catch {}
+});
+
+// ─── Header toggle (hide/show topbar) ────────────────────────────────────────
+const headerToggle = document.getElementById('header-toggle');
+const HEADER_HIDDEN_KEY = 'phidro:headerHidden';
+// Park the toggle in Leaflet's top-left control column, above the zoom +/−.
+const leafletTopLeft = document.querySelector('.leaflet-top.leaflet-left');
+if (headerToggle && leafletTopLeft) {
+  leafletTopLeft.insertBefore(headerToggle, leafletTopLeft.firstChild);
+  L.DomEvent.disableClickPropagation(headerToggle);
+  L.DomEvent.disableScrollPropagation(headerToggle);
+}
+function applyHeaderVisibility(hidden) {
+  document.body.classList.toggle('header-hidden', hidden);
+  if (headerToggle) {
+    headerToggle.textContent = hidden ? '▼' : '▲';
+    headerToggle.setAttribute('aria-pressed', String(hidden));
+    headerToggle.setAttribute('aria-label', hidden ? 'Mostrar cabeçalho' : 'Ocultar cabeçalho');
+    headerToggle.setAttribute('title', hidden ? 'Mostrar cabeçalho' : 'Ocultar cabeçalho');
+  }
+}
+applyHeaderVisibility(localStorage.getItem(HEADER_HIDDEN_KEY) === '1');
+headerToggle?.addEventListener('click', () => {
+  const nowHidden = !document.body.classList.contains('header-hidden');
+  applyHeaderVisibility(nowHidden);
+  try { localStorage.setItem(HEADER_HIDDEN_KEY, nowHidden ? '1' : '0'); } catch {}
 });
 
 // ─── Sidebar toggle (mobile drawer + desktop hide) ───────────────────────────
@@ -2014,17 +2298,16 @@ async function boot() {
   let drawn = 0;
 
   for (const entry of all) {
+    const key = entry.tourIri || entry.id;
     const li = addRouteToSidebar(entry);
     if (!entry.latlngs || entry.latlngs.length === 0) {
       li.classList.add('failed');
       li.title = entry.error || 'No track data';
-      routes.set(entry.id, { entry, listEl: li, dateMs: entry.dateMs ?? null, visible: false });
+      routes.set(key, { entry, listEl: li, dateMs: entry.dateMs ?? null, visible: false });
       continue;
     }
 
-    const numberLabel = entry.number?.value
-      ? `${entry.number.source} ${entry.number.value}`
-      : '';
+    const numberLabel = formatNumbers(entry);
 
     // Dark casing + white stroke for readability on top of OSM/hydrography.
     const casing = L.polyline(entry.latlngs, {
@@ -2046,9 +2329,9 @@ async function boot() {
       `<strong>${escapeHtml(buildLabel(entry))}</strong><br>` +
       (numberLabel ? `${escapeHtml(numberLabel)} · ` : '') +
       `Route ${entry.id}` +
-      (entry.igPost ? `<br><a href="#" class="popup-open-modal" data-route-id="${entry.id}">Open IG post</a>` : '');
+      (entry.igPost ? `<br><a href="#" class="popup-open-modal" data-route-id="${escapeHtml(key)}">Open IG post</a>` : '');
     layer.bindPopup(popupHtml);
-    layer.on('click', () => openRouteModal(entry.id));
+    layer.on('click', () => openRouteModal(key));
     layer.on('popupopen', () => wireUpPopupLinks());
 
     // Plain-text number overlay (no background) at the route's midpoint.
@@ -2065,7 +2348,7 @@ async function boot() {
         interactive: true,
         keyboard: false,
       });
-      badge.on('click', () => openRouteModal(entry.id));
+      badge.on('click', () => openRouteModal(key));
     }
 
     casing.addTo(map);
@@ -2077,7 +2360,7 @@ async function boot() {
     // on the always-visible map — they appear only when the user enters edit
     // mode for this route via the modal's "Editar este traçado" button.
 
-    routes.set(entry.id, {
+    routes.set(key, {
       entry,
       layer,
       casing,
@@ -2099,18 +2382,17 @@ async function boot() {
 
 // ─── Sidebar ─────────────────────────────────────────────────────────────────
 function addRouteToSidebar(entry) {
+  const key = entry.tourIri || entry.id;
   const li = document.createElement('li');
-  li.dataset.routeId = entry.id;
-  const numberLabel = entry.number?.value
-    ? `${entry.number.source} ${entry.number.value}`
-    : '';
+  li.dataset.routeId = key;
+  const numberLabel = formatNumbers(entry);
   li.innerHTML = `
     <span class="route-number sidebar-badge">${numberLabel ? escapeHtml(numberLabel) : '·'}</span>
     <div>
       <strong>${escapeHtml(buildLabel(entry))}</strong>
     </div>
   `;
-  li.addEventListener('click', () => openRouteModal(entry.id));
+  li.addEventListener('click', () => openRouteModal(key));
   li.addEventListener('mouseenter', () => onRouteRowHover(entry, li, true));
   li.addEventListener('mouseleave', () => onRouteRowHover(entry, li, false));
   routesList.appendChild(li);
@@ -2121,7 +2403,7 @@ function addRouteToSidebar(entry) {
 const routeTooltip = document.getElementById('route-tooltip');
 
 function onRouteRowHover(entry, li, hovering) {
-  const r = routes.get(entry.id);
+  const r = routes.get(entry.tourIri || entry.id);
   if (!r || drawingMode) {
     if (!hovering) hideRouteTooltip();
     return;
@@ -2156,9 +2438,7 @@ function unhighlightRoute(r) {
 function showRouteTooltip(entry, li) {
   if (!routeTooltip) return;
   const stats = entry.stats;
-  const numberLabel = entry.number?.value
-    ? `${entry.number.source} ${entry.number.value}`
-    : '';
+  const numberLabel = formatNumbers(entry);
   const km =
     stats?.distMeters != null
       ? `${(stats.distMeters / 1000).toFixed(1).replace('.', ',')} km`
@@ -2188,6 +2468,15 @@ function buildLabel(entry) {
   const date = entry.date || '';
   const name = entry.name || '';
   return [date, name].filter(Boolean).join(' — ') || `Route ${entry.id}`;
+}
+
+// Junta todos os códigos de série atribuídos ao passeio (ex.: "PH 79 · BP 4").
+// Cai pra `entry.number` quando o backend ainda não emite `numbers`.
+function formatNumbers(entry) {
+  const nums = Array.isArray(entry.numbers) && entry.numbers.length
+    ? entry.numbers
+    : (entry.number?.value ? [entry.number] : []);
+  return nums.map((n) => `${n.source} ${n.value}`).join(' · ');
 }
 
 function renderStatus(drawn, total, generatedAt) {
@@ -2342,9 +2631,7 @@ function openRouteModal(id) {
   focusRoute(id);
 
   const entry = r.entry;
-  const numberLabel = entry.number?.value
-    ? `${entry.number.source} ${entry.number.value}`
-    : '';
+  const numberLabel = formatNumbers(entry);
 
   routeModalTitle.textContent = buildLabel(entry);
 
@@ -2443,7 +2730,7 @@ const traceBtn = document.getElementById('trace-btn');
 const traceControls = document.getElementById('trace-controls');
 const traceUndo = document.getElementById('trace-undo');
 const traceRedo = document.getElementById('trace-redo');
-const traceCancel = document.getElementById('trace-cancel');
+const traceSave = document.getElementById('trace-save');
 const traceCount = document.getElementById('trace-count');   // ausente desde a remoção do label "# pontos"
 
 // The floating panel sits inside the map container, so without this Leaflet
@@ -2525,9 +2812,9 @@ let pendingRouteSeq = 0;     // increments per OSRM call; lets us discard stale 
 
 traceBtn.addEventListener('click', () => {
   if (!drawingMode) enterDrawingMode();
-  else saveAndExit();
+  else exitDrawingMode();
 });
-traceCancel.addEventListener('click', () => exitDrawingMode());
+traceSave.addEventListener('click', () => saveAndExit());
 traceUndo.addEventListener('click', undo);
 traceRedo.addEventListener('click', redo);
 traceRoutingMode.addEventListener('change', () => {
@@ -2587,7 +2874,9 @@ function enterDrawingMode() {
     document.body.classList.add('layers-hidden');
     if (layersBtn) layersBtn.setAttribute('aria-pressed', 'false');
   }
-  traceBtn.textContent = 'Salvar GPX';
+  traceBtn.textContent = '✕🗺︎';
+  traceBtn.setAttribute('aria-label', 'Cancelar');
+  traceBtn.setAttribute('title', 'Cancelar (Esc)');
   traceControls.hidden = false;
   updateTraceControls();
   updateMetrics();
@@ -2604,23 +2893,21 @@ function exitDrawingMode() {
   history = [[]];
   historyIndex = 0;
 
-  for (const r of routes.values()) {
+  for (const [key, r] of routes) {
     const entry = r.entry;
-    const numberLabel = entry.number?.value
-      ? `${entry.number.source} ${entry.number.value}`
-      : '';
+    const numberLabel = formatNumbers(entry);
     if (r.layer) {
       const popupHtml =
         `<strong>${escapeHtml(buildLabel(entry))}</strong><br>` +
         (numberLabel ? `${escapeHtml(numberLabel)} · ` : '') +
         `Route ${entry.id}` +
         (entry.igPost
-          ? `<br><a href="#" class="popup-open-modal" data-route-id="${entry.id}">Open IG post</a>`
+          ? `<br><a href="#" class="popup-open-modal" data-route-id="${escapeHtml(key)}">Open IG post</a>`
           : '');
       r.layer.bindPopup(popupHtml);
-      r.layer.on('click', () => openRouteModal(entry.id));
+      r.layer.on('click', () => openRouteModal(key));
     }
-    if (r.badge) r.badge.on('click', () => openRouteModal(entry.id));
+    if (r.badge) r.badge.on('click', () => openRouteModal(key));
   }
   // Restore the route opacity to whatever the layer-panel slider says.
   applyRoutesOpacity(routesOpacityPct);
@@ -2633,7 +2920,9 @@ function exitDrawingMode() {
     if (layersBtn) layersBtn.setAttribute('aria-pressed', 'true');
     layersWasVisible = false;
   }
-  traceBtn.textContent = 'Traçar GPX';
+  traceBtn.textContent = '＋🗺︎';
+  traceBtn.setAttribute('aria-label', 'Traçar GPX');
+  traceBtn.setAttribute('title', 'Traçar GPX');
   traceControls.hidden = true;
   defaultSaveName = '';
 }

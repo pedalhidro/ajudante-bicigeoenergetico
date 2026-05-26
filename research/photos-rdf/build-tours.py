@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
-"""Converte data/tours.csv em data/tours.ttl seguindo shapes.ttl."""
+"""Converte data/tours.csv em web/data/tours.ttl seguindo shapes.ttl."""
 import csv, re, sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent
+REPO_ROOT = ROOT.parent.parent
 CSV_PATH = ROOT / 'data' / 'tours.csv'
-TTL_PATH = ROOT / 'data' / 'tours.ttl'
+TTL_PATH = REPO_ROOT / 'web' / 'data' / 'tours.ttl'
 
 # Sentinels treated as "no value"
 BLANK = {'', '-', 'n/a', 'N/A', '?', 'sumiu', '#DIV/0!', '#REF!', '#N/A'}
@@ -195,7 +196,7 @@ phd:BT a schema:EventSeries ; dcterms:title "Bondes / Trips" .
 
     TTL_PATH.write_text(prefixes + series_block + persons_block + assocs_block + tours_block)
 
-    print(f'✓ {len(tour_ttls)} passeios, {len(assocs)} associações, {len(persons)} pessoas → {TTL_PATH.relative_to(ROOT)}')
+    print(f'✓ {len(tour_ttls)} passeios, {len(assocs)} associações, {len(persons)} pessoas → {TTL_PATH.relative_to(REPO_ROOT)}')
     if missing_route:
         print(f'⚠ {len(missing_route)} passeios sem RideWithGPS (falham linkRWGPS):',
               ', '.join(f'#{eh}' for eh, _ in missing_route[:10]),

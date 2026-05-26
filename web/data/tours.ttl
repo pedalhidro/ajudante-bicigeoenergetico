@@ -1,504 +1,369 @@
 @prefix dcterms: <http://purl.org/dc/terms/> .
-@prefix pav: <http://purl.org/pav/> .
-@prefix ph: <https://pedalhidrografi.co/terms#> .
-@prefix phd: <https://pedalhidrografi.co/data/> .
-@prefix prov: <http://www.w3.org/ns/prov#> .
-@prefix qudt: <http://qudt.org/schema/qudt/> .
-@prefix schema: <https://schema.org/> .
-@prefix unit: <http://qudt.org/vocab/unit/> .
-@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix pav:     <http://purl.org/pav/> .
+@prefix ph:      <https://pedalhidrografi.co/terms#> .
+@prefix phd:     <https://pedalhidrografi.co/data/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix qudt:    <http://qudt.org/schema/qudt/> .
+@prefix schema:  <https://schema.org/> .
+@prefix unit:    <http://qudt.org/vocab/unit/> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
 
 # Séries
-phd:PH a schema:EventSeries ;
-    dcterms:title "Pedal Hidrográfico" .
-
-phd:BP a schema:EventSeries ;
-    dcterms:title "Bicipassarinhada" .
-
-phd:S a schema:EventSeries ;
-    dcterms:title "Pedal Hidrográfico Suado" .
-
-phd:BT a schema:EventSeries ;
-    dcterms:title "Bicicletografia" .
+phd:PH a schema:EventSeries ; dcterms:title "Pedais Hidrográficos Regulares" .
+phd:BP a schema:EventSeries ; dcterms:title "Bicipassarinhadas" .
+phd:S  a schema:EventSeries ; dcterms:title "Pedais Hidrográficos Suados" .
+phd:BT a schema:EventSeries ; dcterms:title "Bondes / Trips" .
 
 # Pessoas
 phd:pessoaAlef a schema:Person ; schema:alternateName "alef" .
-
 phd:pessoaAlex a schema:Person ; schema:alternateName "alex" .
-
 phd:pessoaAmarmo a schema:Person ; schema:alternateName "amarmo" .
-
 phd:pessoaAnaju a schema:Person ; schema:alternateName "anaju" .
-
 phd:pessoaAndrio a schema:Person ; schema:alternateName "andrio" .
-
 phd:pessoaBrunabom a schema:Person ; schema:alternateName "brunabom" .
-
 phd:pessoaBrunoperandin a schema:Person ; schema:alternateName "brunoperandin" .
-
 phd:pessoaBrunotitton a schema:Person ; schema:alternateName "brunotitton" .
-
 phd:pessoaDandan a schema:Person ; schema:alternateName "dandan" .
-
 phd:pessoaDelaram a schema:Person ; schema:alternateName "delaram" .
-
 phd:pessoaEricalatina a schema:Person ; schema:alternateName "ericalatina" .
-
 phd:pessoaFetiche a schema:Person ; schema:alternateName "fetiche" .
-
 phd:pessoaGa a schema:Person ; schema:alternateName "ga" .
-
 phd:pessoaGabrieltunes a schema:Person ; schema:alternateName "gabrieltunes" .
-
 phd:pessoaGiovanna a schema:Person ; schema:alternateName "giovanna" .
-
 phd:pessoaGiucuci a schema:Person ; schema:alternateName "giucuci" .
-
 phd:pessoaGmard a schema:Person ; schema:alternateName "gmard" .
-
 phd:pessoaLume a schema:Person ; schema:alternateName "lume" .
-
 phd:pessoaMicaelrodrigues a schema:Person ; schema:alternateName "micaelrodrigues" .
-
 phd:pessoaPedpaula a schema:Person ; schema:alternateName "pedpaula" .
-
 phd:pessoaThiagoneves a schema:Person ; schema:alternateName "thiagoneves" .
-
 phd:pessoaTomb a schema:Person ; schema:alternateName "tomb" .
-
 phd:pessoaTrilheiro a schema:Person ; schema:alternateName "trilheiro" .
-
 phd:pessoaYas a schema:Person ; schema:alternateName "yas" .
-
 phd:pessoaZito a schema:Person ; schema:alternateName "zito" .
 
 # Associações (filiação a série)
 phd:assoc_BP_1 a ph:Association ;
     ph:inEventSeries phd:BP ;
     ph:sequenceInSeries 1 .
-
 phd:assoc_BP_2 a ph:Association ;
     ph:inEventSeries phd:BP ;
     ph:sequenceInSeries 2 .
-
 phd:assoc_BP_3 a ph:Association ;
     ph:inEventSeries phd:BP ;
     ph:sequenceInSeries 3 .
-
 phd:assoc_BP_4 a ph:Association ;
     ph:inEventSeries phd:BP ;
     ph:sequenceInSeries 4 .
-
 phd:assoc_BT_1 a ph:Association ;
     ph:inEventSeries phd:BT ;
     ph:sequenceInSeries 1 .
-
 phd:assoc_BT_2 a ph:Association ;
     ph:inEventSeries phd:BT ;
     ph:sequenceInSeries 2 .
-
 phd:assoc_BT_3 a ph:Association ;
     ph:inEventSeries phd:BT ;
     ph:sequenceInSeries 3 .
-
 phd:assoc_PH_1 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 1 .
-
 phd:assoc_PH_2 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 2 .
-
 phd:assoc_PH_3 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 3 .
-
 phd:assoc_PH_4 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 4 .
-
 phd:assoc_PH_5 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 5 .
-
 phd:assoc_PH_6 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 6 .
-
 phd:assoc_PH_7 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 7 .
-
 phd:assoc_PH_8 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 8 .
-
 phd:assoc_PH_9 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 9 .
-
 phd:assoc_PH_10 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 10 .
-
 phd:assoc_PH_11 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 11 .
-
 phd:assoc_PH_12 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 12 .
-
 phd:assoc_PH_13 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 13 .
-
 phd:assoc_PH_14 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 14 .
-
 phd:assoc_PH_15 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 15 .
-
 phd:assoc_PH_16 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 16 .
-
 phd:assoc_PH_17 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 17 .
-
 phd:assoc_PH_18 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 18 .
-
 phd:assoc_PH_19 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 19 .
-
 phd:assoc_PH_20 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 20 .
-
 phd:assoc_PH_21 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 21 .
-
 phd:assoc_PH_22 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 22 .
-
 phd:assoc_PH_23 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 23 .
-
 phd:assoc_PH_24 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 24 .
-
 phd:assoc_PH_25 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 25 .
-
 phd:assoc_PH_26 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 26 .
-
 phd:assoc_PH_27 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 27 .
-
 phd:assoc_PH_28 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 28 .
-
 phd:assoc_PH_29 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 29 .
-
 phd:assoc_PH_30 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 30 .
-
 phd:assoc_PH_31 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 31 .
-
 phd:assoc_PH_32 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 32 .
-
 phd:assoc_PH_33 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 33 .
-
 phd:assoc_PH_34 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 34 .
-
 phd:assoc_PH_35 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 35 .
-
 phd:assoc_PH_36 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 36 .
-
 phd:assoc_PH_37 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 37 .
-
 phd:assoc_PH_38 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 38 .
-
 phd:assoc_PH_39 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 39 .
-
 phd:assoc_PH_40 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 40 .
-
 phd:assoc_PH_41 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 41 .
-
 phd:assoc_PH_42 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 42 .
-
 phd:assoc_PH_43 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 43 .
-
 phd:assoc_PH_44 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 44 .
-
 phd:assoc_PH_45 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 45 .
-
 phd:assoc_PH_46 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 46 .
-
 phd:assoc_PH_47 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 47 .
-
 phd:assoc_PH_48 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 48 .
-
 phd:assoc_PH_49 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 49 .
-
 phd:assoc_PH_50 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 50 .
-
 phd:assoc_PH_51 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 51 .
-
 phd:assoc_PH_52 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 52 .
-
 phd:assoc_PH_53 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 53 .
-
 phd:assoc_PH_54 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 54 .
-
 phd:assoc_PH_55 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 55 .
-
 phd:assoc_PH_56 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 56 .
-
 phd:assoc_PH_57 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 57 .
-
 phd:assoc_PH_58 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 58 .
-
 phd:assoc_PH_59 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 59 .
-
 phd:assoc_PH_60 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 60 .
-
 phd:assoc_PH_61 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 61 .
-
 phd:assoc_PH_62 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 62 .
-
 phd:assoc_PH_63 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 63 .
-
 phd:assoc_PH_64 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 64 .
-
 phd:assoc_PH_65 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 65 .
-
 phd:assoc_PH_66 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 66 .
-
 phd:assoc_PH_67 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 67 .
-
 phd:assoc_PH_68 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 68 .
-
 phd:assoc_PH_69 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 69 .
-
 phd:assoc_PH_70 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 70 .
-
 phd:assoc_PH_71 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 71 .
-
 phd:assoc_PH_72 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 72 .
-
 phd:assoc_PH_73 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 73 .
-
 phd:assoc_PH_74 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 74 .
-
 phd:assoc_PH_75 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 75 .
-
 phd:assoc_PH_76 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 76 .
-
 phd:assoc_PH_77 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 77 .
-
 phd:assoc_PH_78 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 78 .
-
 phd:assoc_PH_79 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 79 .
-
 phd:assoc_PH_80 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 80 .
-
 phd:assoc_PH_81 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 81 .
-
 phd:assoc_PH_82 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 82 .
-
 phd:assoc_PH_83 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 83 .
-
 phd:assoc_PH_84 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 84 .
-
 phd:assoc_PH_85 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 85 .
-
 phd:assoc_PH_86 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 86 .
-
 phd:assoc_PH_87 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 87 .
-
 phd:assoc_PH_88 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 88 .
-
 phd:assoc_PH_89 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 89 .
-
 phd:assoc_PH_90 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 90 .
-
 phd:assoc_PH_91 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 91 .
-
 phd:assoc_PH_92 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 92 .
-
 phd:assoc_PH_93 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 93 .
-
 phd:assoc_S_1 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 1 .
-
 phd:assoc_S_2 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 2 .
-
 phd:assoc_S_3 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 3 .
-
 phd:assoc_S_4 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 4 .
-
 phd:assoc_S_5 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 5 .
-
 phd:assoc_S_6 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 6 .
 
 # Passeios
-phd:tour_1 a ph:Tour ;
+phd:tour_1
+    a ph:Tour ;
     dcterms:title "Água Preta e Tiburtino" ;
     dcterms:date "2024-09-09T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_1 ;
@@ -518,7 +383,8 @@ phd:tour_1 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 2 .
 
-phd:tour_2 a ph:Tour ;
+phd:tour_2
+    a ph:Tour ;
     dcterms:title "Coruja e Verde" ;
     dcterms:date "2024-09-16T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_2 ;
@@ -538,7 +404,8 @@ phd:tour_2 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 6 .
 
-phd:tour_3 a ph:Tour ;
+phd:tour_3
+    a ph:Tour ;
     dcterms:title "Altos do Sumaré e Verde I+II" ;
     dcterms:date "2024-09-23T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_3 ;
@@ -558,7 +425,8 @@ phd:tour_3 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 7 .
 
-phd:tour_4 a ph:Tour ;
+phd:tour_4
+    a ph:Tour ;
     dcterms:title "Coruja, Bellini e Parque Lapa" ;
     dcterms:date "2024-10-01T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_4 ;
@@ -578,7 +446,8 @@ phd:tour_4 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 43 .
 
-phd:tour_5 a ph:Tour ;
+phd:tour_5
+    a ph:Tour ;
     dcterms:title "Santa Cecília e Saracura" ;
     dcterms:date "2024-10-08T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_5 ;
@@ -598,7 +467,8 @@ phd:tour_5 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 63 .
 
-phd:tour_6 a ph:Tour ;
+phd:tour_6
+    a ph:Tour ;
     dcterms:title "Crista de Perdizes, Altos do Água Preta, Tiburtino e Mercedes" ;
     dcterms:date "2024-10-15T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_6 ;
@@ -613,7 +483,8 @@ phd:tour_6 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 11 .
 
-phd:tour_7 a ph:Tour ;
+phd:tour_7
+    a ph:Tour ;
     dcterms:title "Verde, Anhanguera e Sapateiro" ;
     dcterms:date "2024-10-22T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_7 ;
@@ -633,7 +504,8 @@ phd:tour_7 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 56 .
 
-phd:tour_8 a ph:Tour ;
+phd:tour_8
+    a ph:Tour ;
     dcterms:title "Itororó, Lavapés/Glicério e Aclimação/Cambuci" ;
     dcterms:date "2024-10-24T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_8 ;
@@ -654,7 +526,8 @@ phd:tour_8 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 45 .
 
-phd:tour_9 a ph:Tour ;
+phd:tour_9
+    a ph:Tour ;
     dcterms:title "Sertões de Pirituba" ;
     dcterms:date "2024-10-29T20:15:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_9 ;
@@ -675,7 +548,8 @@ phd:tour_9 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaThiagoneves ;
     ph:mediaCount 94 .
 
-phd:tour_10 a ph:Tour ;
+phd:tour_10
+    a ph:Tour ;
     dcterms:title "ABC" ;
     dcterms:date "2024-11-02T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_10 ;
@@ -697,7 +571,8 @@ phd:tour_10 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaBrunoperandin ;
     ph:mediaCount 467 .
 
-phd:tour_11 a ph:Tour ;
+phd:tour_11
+    a ph:Tour ;
     dcterms:title "Contornar Pacaembu e Sumaré" ;
     dcterms:date "2024-11-05T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_11 ;
@@ -718,7 +593,8 @@ phd:tour_11 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 50 .
 
-phd:tour_12 a ph:Tour ;
+phd:tour_12
+    a ph:Tour ;
     dcterms:title "Mirantes do Tietê com Pico do Urubu" ;
     dcterms:date "2024-11-09T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_12 ;
@@ -738,7 +614,8 @@ phd:tour_12 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaBrunoperandin ;
     ph:mediaCount 222 .
 
-phd:tour_13 a ph:Tour ;
+phd:tour_13
+    a ph:Tour ;
     dcterms:title "Margens Ocidentais do Baixo Ipiranga" ;
     dcterms:date "2024-11-12T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_13 ;
@@ -759,7 +636,8 @@ phd:tour_13 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 79 .
 
-phd:tour_14 a ph:Tour ;
+phd:tour_14
+    a ph:Tour ;
     dcterms:title "Margens Destras do Baixo Jaguaré" ;
     dcterms:date "2024-11-19T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_14 ;
@@ -780,7 +658,8 @@ phd:tour_14 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 42 .
 
-phd:tour_15 a ph:Tour ;
+phd:tour_15
+    a ph:Tour ;
     dcterms:title "Represa do Guarapiranga" ;
     dcterms:date "2024-11-20T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_BP_1 ;
@@ -795,7 +674,8 @@ phd:tour_15 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaAnaju ;
     ph:mediaCount 2 .
 
-phd:tour_16 a ph:Tour ;
+phd:tour_16
+    a ph:Tour ;
     dcterms:title "Crista de Osasco" ;
     dcterms:date "2024-11-22T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_S_1 ;
@@ -815,7 +695,8 @@ phd:tour_16 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 16 .
 
-phd:tour_17 a ph:Tour ;
+phd:tour_17
+    a ph:Tour ;
     dcterms:title "Parelheiros" ;
     dcterms:date "2024-11-23T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_15 ;
@@ -836,7 +717,8 @@ phd:tour_17 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 227 .
 
-phd:tour_18 a ph:Tour ;
+phd:tour_18
+    a ph:Tour ;
     dcterms:title "Água Preta e Tiburtino" ;
     dcterms:date "2024-11-26T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_16 ;
@@ -857,7 +739,8 @@ phd:tour_18 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaThiagoneves ;
     ph:mediaCount 66 .
 
-phd:tour_19 a ph:Tour ;
+phd:tour_19
+    a ph:Tour ;
     dcterms:title "Paranapiacaba com Cachoeira" ;
     dcterms:date "2024-11-30T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_17 ;
@@ -878,7 +761,8 @@ phd:tour_19 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaTrilheiro ;
     ph:mediaCount 103 .
 
-phd:tour_20 a ph:Tour ;
+phd:tour_20
+    a ph:Tour ;
     dcterms:title "Contornar Iquirim e um pouco do Pirajuçara" ;
     dcterms:date "2024-12-03T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_18 ;
@@ -899,7 +783,8 @@ phd:tour_20 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 62 .
 
-phd:tour_21 a ph:Tour ;
+phd:tour_21
+    a ph:Tour ;
     dcterms:title "Morumbi e Antonico" ;
     dcterms:date "2024-12-06T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_S_2 ;
@@ -919,7 +804,8 @@ phd:tour_21 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 11 .
 
-phd:tour_22 a ph:Tour ;
+phd:tour_22
+    a ph:Tour ;
     dcterms:title "Nascentes da Brasilândia" ;
     dcterms:date "2024-12-10T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_19 ;
@@ -940,7 +826,8 @@ phd:tour_22 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 58 .
 
-phd:tour_23 a ph:Tour ;
+phd:tour_23
+    a ph:Tour ;
     dcterms:title "Jaraguá Hidrográfico" ;
     dcterms:date "2024-12-13T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_S_3 ;
@@ -960,7 +847,8 @@ phd:tour_23 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 70 .
 
-phd:tour_24 a ph:Tour ;
+phd:tour_24
+    a ph:Tour ;
     dcterms:title "Águas de Pinheiros" ;
     dcterms:date "2024-12-17T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_20 ;
@@ -981,7 +869,8 @@ phd:tour_24 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 114 .
 
-phd:tour_25 a ph:Tour ;
+phd:tour_25
+    a ph:Tour ;
     dcterms:title "Verde, Anhanguera e Sapateiro" ;
     dcterms:date "2025-01-07T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_21 ;
@@ -1002,7 +891,8 @@ phd:tour_25 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaAnaju ;
     ph:mediaCount 28 .
 
-phd:tour_26 a ph:Tour ;
+phd:tour_26
+    a ph:Tour ;
     dcterms:title "Contornar Pacaembu e Sumaré" ;
     dcterms:date "2025-01-14T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_22 ;
@@ -1023,7 +913,8 @@ phd:tour_26 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaAnaju ;
     ph:mediaCount 41 .
 
-phd:tour_27 a ph:Tour ;
+phd:tour_27
+    a ph:Tour ;
     dcterms:title "Foz do Tamanduateí até sua Nascente" ;
     dcterms:date "2025-01-19T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_BT_2 ;
@@ -1043,7 +934,8 @@ phd:tour_27 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaBrunoperandin ;
     ph:mediaCount 56 .
 
-phd:tour_28 a ph:Tour ;
+phd:tour_28
+    a ph:Tour ;
     dcterms:title "Crista de Sapopema" ;
     dcterms:date "2025-01-21T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_23 ;
@@ -1063,7 +955,8 @@ phd:tour_28 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 48 .
 
-phd:tour_29 a ph:Tour ;
+phd:tour_29
+    a ph:Tour ;
     dcterms:title "Contornar Anhangabaú" ;
     dcterms:date "2025-01-28T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_24 ;
@@ -1083,7 +976,8 @@ phd:tour_29 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 7 .
 
-phd:tour_30 a ph:Tour ;
+phd:tour_30
+    a ph:Tour ;
     dcterms:title "Pirajuçara, Água Podre e Crista de Osasco" ;
     dcterms:date "2025-02-04T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_25 ;
@@ -1103,7 +997,8 @@ phd:tour_30 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 132 .
 
-phd:tour_31 a ph:Tour ;
+phd:tour_31
+    a ph:Tour ;
     dcterms:title "Cabeceiras do Ipiranga" ;
     dcterms:date "2025-02-11T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_26 ;
@@ -1123,7 +1018,8 @@ phd:tour_31 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 45 .
 
-phd:tour_32 a ph:Tour ;
+phd:tour_32
+    a ph:Tour ;
     dcterms:title "Sertões do Mandaqui" ;
     dcterms:date "2025-02-25T19:30:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_27 ;
@@ -1143,7 +1039,8 @@ phd:tour_32 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 87 .
 
-phd:tour_33 a ph:Tour ;
+phd:tour_33
+    a ph:Tour ;
     dcterms:title "Águas do Lavapés e Aclimação" ;
     dcterms:date "2025-03-11T19:30:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_28 ;
@@ -1163,7 +1060,8 @@ phd:tour_33 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 83 .
 
-phd:tour_34 a ph:Tour ;
+phd:tour_34
+    a ph:Tour ;
     dcterms:title "Águas Meridionais de Osasco" ;
     dcterms:date "2025-03-26T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_29 ;
@@ -1183,7 +1081,8 @@ phd:tour_34 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 75 .
 
-phd:tour_35 a ph:Tour ;
+phd:tour_35
+    a ph:Tour ;
     dcterms:title "Subir Pirituba, Surfar Alpes do Jaraguá e Descer Perus" ;
     dcterms:date "2025-04-01T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_30 ;
@@ -1203,7 +1102,8 @@ phd:tour_35 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 99 .
 
-phd:tour_36 a ph:Tour ;
+phd:tour_36
+    a ph:Tour ;
     dcterms:title "Tiquatira da Foz à Nascente" ;
     dcterms:date "2025-04-08T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_31 ;
@@ -1224,7 +1124,8 @@ phd:tour_36 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaThiagoneves ;
     ph:mediaCount 67 .
 
-phd:tour_37 a ph:Tour ;
+phd:tour_37
+    a ph:Tour ;
     dcterms:title "Rios Indígenas de Santo André" ;
     dcterms:date "2025-04-13T08:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_32 ;
@@ -1246,7 +1147,8 @@ phd:tour_37 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 172 .
 
-phd:tour_38 a ph:Tour ;
+phd:tour_38
+    a ph:Tour ;
     dcterms:title "Moinho Velho A Outra Margem do Ipiranga" ;
     dcterms:date "2025-04-15T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_33 ;
@@ -1267,7 +1169,8 @@ phd:tour_38 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaPedpaula ;
     ph:mediaCount 70 .
 
-phd:tour_39 a ph:Tour ;
+phd:tour_39
+    a ph:Tour ;
     dcterms:title "Crista do Campo Limpo via Corveta-Camacuã" ;
     dcterms:date "2025-04-22T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_34 ;
@@ -1288,7 +1191,8 @@ phd:tour_39 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 52 .
 
-phd:tour_40 a ph:Tour ;
+phd:tour_40
+    a ph:Tour ;
     dcterms:title "Os Vales Secos do Tietê dos Remédios à Osasco" ;
     dcterms:date "2025-05-06T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_35 ;
@@ -1310,7 +1214,8 @@ phd:tour_40 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaPedpaula ;
     ph:mediaCount 112 .
 
-phd:tour_41 a ph:Tour ;
+phd:tour_41
+    a ph:Tour ;
     dcterms:title "Sopés da Cantareira: Alto Piqueri e Tremembé" ;
     dcterms:date "2025-05-14T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_36 ;
@@ -1322,7 +1227,8 @@ phd:tour_41 a ph:Tour ;
     ph:linkInstagram "https://www.instagram.com/p/DJmCzVGuRwK/"^^xsd:anyURI ;
     prov:wasAttributedTo phd:pessoaThiagoneves .
 
-phd:tour_42 a ph:Tour ;
+phd:tour_42
+    a ph:Tour ;
     dcterms:title "Sertões de Pirituba 2 Margem Esquerda do Verde e Alto do Morro Grande" ;
     dcterms:date "2025-05-20T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_37 ;
@@ -1343,7 +1249,8 @@ phd:tour_42 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 123 .
 
-phd:tour_43 a ph:Tour ;
+phd:tour_43
+    a ph:Tour ;
     dcterms:title "Pontos de Sela do Centro-Norte" ;
     dcterms:date "2025-05-27T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_38 ;
@@ -1364,7 +1271,8 @@ phd:tour_43 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 91 .
 
-phd:tour_44 a ph:Tour ;
+phd:tour_44
+    a ph:Tour ;
     dcterms:title "Cânions da Brasilandia" ;
     dcterms:date "2025-06-01T07:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_S_4 ;
@@ -1379,7 +1287,8 @@ phd:tour_44 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaThiagoneves ;
     ph:mediaCount 185 .
 
-phd:tour_45 a ph:Tour ;
+phd:tour_45
+    a ph:Tour ;
     dcterms:title "Água Espraiada da Foz à Nascente" ;
     dcterms:date "2025-06-03T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_39 ;
@@ -1401,7 +1310,8 @@ phd:tour_45 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 125 .
 
-phd:tour_46 a ph:Tour ;
+phd:tour_46
+    a ph:Tour ;
     dcterms:title "Crista da Mooca e Médio-Alto Oratório" ;
     dcterms:date "2025-06-10T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_40 ;
@@ -1422,7 +1332,8 @@ phd:tour_46 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 110 .
 
-phd:tour_47 a ph:Tour ;
+phd:tour_47
+    a ph:Tour ;
     dcterms:title "Águas Meridionais da Colina Histórica" ;
     dcterms:date "2025-06-17T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_41 ;
@@ -1445,7 +1356,8 @@ phd:tour_47 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGmard ;
     ph:mediaCount 77 .
 
-phd:tour_48 a ph:Tour ;
+phd:tour_48
+    a ph:Tour ;
     dcterms:title "Carapicuíba duma nascente à foz, vindo do espigão da usp e alto jaguaré" ;
     dcterms:date "2025-06-24T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_42 ;
@@ -1467,7 +1379,8 @@ phd:tour_48 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaMicaelrodrigues ;
     ph:mediaCount 81 .
 
-phd:tour_49 a ph:Tour ;
+phd:tour_49
+    a ph:Tour ;
     dcterms:title "Riacho do Divisor ao Baquivu-guaçu pelos sopés da Serra do Bananal" ;
     dcterms:date "2025-07-01T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_43 ;
@@ -1489,7 +1402,8 @@ phd:tour_49 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 115 .
 
-phd:tour_50 a ph:Tour ;
+phd:tour_50
+    a ph:Tour ;
     dcterms:title "Foz dos Meninos à Foz do Zavuvus pelo Riacho do Taboão e o desmorrodouro do Caaguaçu" ;
     dcterms:date "2025-07-08T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_44 ;
@@ -1511,7 +1425,8 @@ phd:tour_50 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 77 .
 
-phd:tour_51 a ph:Tour ;
+phd:tour_51
+    a ph:Tour ;
     dcterms:title "Pirajuçara da Foz à Nascente e Cabeçeiras do rio do Morro do S" ;
     dcterms:date "2025-07-15T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_45 ;
@@ -1534,7 +1449,8 @@ phd:tour_51 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGmard ;
     ph:mediaCount 64 .
 
-phd:tour_52 a ph:Tour ;
+phd:tour_52
+    a ph:Tour ;
     dcterms:title "Contorno Central da Enchente de 1929 e pizza no brás" ;
     dcterms:date "2025-07-22T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_46 ;
@@ -1557,7 +1473,8 @@ phd:tour_52 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaPedpaula ;
     ph:mediaCount 108 .
 
-phd:tour_53 a ph:Tour ;
+phd:tour_53
+    a ph:Tour ;
     dcterms:title "Margens destras do Jaguaré, mirante da década de 40 e pastel de Oz" ;
     dcterms:date "2025-07-29T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_47 ;
@@ -1579,7 +1496,8 @@ phd:tour_53 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaThiagoneves ;
     ph:mediaCount 123 .
 
-phd:tour_54 a ph:Tour ;
+phd:tour_54
+    a ph:Tour ;
     dcterms:title "Sopés da Cantareira: Tremembé, Linha Verde e Piqueri" ;
     dcterms:date "2025-08-03T08:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_48 ;
@@ -1600,7 +1518,8 @@ phd:tour_54 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaThiagoneves ;
     ph:mediaCount 70 .
 
-phd:tour_55 a ph:Tour ;
+phd:tour_55
+    a ph:Tour ;
     dcterms:title "Pontos de Sela da Média Leste" ;
     dcterms:date "2025-08-05T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_49 ;
@@ -1621,7 +1540,8 @@ phd:tour_55 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 109 .
 
-phd:tour_56 a ph:Tour ;
+phd:tour_56
+    a ph:Tour ;
     dcterms:title "Subir Rio Uberaba, descer rio Cupucê" ;
     dcterms:date "2025-08-12T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_50 ;
@@ -1642,7 +1562,8 @@ phd:tour_56 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 65 .
 
-phd:tour_57 a ph:Tour ;
+phd:tour_57
+    a ph:Tour ;
     dcterms:title "O Itaquera" ;
     dcterms:date "2025-08-19T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_51 ;
@@ -1663,7 +1584,8 @@ phd:tour_57 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 76 .
 
-phd:tour_58 a ph:Tour ;
+phd:tour_58
+    a ph:Tour ;
     dcterms:title "Rampa do Sapateiro, Uberaba e Traição" ;
     dcterms:date "2025-08-26T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_52 ;
@@ -1685,7 +1607,8 @@ phd:tour_58 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGiucuci ;
     ph:mediaCount 64 .
 
-phd:tour_59 a ph:Tour ;
+phd:tour_59
+    a ph:Tour ;
     dcterms:title "Parque do Juqueri e DIB" ;
     dcterms:date "2025-08-30T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_S_5 ;
@@ -1700,7 +1623,8 @@ phd:tour_59 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaThiagoneves ;
     ph:mediaCount 321 .
 
-phd:tour_60 a ph:Tour ;
+phd:tour_60
+    a ph:Tour ;
     dcterms:title "Contornar Paraisópolis" ;
     dcterms:date "2025-09-02T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_53 ;
@@ -1722,7 +1646,8 @@ phd:tour_60 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 15 .
 
-phd:tour_61 a ph:Tour ;
+phd:tour_61
+    a ph:Tour ;
     dcterms:title "1 ano" ;
     dcterms:date "2025-09-09T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_54 ;
@@ -1745,7 +1670,8 @@ phd:tour_61 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaLume ;
     ph:mediaCount 213 .
 
-phd:tour_62 a ph:Tour ;
+phd:tour_62
+    a ph:Tour ;
     dcterms:title "Ilhota da Guapira e Alto da Cangaíba" ;
     dcterms:date "2025-09-16T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_55 ;
@@ -1766,7 +1692,8 @@ phd:tour_62 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 201 .
 
-phd:tour_63 a ph:Tour ;
+phd:tour_63
+    a ph:Tour ;
     dcterms:title "O Trem e o Meteoro" ;
     dcterms:date "2025-09-21T08:30:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_56 ;
@@ -1788,7 +1715,8 @@ phd:tour_63 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 466 .
 
-phd:tour_64 a ph:Tour ;
+phd:tour_64
+    a ph:Tour ;
     dcterms:title "Os Três Sopés e a Ilhota de São João" ;
     dcterms:date "2025-09-24T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_57 ;
@@ -1809,7 +1737,8 @@ phd:tour_64 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 179 .
 
-phd:tour_65 a ph:Tour ;
+phd:tour_65
+    a ph:Tour ;
     dcterms:title "Rampa do Sapateiro, Uberaba e Traição" ;
     dcterms:date "2025-09-30T20:30:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_58 ;
@@ -1828,7 +1757,8 @@ phd:tour_65 a ph:Tour ;
     ] ;
     ph:mediaCount 31 .
 
-phd:tour_66 a ph:Tour ;
+phd:tour_66
+    a ph:Tour ;
     dcterms:title "Bico do Caaguaçu" ;
     dcterms:date "2025-10-07T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_59 ;
@@ -1849,7 +1779,8 @@ phd:tour_66 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGmard ;
     ph:mediaCount 12 .
 
-phd:tour_67 a ph:Tour ;
+phd:tour_67
+    a ph:Tour ;
     dcterms:title "Oakland: Lake Merritt Up and down stream with a diversion by the Sausal Canyon" ;
     dcterms:date "2025-10-17T17:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_61 ;
@@ -1871,7 +1802,8 @@ phd:tour_67 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDelaram ;
     ph:mediaCount 165 .
 
-phd:tour_68 a ph:Tour ;
+phd:tour_68
+    a ph:Tour ;
     dcterms:title "Águas Meridionais da Colina Histórica" ;
     dcterms:date "2025-10-21T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_60 ;
@@ -1894,7 +1826,8 @@ phd:tour_68 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaZito ;
     ph:mediaCount 55 .
 
-phd:tour_69 a ph:Tour ;
+phd:tour_69
+    a ph:Tour ;
     dcterms:title "Cubatão e a Foz dos Pilões" ;
     dcterms:date "2025-10-26T07:30:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_62 ;
@@ -1916,7 +1849,8 @@ phd:tour_69 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaEricalatina ;
     ph:mediaCount 110 .
 
-phd:tour_70 a ph:Tour ;
+phd:tour_70
+    a ph:Tour ;
     dcterms:title "O arco das cumeeiras do Caaguaçu" ;
     dcterms:date "2025-10-28T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_63 ;
@@ -1938,7 +1872,8 @@ phd:tour_70 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGmard ;
     ph:mediaCount 36 .
 
-phd:tour_71 a ph:Tour ;
+phd:tour_71
+    a ph:Tour ;
     dcterms:title "Pontes da Ponte Rasa via Várzea do Carandiru e Baixo Cangaíba" ;
     dcterms:date "2025-11-04T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_64 ;
@@ -1959,7 +1894,8 @@ phd:tour_71 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 159 .
 
-phd:tour_72 a ph:Tour ;
+phd:tour_72
+    a ph:Tour ;
     dcterms:title "Pelos Alpes do Jaraguá ao Subir Rio Pirituba e descer Rio Perus" ;
     dcterms:date "2025-11-11T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_65 ;
@@ -1980,7 +1916,8 @@ phd:tour_72 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 135 .
 
-phd:tour_73 a ph:Tour ;
+phd:tour_73
+    a ph:Tour ;
     dcterms:title "Marcos das antigas rotas de SP (seus relevos e relevâncias)" ;
     dcterms:date "2025-11-25T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_66 ;
@@ -2001,7 +1938,8 @@ phd:tour_73 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGmard ;
     ph:mediaCount 37 .
 
-phd:tour_74 a ph:Tour ;
+phd:tour_74
+    a ph:Tour ;
     dcterms:title "Recosturando Tietê e Paraíba do Sul" ;
     dcterms:date "2025-11-30T08:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_67 ;
@@ -2023,7 +1961,8 @@ phd:tour_74 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGmard ;
     ph:mediaCount 100 .
 
-phd:tour_75 a ph:Tour ;
+phd:tour_75
+    a ph:Tour ;
     dcterms:title "Contornando Capão do Embira e Tatuapé pela Crista de Sapopemba e Vila Formosa" ;
     dcterms:date "2025-12-03T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_68 ;
@@ -2045,7 +1984,8 @@ phd:tour_75 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGiucuci ;
     ph:mediaCount 23 .
 
-phd:tour_76 a ph:Tour ;
+phd:tour_76
+    a ph:Tour ;
     dcterms:title "Tiburtino e córrego das corujas" ;
     dcterms:date "2025-12-10T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_69 ;
@@ -2066,7 +2006,8 @@ phd:tour_76 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaLume ;
     ph:mediaCount 12 .
 
-phd:tour_77 a ph:Tour ;
+phd:tour_77
+    a ph:Tour ;
     dcterms:title "Cabeçeiras do Ipiranga ou Desmorrodouro do Caaguaçu" ;
     dcterms:date "2025-12-17T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_70 ;
@@ -2088,7 +2029,8 @@ phd:tour_77 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     ph:mediaCount 64 .
 
-phd:tour_78 a ph:Tour ;
+phd:tour_78
+    a ph:Tour ;
     dcterms:title "Bonde, Pedra e Cachoeira" ;
     dcterms:date "2025-12-23T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_71 ;
@@ -2110,7 +2052,8 @@ phd:tour_78 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaFetiche ;
     ph:mediaCount 184 .
 
-phd:tour_79 a ph:Tour ;
+phd:tour_79
+    a ph:Tour ;
     dcterms:title "Selas, Divisas e Divisores" ;
     dcterms:date "2026-01-07T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_72 ;
@@ -2131,7 +2074,8 @@ phd:tour_79 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaFetiche ;
     ph:mediaCount 9 .
 
-phd:tour_80 a ph:Tour ;
+phd:tour_80
+    a ph:Tour ;
     dcterms:title "Contornando Carandiru e Paciência" ;
     dcterms:date "2026-01-14T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_73 ;
@@ -2152,7 +2096,8 @@ phd:tour_80 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaFetiche ;
     ph:mediaCount 80 .
 
-phd:tour_81 a ph:Tour ;
+phd:tour_81
+    a ph:Tour ;
     dcterms:title "Pontes do Itororó" ;
     dcterms:date "2026-01-21T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_74 ;
@@ -2165,7 +2110,8 @@ phd:tour_81 a ph:Tour ;
     ph:countNewcomer 0 ;
     ph:mediaCount 13 .
 
-phd:tour_82 a ph:Tour ;
+phd:tour_82
+    a ph:Tour ;
     dcterms:title "Circundar Canindé pelas Águas do Moinho e Biquinha" ;
     dcterms:date "2026-01-28T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_75 ;
@@ -2188,7 +2134,8 @@ phd:tour_82 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGiucuci ;
     ph:mediaCount 100 .
 
-phd:tour_83 a ph:Tour ;
+phd:tour_83
+    a ph:Tour ;
     dcterms:title "Caaguaçu Emboaçu e Riacho do Ipiranga" ;
     dcterms:date "2026-01-31T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_76 ;
@@ -2209,7 +2156,8 @@ phd:tour_83 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaAnaju ;
     ph:mediaCount 53 .
 
-phd:tour_84 a ph:Tour ;
+phd:tour_84
+    a ph:Tour ;
     dcterms:title "SESC Consolação" ;
     dcterms:date "2026-02-01T00:00:00-03:00"^^xsd:dateTime ;
     ph:linkInstagram "https://www.instagram.com/p/DUBptxLEW6g/?img_index=1"^^xsd:anyURI ;
@@ -2217,7 +2165,8 @@ phd:tour_84 a ph:Tour ;
     ph:countNewcomer 45 ;
     ph:mediaCount 65 .
 
-phd:tour_85 a ph:Tour ;
+phd:tour_85
+    a ph:Tour ;
     dcterms:title "Entre-bacias do Jaguaré e Pirajussara pelo ponto de sela do Sopé" ;
     dcterms:date "2026-02-04T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_77 ;
@@ -2232,7 +2181,8 @@ phd:tour_85 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaFetiche ;
     ph:mediaCount 29 .
 
-phd:tour_86 a ph:Tour ;
+phd:tour_86
+    a ph:Tour ;
     dcterms:title "Lavapés, Saracura e Banana: Três Constelações da origem do Carnaval Paulista" ;
     dcterms:date "2026-02-11T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_78 ;
@@ -2247,7 +2197,8 @@ phd:tour_86 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaAlef ;
     ph:mediaCount 81 .
 
-phd:tour_87 a ph:Tour ;
+phd:tour_87
+    a ph:Tour ;
     dcterms:title "As águas da desilusão e Urutau Modernista" ;
     dcterms:date "2026-02-12T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_79 ;
@@ -2269,7 +2220,8 @@ phd:tour_87 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaTomb ;
     ph:mediaCount 55 .
 
-phd:tour_88 a ph:Tour ;
+phd:tour_88
+    a ph:Tour ;
     dcterms:title "Fluindo à Deriva" ;
     dcterms:date "2026-02-18T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_80 ;
@@ -2279,7 +2231,8 @@ phd:tour_88 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaZito ;
     ph:mediaCount 7 .
 
-phd:tour_89 a ph:Tour ;
+phd:tour_89
+    a ph:Tour ;
     dcterms:title "Planalto de Taipas e os Cânions da Brasilândia" ;
     dcterms:date "2026-02-24T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_81 ;
@@ -2301,7 +2254,8 @@ phd:tour_89 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGiucuci ;
     ph:mediaCount 104 .
 
-phd:tour_90 a ph:Tour ;
+phd:tour_90
+    a ph:Tour ;
     dcterms:title "Colina da Matilde e Riacho dos Machados" ;
     dcterms:date "2026-03-04T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_82 ;
@@ -2315,7 +2269,8 @@ phd:tour_90 a ph:Tour ;
     ph:countNewcomer 0 ;
     prov:wasAttributedTo phd:pessoaFetiche .
 
-phd:tour_91 a ph:Tour ;
+phd:tour_91
+    a ph:Tour ;
     dcterms:title "Histórico pelo entorno do Cassandoca" ;
     dcterms:date "2026-03-18T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_83 ;
@@ -2329,7 +2284,8 @@ phd:tour_91 a ph:Tour ;
     ph:countNewcomer 0 ;
     prov:wasAttributedTo phd:pessoaAlex .
 
-phd:tour_92 a ph:Tour ;
+phd:tour_92
+    a ph:Tour ;
     dcterms:title "Horta do Parque do Rio Bixiga" ;
     dcterms:date "2026-03-22T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_84 ;
@@ -2343,7 +2299,8 @@ phd:tour_92 a ph:Tour ;
     ph:countNewcomer 0 ;
     prov:wasAttributedTo phd:pessoaYas .
 
-phd:tour_93 a ph:Tour ;
+phd:tour_93
+    a ph:Tour ;
     dcterms:title "A Voçoroca e o Pântano" ;
     dcterms:date "2025-03-25T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_85 ;
@@ -2362,7 +2319,8 @@ phd:tour_93 a ph:Tour ;
         ph:intensityClassification "Endorfinado"
     ] .
 
-phd:tour_94 a ph:Tour ;
+phd:tour_94
+    a ph:Tour ;
     dcterms:title "Águas de Março: povo, éguas, lágrimas, alagados" ;
     dcterms:date "2026-03-31T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_86 ;
@@ -2383,7 +2341,8 @@ phd:tour_94 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     prov:wasAttributedTo phd:pessoaGmard .
 
-phd:tour_95 a ph:Tour ;
+phd:tour_95
+    a ph:Tour ;
     dcterms:title "Dar tchau pra quem migra" ;
     dcterms:date "2026-04-11T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_BP_4 ;
@@ -2403,7 +2362,8 @@ phd:tour_95 a ph:Tour ;
     ] ;
     prov:wasAttributedTo phd:pessoaAnaju .
 
-phd:tour_96 a ph:Tour ;
+phd:tour_96
+    a ph:Tour ;
     dcterms:title "Várzea do Tietê e as origens do Futebol" ;
     dcterms:date "2026-04-14T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_87 ;
@@ -2423,7 +2383,8 @@ phd:tour_96 a ph:Tour ;
     ] ;
     prov:wasAttributedTo phd:pessoaAlef .
 
-phd:tour_97 a ph:Tour ;
+phd:tour_97
+    a ph:Tour ;
     dcterms:title "Da Cantareira ao Tremembé" ;
     dcterms:date "2026-04-21T00:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_88 ;
@@ -2444,7 +2405,8 @@ phd:tour_97 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     prov:wasAttributedTo phd:pessoaGa .
 
-phd:tour_98 a ph:Tour ;
+phd:tour_98
+    a ph:Tour ;
     dcterms:title "Pontos de Sela dos afluentes de Tamanduateí" ;
     dcterms:date "2026-04-28T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_89 ;
@@ -2464,7 +2426,8 @@ phd:tour_98 a ph:Tour ;
     ] ;
     prov:wasAttributedTo phd:pessoaGabrieltunes .
 
-phd:tour_99 a ph:Tour ;
+phd:tour_99
+    a ph:Tour ;
     dcterms:title "Subir Gamelinha e Contornar Rincão pela Crista da Penha" ;
     dcterms:date "2026-05-06T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_90 ;
@@ -2486,7 +2449,8 @@ phd:tour_99 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaDandan ;
     prov:wasAttributedTo phd:pessoaGabrieltunes .
 
-phd:tour_100 a ph:Tour ;
+phd:tour_100
+    a ph:Tour ;
     dcterms:title "era infinitamente maio no alto rio bravo" ;
     dcterms:date "2026-05-09T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_91 ;
@@ -2509,7 +2473,8 @@ phd:tour_100 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaGiovanna ;
     prov:wasAttributedTo phd:pessoaGmard .
 
-phd:tour_101 a ph:Tour ;
+phd:tour_101
+    a ph:Tour ;
     dcterms:title "Crista do Lauzane, subir Água Fria e duas vilas escondidas" ;
     dcterms:date "2026-05-13T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_92 ;
@@ -2530,7 +2495,8 @@ phd:tour_101 a ph:Tour ;
     prov:wasAttributedTo phd:pessoaAlef ;
     prov:wasAttributedTo phd:pessoaGabrieltunes .
 
-phd:tour_102 a ph:Tour ;
+phd:tour_102
+    a ph:Tour ;
     dcterms:title "Ziguezaguear a Crista do Morumbi" ;
     dcterms:date "2026-05-20T20:00:00-03:00"^^xsd:dateTime ;
     ph:inSeriesEdition phd:assoc_PH_93 ;

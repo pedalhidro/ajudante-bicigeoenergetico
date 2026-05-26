@@ -46,8 +46,8 @@ ph:ImageShape a sh:NodeShape ;
         sh:maxCount 1 ;
         sh:datatype xsd:decimal ;
         sh:minExclusive 0 ;
-        sh:maxInclusive 180 ;
-        sh:message "Ideal: declarar campo de visão (ph:fieldOfView, graus)."@pt ;
+        sh:maxInclusive 100000 ;
+        sh:message "Ideal: declarar distância de focal equivalente a 35mm"@pt ;
     ] ;
     sh:property [
         sh:path ph:capturedDuring ;

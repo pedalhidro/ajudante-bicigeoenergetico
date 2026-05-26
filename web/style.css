@@ -42,6 +42,22 @@ body {
   border-bottom: 1px solid var(--border);
 }
 
+.header-toggle {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  color: #333;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+.header-toggle:hover { background: #f4f4f4; }
+body.header-hidden .topbar { display: none; }
+
 /* "Rotas" button: shown on all viewports — toggles drawer on mobile, hides
    the right-side panel on desktop. */
 .menu-btn { display: inline-block; }
@@ -69,31 +85,6 @@ body {
   letter-spacing: 0.2px;
   font-weight: 600;
   line-height: 1.25;
-}
-.topbar .credit {
-  font-size: 11px;
-  color: var(--muted);
-  margin-top: 2px;
-}
-/* Discreet "?" help button living inline with the credit line. */
-.help-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 18px; height: 18px;
-  margin-left: 6px;
-  padding: 0;
-  border: 1px solid var(--muted);
-  border-radius: 50%;
-  background: transparent;
-  color: var(--muted);
-  font: 600 11px/1 system-ui, sans-serif;
-  cursor: pointer;
-  vertical-align: middle;
-}
-.help-btn:hover {
-  color: var(--text);
-  border-color: var(--text);
 }
 .topbar .title {
   flex: 1 1 auto;
@@ -483,7 +474,6 @@ body {
     gap: 6px;
   }
   .topbar h1 { font-size: 12px; line-height: 1.2; }
-  .topbar .credit { font-size: 10px; }
   .topbar .title { padding: 4px 4px 4px 0; flex: 1 1 100%; }
 
   /* Mobile-friendly button heights — at least ~36 px tall for thumbs. */
@@ -783,11 +773,20 @@ body.drawing .trackpoint-marker:active { cursor: grabbing !important; }
   opacity: 0.4;
   cursor: not-allowed;
 }
-.trace-controls .trace-cancel {
-  border-color: #6b3a3a;
-  color: #ffb1b1;
+.trace-controls .trace-save {
+  border-color: #3a6b3a;
+  color: #b1ffb1;
 }
-.trace-controls .trace-cancel:hover {
+.trace-controls .trace-save:hover {
+  background: rgba(90, 255, 90, 0.18);
+  border-color: #7bff7b;
+}
+body.drawing #trace-btn {
+  background: #0c1722;
+  color: #ffb1b1;
+  border: 1px solid #6b3a3a;
+}
+body.drawing #trace-btn:hover {
   background: rgba(255, 90, 90, 0.18);
   border-color: #ff7b7b;
 }
@@ -1014,6 +1013,14 @@ body.drawing .trackpoint-marker:active { cursor: grabbing !important; }
   padding: 1px 5px;
   font-size: 11px;
 }
+.help-credit {
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted);
+  font-style: italic;
+}
 
 /* Trackpoint marker: small filled circle with a white ring. */
 .trackpoint-marker {
@@ -1128,22 +1135,86 @@ body.drawing .trackpoint-marker:active { cursor: grabbing !important; }
 .tp-popup-body .tp-delete:hover { text-decoration: underline; }
 
 /* Geo-tagged photo markers — small circular thumbnail of the photo itself. */
-.photo-dot-wrap { background: none; border: none; }
+.photo-dot-wrap {
+  background: none;
+  border: none;
+  /* Wrapper é só a caixa que o Leaflet posiciona; o hit-area do clique/hover
+     fica restrito ao .photo-dot visível (width/height = caixa real). O
+     wrapper não recebe eventos, então hover/click só pegam o dot interno. */
+  pointer-events: none !important;
+  cursor: default;
+}
+/* Quando o usuário passa o cursor sobre um dot que está visualmente "debaixo"
+   de outro marcador, esta regra eleva o wrapper inteiro pro topo — assim o
+   dot ampliado fica acima dos vizinhos e o popup abre no marcador certo. */
+.photo-dot-wrap:has(.photo-dot:hover) {
+  z-index: 1000 !important;
+}
 .photo-dot {
-  width: 40px;
-  height: 40px;
+  /* Dimensiona o elemento real (width/height) — não usar transform:scale
+     aqui, senão o hit-area do clique/hover continua sendo a caixa
+     pré-scale e o cursor pega regiões transparentes vizinhas. */
+  --visible-size: calc(40px * var(--photo-scale, 1) * var(--photo-density-scale, 1));
+  width: var(--visible-size);
+  height: var(--visible-size);
+  /* Centraliza dentro do wrapper que o Leaflet posiciona (40×40 ou 120×120),
+     mais o nudge anti-colisão. */
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%)
+             translate(var(--photo-dx, 0px), var(--photo-dy, 0px));
   border-radius: 50%;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
-  border: 2px solid #fff;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
   cursor: pointer;
-  transition: transform 0.12s ease;
+  /* Os large.jpg gravados pré-fix carregam Orientation no EXIF mas os pixels
+     já vêm na orientação visual — ignorar evita rotação dupla. */
+  image-orientation: none;
+  pointer-events: auto;
+  transition: width 0.3s ease, height 0.3s ease, transform 0.3s ease;
 }
 .photo-dot:hover {
-  transform: scale(3.75);
+  /* Hover cresce para um tamanho fixo (88px = ~2.2 × 40), grande o suficiente
+     pra preview clara sem cobrir vizinhos. width/height = hit-area cresce
+     junto, então é correto. */
+  width: 88px;
+  height: 88px;
   z-index: 1000;
+  /* Hover transitiona mais rápido que o re-layout pra resposta tátil. */
+  transition: width 0.15s ease, height 0.15s ease, transform 0.3s ease;
+}
+/* Cone de visada acompanha o mesmo encolhimento + nudge. */
+.photo-aim {
+  transform: translate(var(--photo-dx, 0px), var(--photo-dy, 0px))
+             scale(calc(var(--photo-scale, 1) * var(--photo-density-scale, 1)));
+  transform-origin: center center;
+  transition: transform 0.3s ease;
+  /* Mesma razão do .photo-dot-wrap: a caixa 120×120 do cone não pode roubar
+     hover/click — só o svg (com pointer-events:none) e o dot interno contam. */
+  pointer-events: none;
+}
+/* No cone, o .photo-dot já está dentro de .photo-aim; o scale do pai cuida
+   do tamanho e o nudge também, então o filho não duplica. */
+/* No cone, o pai .photo-aim já aplica o scale por zoom/densidade no subtree
+   inteiro; aqui forçamos o dot interno de volta para 40×40 no canto certo
+   (left:40, top:40 vem da regra mais abaixo) e zeramos translate/centering. */
+.photo-aim > .photo-dot {
+  --visible-size: 40px;
+  width: 40px;
+  height: 40px;
+  left: 40px;
+  top: 40px;
+  transform: none;
+}
+/* Hover do dot interno: width/height fixos (40px), o scale inverte o do pai
+   para chegar a 88px visíveis (alinhado com o hover do dot solto). */
+.photo-aim > .photo-dot:hover {
+  width: 40px;
+  height: 40px;
+  transform: scale(calc(2.2 / (var(--photo-scale, 1) * var(--photo-density-scale, 1))));
 }
 
 /* Geo-tagged photo popups (Fotos geo overlay). */
@@ -1160,6 +1231,7 @@ body.drawing .trackpoint-marker:active { cursor: grabbing !important; }
   object-fit: contain;
   border-radius: 6px 6px 0 0;
   background: #000;
+  image-orientation: none;
 }
 .photo-popup .photo-meta {
   padding: 6px 10px;
@@ -1291,6 +1363,7 @@ body.drawing .trackpoint-marker:active { cursor: grabbing !important; }
   cursor: pointer;
   background: #000;
   transition: transform 0.12s ease;
+  image-orientation: none;
 }
 .route-photos-strip img:hover { transform: scale(1.06); }
 
@@ -1556,9 +1629,7 @@ body.drawing .trackpoint-marker:active { cursor: grabbing !important; }
   top: 40px;
 }
 .photo-cone {
-  fill: #2da9ff;
-  fill-opacity: 0.25;
-  stroke: #2da9ff;
-  stroke-opacity: 0.6;
-  stroke-width: 1;
+  fill: #fff;
+  fill-opacity: 0.45;
+  stroke: none;
 }
