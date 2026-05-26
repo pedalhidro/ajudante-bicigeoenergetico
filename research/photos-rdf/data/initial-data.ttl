@@ -1,0 +1,71 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix geo: <http://www.opengis.net/ont/geosparql#> .
+@prefix ph: <https://pedalhidrografi.co/terms#> .
+@prefix phd: <https://pedalhidrografi.co/data/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix schema: <https://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix qudt: <http://qudt.org/schema/qudt/> .
+@prefix unit: <http://qudt.org/vocab/unit/> .
+@prefix exif: <http://www.w3.org/2003/12/exif/ns#> .
+@prefix nfo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#> .
+
+phd:pessoaAnaju a schema:Person .
+phd:pessoaDandan a schema:Person .
+
+phd:ph1 a ph:Association ;
+    ph:inEventSeries phd:PH ;
+    ph:sequenceInSeries 1 .
+
+phd:bp1 a ph:Association ;
+    ph:inEventSeries phd:BP ;
+    ph:sequenceInSeries 1 .
+
+phd:PH a schema:EventSeries ;
+    dcterms:title "Pedais Hidrográficos Regulares" .
+
+phd:BP a schema:EventSeries ;
+    dcterms:title "Bicipassarinhadas" .
+
+phd:tour_ph1 a ph:Tour ;
+    dcterms:title "Água Preta e Tiburtino" ;
+    dcterms:date "2024-09-09T20:00:00-03:00"^^xsd:dateTime ;
+    ph:inSeriesEdition phd:ph1 ;
+    ph:inSeriesEdition phd:bp1 ;
+    pav:providedBy phd:pessoaDandan ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    prov:wasAttributedTo phd:pessoaAnaju ;
+    ph:linkRoute [
+        a ph:RouteReference ;
+        schema:url <https://ridewithgps.com/routes/49272936> ;
+        schema:provider ph:rwgps
+    ] ;
+    ph:linkInstagram "https://www.instagram.com/p/DBhH6IpPZO3/"^^xsd:anyURI ;
+    ph:countAttendee 4 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [
+        a qudt:QuantityValue ;
+        qudt:numericValue "350"^^xsd:decimal ;
+        qudt:hasUnit unit:KiloJ ;
+        ph:intensityClassification "Endorfinado" ;
+    ] .
+
+phd:image_1 a ph:Image ;
+    nfo:hasHash [
+        a nfo:FileHash ;
+        nfo:hashAlgorithm "SHA-256" ;
+        nfo:hashValue "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    ] ;
+    dcterms:date "2024-09-09T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:license <https://creativecommons.org/licenses/by-sa/4.0/> ;
+    schema:locationCreated [
+        a schema:GeoCoordinates ;
+        schema:latitude "-23.5505"^^xsd:decimal ;
+        schema:longitude "-46.6333"^^xsd:decimal
+    ] ;
+    exif:gpsImgDirection "90.5"^^xsd:decimal ;
+    exif:focalLengthIn35mmFilm "27"^^xsd:decimal ;
+    ph:capturedDuring phd:tour_ph1 ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    pav:providedBy phd:pessoaDandan .

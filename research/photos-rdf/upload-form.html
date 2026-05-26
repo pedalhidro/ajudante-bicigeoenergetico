@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Upload de foto — Pedal Hidrográfico</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 760px; margin: 2rem auto; padding: 0 1rem; color: #222; }
+  h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
+  p.lede { color: #666; margin: 0 0 1rem; }
+  fieldset { border: 1px solid #ccc; padding: 1rem; margin: 1rem 0; }
+  legend { font-weight: 600; padding: 0 .4rem; }
+  label { display: block; margin: .6rem 0 .2rem; font-size: .9rem; }
+  input, select { width: 100%; padding: .45rem; box-sizing: border-box; font-size: 1rem; font-family: inherit; }
+  .row { display: flex; gap: 1rem; }
+  .row > div { flex: 1; }
+  small { display: block; color: #666; font-size: .8rem; margin-top: .25rem; }
+  pre { background: #f4f4f4; padding: 1rem; overflow-x: auto; font-size: .85rem; border-radius: 4px; white-space: pre-wrap; word-break: break-word; }
+  .actions { margin: 1rem 0; display: flex; gap: .5rem; }
+  button { padding: .5rem 1rem; font-size: 1rem; cursor: pointer; border: 1px solid #888; background: #f8f8f8; border-radius: 4px; }
+  button[disabled] { opacity: .5; cursor: not-allowed; }
+  .required::after { content: " *"; color: #c00; }
+  .ok { color: #080; }
+  .warn { color: #c80; }
+  .err { color: #c00; }
+  code { background: #eee; padding: 0 .25rem; border-radius: 2px; font-size: .9em; }
+</style>
+</head>
+<body>
+
+<h1>Upload de foto</h1>
+<p class="lede">Gera RDF (Turtle) que satisfaz <code>ph:ImageShape</code>.</p>
+
+<form id="form">
+  <fieldset>
+    <legend>Arquivo</legend>
+    <label class="required" for="file">Foto (JPEG/PNG)</label>
+    <input type="file" id="file" accept="image/*" required>
+    <small id="hashStatus">Hash SHA-256 e EXIF serão extraídos automaticamente.</small>
+  </fieldset>
+
+  <fieldset>
+    <legend>Quando / onde</legend>
+    <label class="required" for="date">Data e hora</label>
+    <input type="datetime-local" id="date" step="1" required>
+    <small>Será gravado como <code>xsd:dateTime</code> no fuso local.</small>
+
+    <div class="row">
+      <div>
+        <label class="required" for="lat">Latitude</label>
+        <input type="number" id="lat" step="any" min="-90" max="90" placeholder="-23.5505" required>
+      </div>
+      <div>
+        <label class="required" for="lon">Longitude</label>
+        <input type="number" id="lon" step="any" min="-180" max="180" placeholder="-46.6333" required>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Câmera <small style="display:inline;color:#888">(opcional, mas recomendado)</small></legend>
+    <div class="row">
+      <div>
+        <label for="bearing">Direção (0–360°)</label>
+        <input type="number" id="bearing" step="any" min="0" max="359.999">
+      </div>
+      <div>
+        <label for="focal">Distância focal eq. 35 mm (mm)</label>
+        <input type="number" id="focal" step="any" min="0.001" max="180">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Atribuição <small style="display:inline;color:#888">(opcional)</small></legend>
+    <label for="tour">Passeio — <code>ph:capturedDuring</code></label>
+    <input type="text" id="tour" placeholder="phd:tour_ph1" pattern="^[A-Za-z_][A-Za-z0-9_-]*:[A-Za-z0-9_.-]+$|^https?://\S+$">
+
+    <label for="author">Autora — <code>prov:wasAttributedTo</code></label>
+    <input type="text" id="author" placeholder="phd:pessoaXxx" pattern="^[A-Za-z_][A-Za-z0-9_-]*:[A-Za-z0-9_.-]+$|^https?://\S+$">
+
+    <label for="provider">Quem subiu — <code>pav:providedBy</code></label>
+    <input type="text" id="provider" placeholder="phd:pessoaXxx" pattern="^[A-Za-z_][A-Za-z0-9_-]*:[A-Za-z0-9_.-]+$|^https?://\S+$">
+
+    <label for="license">Licença</label>
+    <select id="license">
+      <option value="https://creativecommons.org/licenses/by-sa/4.0/" selected>CC BY-SA 4.0</option>
+      <option value="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</option>
+      <option value="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</option>
+      <option value="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</option>
+      <option value="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</option>
+    </select>
+  </fieldset>
+
+  <div class="actions">
+    <button type="button" id="generate">Gerar Turtle</button>
+    <button type="button" id="download" disabled>Baixar .ttl</button>
+    <button type="button" id="copy" disabled>Copiar</button>
+  </div>
+</form>
+
+<h2>RDF (Turtle)</h2>
+<pre id="output">— vazio —</pre>
+
+<script type="module">
+const $ = (sel) => document.querySelector(sel);
+let fileHash = null;
+
+let exifr = null;
+try {
+  exifr = await import('https://cdn.jsdelivr.net/npm/exifr@7.1.3/dist/full.esm.mjs')
+    .then(m => m.default || m);
+} catch (_) {
+  $('#hashStatus').textContent = 'EXIF auto-fill indisponível (offline). Preencha manualmente.';
+}
+
+async function sha256Hex(blob) {
+  const buf = await blob.arrayBuffer();
+  const hash = await crypto.subtle.digest('SHA-256', buf);
+  return Array.from(new Uint8Array(hash))
+    .map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+function pad(n) { return String(n).padStart(2, '0'); }
+
+function dateToLocalInput(d) {
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` +
+         `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+}
+
+function localToXsdDateTime(s) {
+  // datetime-local → xsd:dateTime with local TZ offset
+  const d = new Date(s);
+  if (isNaN(d)) return null;
+  const off = -d.getTimezoneOffset();
+  const sign = off >= 0 ? '+' : '-';
+  const oh = pad(Math.floor(Math.abs(off) / 60));
+  const om = pad(Math.abs(off) % 60);
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}` +
+         `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}` +
+         `${sign}${oh}:${om}`;
+}
+
+$('#file').addEventListener('change', async (e) => {
+  const f = e.target.files[0];
+  if (!f) return;
+  $('#hashStatus').innerHTML = 'Calculando hash…';
+  fileHash = await sha256Hex(f);
+  $('#hashStatus').innerHTML = `<span class="ok">SHA-256: <code>${fileHash}</code></span>`;
+
+  if (!exifr) return;
+  try {
+    const data = await exifr.parse(f, { gps: true });
+    if (!data) return;
+    const filled = [];
+    if (data.DateTimeOriginal && !$('#date').value) {
+      $('#date').value = dateToLocalInput(new Date(data.DateTimeOriginal));
+      filled.push('data');
+    }
+    if (data.latitude != null && !$('#lat').value) {
+      $('#lat').value = data.latitude.toFixed(6); filled.push('lat');
+    }
+    if (data.longitude != null && !$('#lon').value) {
+      $('#lon').value = data.longitude.toFixed(6); filled.push('lon');
+    }
+    if (data.GPSImgDirection != null && !$('#bearing').value) {
+      $('#bearing').value = data.GPSImgDirection; filled.push('direção');
+    }
+    if (data.FocalLengthIn35mmFormat != null && !$('#focal').value) {
+      $('#focal').value = data.FocalLengthIn35mmFormat; filled.push('focal');
+    }
+    if (filled.length) {
+      $('#hashStatus').innerHTML +=
+        ` <span class="ok">· EXIF preenchido: ${filled.join(', ')}.</span>`;
+    }
+  } catch (err) {
+    console.warn('EXIF:', err);
+  }
+});
+
+function generate() {
+  if (!fileHash) { alert('Selecione um arquivo primeiro.'); return; }
+  if (!$('#form').reportValidity()) return;
+
+  const dateXsd  = localToXsdDateTime($('#date').value);
+  const lat      = $('#lat').value;
+  const lon      = $('#lon').value;
+  const bearing  = $('#bearing').value;
+  const focal    = $('#focal').value;
+  const tour     = $('#tour').value.trim();
+  const author   = $('#author').value.trim();
+  const provider = $('#provider').value.trim();
+  const license  = $('#license').value;
+
+  const id = `phd:image_${fileHash.slice(0, 8)}`;
+
+  const prefixes = [
+    '@prefix dcterms: <http://purl.org/dc/terms/> .',
+    '@prefix exif:    <http://www.w3.org/2003/12/exif/ns#> .',
+    '@prefix nfo:     <http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#> .',
+    '@prefix pav:     <http://purl.org/pav/> .',
+    '@prefix ph:      <https://pedalhidrografi.co/terms#> .',
+    '@prefix phd:     <https://pedalhidrografi.co/data/> .',
+    '@prefix prov:    <http://www.w3.org/ns/prov#> .',
+    '@prefix schema:  <https://schema.org/> .',
+    '@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .',
+  ].join('\n');
+
+  const props = [];
+  props.push(`a ph:Image`);
+  props.push(
+    `nfo:hasHash [\n` +
+    `        a nfo:FileHash ;\n` +
+    `        nfo:hashAlgorithm "SHA-256" ;\n` +
+    `        nfo:hashValue "${fileHash}"\n` +
+    `    ]`
+  );
+  props.push(`dcterms:date "${dateXsd}"^^xsd:dateTime`);
+  props.push(`dcterms:license <${license}>`);
+  props.push(
+    `schema:locationCreated [\n` +
+    `        a schema:GeoCoordinates ;\n` +
+    `        schema:latitude "${lat}"^^xsd:decimal ;\n` +
+    `        schema:longitude "${lon}"^^xsd:decimal\n` +
+    `    ]`
+  );
+  if (bearing !== '') props.push(`exif:gpsImgDirection "${bearing}"^^xsd:decimal`);
+  if (focal   !== '') props.push(`exif:focalLengthIn35mmFilm "${focal}"^^xsd:decimal`);
+  if (tour)           props.push(`ph:capturedDuring ${tour}`);
+  if (author)         props.push(`prov:wasAttributedTo ${author}`);
+  if (provider)       props.push(`pav:providedBy ${provider}`);
+
+  const body = props.map(p => `    ${p}`).join(' ;\n');
+  const ttl = `${prefixes}\n\n${id}\n${body} .\n`;
+
+  $('#output').textContent = ttl;
+  $('#download').disabled = false;
+  $('#copy').disabled = false;
+  $('#download').dataset.ttl = ttl;
+  $('#download').dataset.name = `image_${fileHash.slice(0, 8)}.ttl`;
+}
+
+$('#generate').addEventListener('click', generate);
+
+$('#download').addEventListener('click', () => {
+  const ttl = $('#download').dataset.ttl;
+  const blob = new Blob([ttl], { type: 'text/turtle;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = $('#download').dataset.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(a.href);
+});
+
+$('#copy').addEventListener('click', async () => {
+  await navigator.clipboard.writeText($('#output').textContent);
+  $('#copy').textContent = 'Copiado!';
+  setTimeout(() => $('#copy').textContent = 'Copiar', 1200);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,167 @@
+@prefix ph:      <https://pedalhidrografi.co/terms#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:     <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix schema:  <https://schema.org/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix qudt:    <http://qudt.org/schema/qudt/> .
+
+<https://pedalhidrografi.co/terms> a owl:Ontology ;
+    dcterms:title "Pedal Hidrográfico — vocabulário"@pt ;
+    dcterms:description
+        "Vocabulário específico do coletivo Pedal Hidrográfico. Reutiliza PROV-O, schema.org, Dublin Core, QUDT, NFO, EXIF, GeoSPARQL; mint termos ph: apenas para conceitos próprios."@pt ;
+    owl:versionInfo "0.1-draft" .
+
+# =====================================================================
+# Classes
+# =====================================================================
+
+ph:Tour a owl:Class ;
+    rdfs:label "Passeio"@pt ;
+    rdfs:comment
+        "Pedalada coletiva organizada pelo coletivo, com data, rota e participantes. Tratada como prov:Activity (gera fotos, atribuição a pessoas) e schema:Event (data, organizador, link público)."@pt ;
+    rdfs:subClassOf prov:Activity, schema:Event .
+
+ph:Image a owl:Class ;
+    rdfs:label "Foto"@pt ;
+    rdfs:comment
+        "Fotografia tirada durante um passeio. Entidade PROV-O (atribuída a uma autora, gerada por um passeio) e schema:ImageObject (licença, hash, coordenada)."@pt ;
+    rdfs:subClassOf prov:Entity, schema:ImageObject .
+
+ph:RouteReference a owl:Class ;
+    rdfs:label "Referência a rota externa"@pt ;
+    rdfs:comment
+        "Ligação para uma rota publicada em um serviço externo (RideWithGPS, Strava, etc.). Carrega URL e provedor."@pt .
+
+ph:Association a owl:Class ;
+    rdfs:label "Filiação a série"@pt ;
+    rdfs:comment
+        "Reificação da relação entre um Passeio e uma schema:EventSeries, carregando a posição na sequência (ex.: o 1º Pedal Hidrográfico Regular). Não confundir com prov:Association (atribuição de responsabilidade a um agente)."@pt .
+
+# =====================================================================
+# Propriedades — Passeio (ph:Tour)
+# =====================================================================
+
+ph:linkRoute a owl:ObjectProperty ;
+    rdfs:label "rota externa"@pt ;
+    rdfs:comment
+        "Referência a uma rota publicada em um serviço (URL + provedor). Substitui ph:linkRWGPS, que ficava restrita ao RideWithGPS."@pt ;
+    rdfs:domain ph:Tour ;
+    rdfs:range ph:RouteReference .
+
+ph:linkRWGPS a owl:DatatypeProperty ;
+    rdfs:label "rota RideWithGPS (legado)"@pt ;
+    rdfs:comment
+        "Substituído por ph:linkRoute, que carrega URL + provedor."@pt ;
+    rdfs:domain ph:Tour ;
+    rdfs:range xsd:anyURI ;
+    rdfs:subPropertyOf schema:url ;
+    owl:deprecated true .
+
+# Provedores de rota (instâncias reutilizáveis)
+
+ph:rwgps a schema:Organization ;
+    schema:name "Ride with GPS" ;
+    schema:url <https://ridewithgps.com> .
+
+ph:strava a schema:Organization ;
+    schema:name "Strava" ;
+    schema:url <https://www.strava.com> .
+
+ph:linkInstagram a owl:DatatypeProperty ;
+    rdfs:label "post no Instagram"@pt ;
+    rdfs:domain ph:Tour ;
+    rdfs:range xsd:anyURI ;
+    rdfs:subPropertyOf schema:url .
+
+ph:countAttendee a owl:DatatypeProperty ;
+    rdfs:label "participantes"@pt ;
+    rdfs:domain ph:Tour ;
+    rdfs:range xsd:nonNegativeInteger .
+
+ph:mediaCount a owl:DatatypeProperty ;
+    rdfs:label "mídias coletadas"@pt ;
+    rdfs:comment
+        "Quantidade de fotos/vídeos arquivados a partir do passeio."@pt ;
+    rdfs:domain ph:Tour ;
+    rdfs:range xsd:nonNegativeInteger .
+
+ph:countNewcomer a owl:DatatypeProperty ;
+    rdfs:label "iniciantes"@pt ;
+    rdfs:comment
+        "Subconjunto de ph:countAttendee: pessoas no primeiro pedal com o coletivo."@pt ;
+    rdfs:domain ph:Tour ;
+    rdfs:range xsd:nonNegativeInteger .
+
+ph:energyEstimate a owl:ObjectProperty ;
+    rdfs:label "estimativa de energia"@pt ;
+    rdfs:comment
+        "Energia estimada gasta no passeio. Unidade fica em qudt:hasUnit dentro do qudt:QuantityValue."@pt ;
+    rdfs:domain ph:Tour ;
+    rdfs:range qudt:QuantityValue .
+
+ph:estimate_quilojoules a owl:ObjectProperty ;
+    rdfs:label "estimativa em quilojoules (legado)"@pt ;
+    rdfs:comment
+        "Nome legado em snake_case. Preferir ph:energyEstimate; a unidade não precisa estar no nome (vive em qudt:hasUnit)."@pt ;
+    rdfs:domain ph:Tour ;
+    rdfs:range qudt:QuantityValue ;
+    owl:equivalentProperty ph:energyEstimate ;
+    owl:deprecated true .
+
+ph:intensityClassification a owl:DatatypeProperty ;
+    rdfs:label "classificação de intensidade"@pt ;
+    rdfs:comment
+        "Rótulo qualitativo da intensidade (ex.: 'Endorfinado'). Anexado a um qudt:QuantityValue."@pt ;
+    rdfs:domain qudt:QuantityValue ;
+    rdfs:range xsd:string .
+
+# =====================================================================
+# Propriedades — Foto (ph:Image)
+# =====================================================================
+
+ph:capturedDuring a owl:ObjectProperty ;
+    rdfs:label "registrada durante"@pt ;
+    rdfs:comment
+        "Liga a foto ao passeio em que foi tirada."@pt ;
+    rdfs:domain ph:Image ;
+    rdfs:range ph:Tour ;
+    rdfs:subPropertyOf prov:wasGeneratedBy .
+
+# =====================================================================
+# Propriedades — Filiação a série (ph:Association)
+# =====================================================================
+# Sucessores propostos para os usos atuais
+# ( `schema:EventSeries` como predicado e `ph:EventSeriesSequenceNumber`
+#   em PascalCase). Mantemos os legados como deprecados.
+
+ph:inSeriesEdition a owl:ObjectProperty ;
+    rdfs:label "edição na série"@pt ;
+    rdfs:comment
+        "Liga um passeio à filiação que registra sua posição em uma série de eventos. Um passeio pode pertencer a mais de uma série (cada uma com sua Association)."@pt ;
+    rdfs:domain ph:Tour ;
+    rdfs:range ph:Association .
+
+ph:inEventSeries a owl:ObjectProperty ;
+    rdfs:label "na série"@pt ;
+    rdfs:comment
+        "Série de eventos à qual o passeio pertence. Substitui o uso (incorreto) de schema:EventSeries como predicado."@pt ;
+    rdfs:domain ph:Association ;
+    rdfs:range schema:EventSeries ;
+    rdfs:subPropertyOf schema:partOfSeries .
+
+ph:sequenceInSeries a owl:DatatypeProperty ;
+    rdfs:label "posição na série"@pt ;
+    rdfs:comment
+        "Número ordinal na sequência da série (1 = primeira edição). Substitui ph:EventSeriesSequenceNumber."@pt ;
+    rdfs:domain ph:Association ;
+    rdfs:range xsd:positiveInteger ;
+    rdfs:subPropertyOf schema:position .
+
+ph:EventSeriesSequenceNumber a owl:DatatypeProperty ;
+    rdfs:label "posição na série (legado)"@pt ;
+    rdfs:comment
+        "Nome legado em PascalCase (próprio de classes, não propriedades). Preferir ph:sequenceInSeries."@pt ;
+    owl:equivalentProperty ph:sequenceInSeries ;
+    owl:deprecated true .

@@ -1,0 +1,286 @@
+@prefix sh: <http://www.w3.org/ns/shacl#> .
+@prefix ph: <https://pedalhidrografi.co/terms#> .
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix schema: <https://schema.org/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+@prefix geo: <http://www.opengis.net/ont/geosparql#> .
+@prefix sf: <http://www.opengis.net/ont/sf#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix exif: <http://www.w3.org/2003/12/exif/ns#> .
+@prefix qudt: <http://qudt.org/schema/qudt/> .
+@prefix nfo: <http://www.semanticdesktop.org/ontologies/2007/03/22/nfo#> .
+
+ph:ImageShape a sh:NodeShape ;
+    sh:targetClass ph:Image ;
+    sh:property [
+        sh:path dcterms:date ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+        sh:message "Foto precisa de um único timestamp (schema:dateCreated)."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:locationCreated ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class schema:GeoCoordinates ;
+        sh:message "Foto precisa de uma única coordenada GPS (ph:capturedAt → schema:GeoCoordinates)."@pt ;
+    ] ;
+    sh:property [
+        sh:path exif:gpsImgDirection ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive 0 ;
+        sh:maxExclusive 360 ;
+        sh:message "Ideal: declarar direção (ph:bearing, 0–360°)."@pt ;
+    ] ;
+    sh:property [
+        sh:path exif:focalLengthIn35mmFilm ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minExclusive 0 ;
+        sh:maxInclusive 180 ;
+        sh:message "Ideal: declarar campo de visão (ph:fieldOfView, graus)."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:capturedDuring ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:class ph:Tour ;
+        sh:message "Ideal: associar a foto a um passeio."@pt ;
+    ] ;
+    sh:property [
+        sh:path prov:wasAttributedTo ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:class schema:Person ;
+        sh:message "Foto de autora (prov:wasAttributedTo)."@pt ;
+    ] ;
+    sh:property [
+        sh:path dcterms:license ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Foto precisa de exatamente uma licença (IRI, ex.: CC BY-SA 4.0)."@pt ;
+    ] ;
+    sh:property [
+        sh:path nfo:hasHash ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class nfo:FileHash ;
+        sh:message "Ideal: declarar hash do arquivo (nfo:FileHash)."@pt ;
+    ] ;
+    sh:property [
+        sh:path pav:providedBy ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:class schema:Person ;
+        sh:message "Foto precisa de proveniência (pav:providedBy)."@pt ;
+    ] .
+
+ph:TourShape a sh:NodeShape ;
+    sh:targetClass ph:Tour ;
+    sh:property [
+        sh:path dcterms:title ;
+        sh:severity sh:Violation ;
+        sh:datatype xsd:string ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Passeio precisa de nome (schema:dateCreated)."@pt ;
+    ] ;
+    sh:property [
+        sh:path dcterms:date ;
+        sh:severity sh:Violation ;
+        sh:datatype xsd:dateTime ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:message "Passeio precisa de data-hora (schema:dateCreated)."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:linkRoute ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:class ph:RouteReference ;
+        sh:message "Passeio precisa de uma referência a rota (ph:linkRoute → ph:RouteReference)."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:organizer ;
+        sh:severity sh:Warning ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Se declarado, schema:organizer deve apontar para uma Pessoa/Organização."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:inSeriesEdition ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:class ph:Association ;
+        sh:message "Passeio precisa de filiação a série (ph:inSeriesEdition → ph:Association)."@pt ;
+    ] ;
+    sh:property [
+        sh:path prov:wasAttributedTo ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:class schema:Person ;
+        sh:message "Passeio de autores (prov:wasAttributedTo)."@pt ;
+    ] ;
+    sh:property [
+        sh:path pav:providedBy ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:class schema:Person ;
+        sh:message "Passeio precisa de proveniência (pav:providedBy)."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:linkInstagram ;
+        sh:severity sh:Warning ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:anyURI ;
+        sh:message "Ideal: declarar link do Instagram."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:countAttendee ;
+        sh:severity sh:Warning ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+        sh:message "Ideal: número de participantes (ph:countAttendee)."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:countNewcomer ;
+        sh:severity sh:Warning ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:integer ;
+        sh:minInclusive 0 ;
+        sh:message "Ideal: número de iniciantes (ph:countNewcomer)."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:energyEstimate ;
+        sh:severity sh:Warning ;
+        sh:maxCount 1 ;
+        sh:class qudt:QuantityValue ;
+        sh:message "Ideal: estimativa de energia (qudt:QuantityValue)."@pt ;
+    ] .
+
+ph:RouteReferenceShape a sh:NodeShape ;
+    sh:targetClass ph:RouteReference ;
+    sh:property [
+        sh:path schema:url ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Rota precisa de URL (schema:url) como IRI."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:provider ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class schema:Organization ;
+        sh:message "Rota precisa de provedor (schema:provider — ex.: ph:rwgps, ph:strava)."@pt ;
+    ] .
+
+ph:GeoCoordinatesShape a sh:NodeShape ;
+    sh:targetClass schema:GeoCoordinates ;
+    sh:property [
+        sh:path schema:latitude ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive -90 ;
+        sh:maxInclusive 90 ;
+        sh:message "Coordenada precisa de latitude (-90 a 90)."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:longitude ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:minInclusive -180 ;
+        sh:maxInclusive 180 ;
+        sh:message "Coordenada precisa de longitude (-180 a 180)."@pt ;
+    ] .
+
+ph:FileHashShape a sh:NodeShape ;
+    sh:targetClass nfo:FileHash ;
+    sh:property [
+        sh:path nfo:hashAlgorithm ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Hash precisa de algoritmo (nfo:hashAlgorithm)."@pt ;
+    ] ;
+    sh:property [
+        sh:path nfo:hashValue ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Hash precisa de valor (nfo:hashValue)."@pt ;
+    ] .
+
+ph:QuantityValueShape a sh:NodeShape ;
+    sh:targetClass qudt:QuantityValue ;
+    sh:property [
+        sh:path qudt:numericValue ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:decimal ;
+        sh:message "Quantidade precisa de valor numérico."@pt ;
+    ] ;
+    sh:property [
+        sh:path qudt:hasUnit ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Quantidade precisa de unidade (qudt:hasUnit)."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:intensityClassification ;
+        sh:severity sh:Warning ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Ideal: classificação de intensidade."@pt ;
+    ] .
+
+ph:EnergyEstimateShape a sh:NodeShape ;
+    sh:targetObjectsOf ph:energyEstimate ;
+    sh:property [
+        sh:path qudt:numericValue ;
+        sh:severity sh:Violation ;
+        sh:minInclusive 0 ;
+        sh:message "Energia estimada não pode ser negativa."@pt ;
+    ] ;
+    sh:sparql [
+        sh:severity sh:Violation ;
+        sh:message "Classificação de intensidade não bate com a faixa: 0–150 → 'De boa', 150–300 → 'Ok', 300–500 → 'Endorfinado', 500–1000 → 'Frito', ≥1000 → 'Insano'."@pt ;
+        sh:select """
+            PREFIX qudt: <http://qudt.org/schema/qudt/>
+            PREFIX ph:   <https://pedalhidrografi.co/terms#>
+            SELECT $this ?value WHERE {
+                $this qudt:numericValue ?value ;
+                      ph:intensityClassification ?actual .
+                BIND(
+                    IF(?value < 150,  "De boa",
+                    IF(?value < 300,  "Ok",
+                    IF(?value < 500,  "Endorfinado",
+                    IF(?value < 1000, "Frito",
+                    "Insano")))) AS ?expected)
+                FILTER (?expected != ?actual)
+            }
+        """ ;
+    ] .
