@@ -159,14 +159,17 @@ python3 -m http.server -d research/photos-rdf 8000
 ### CDN dependencies
 
 | Lib | Purpose |
-|-----|---------|
+| --- | ------- |
 | `exifr` | EXIF parsing (date, GPS, bearing, focal length) |
 | `n3` | Turtle parsing (loads `data/tours.ttl` + `data/initial-data.ttl` for the catalog) |
 | `tom-select` | Searchable, multi-select dropdown with on-the-fly creation for people |
 | `jszip` | Build the update-kit ZIP |
+| `heic2any` | HEIC → JPEG conversion in the browser (libheif-wasm) |
 
-All four are tolerated as missing: form degrades to manual entry if any CDN is
-unreachable.
+All five are tolerated as missing: form degrades to manual entry if any CDN is
+unreachable. `heic2any` is the one exception that hard-blocks a specific code
+path — HEIC files are rejected with a notice if the CDN is down (no fallback,
+since Chrome/Firefox can't decode HEIC natively).
 
 ### Perceptual hash (pHash)
 
@@ -234,6 +237,28 @@ toggles:
 
 Compression loop tries quality 0.85 → 0.3 at progressively smaller max
 dimensions (2400 → 500 px) until the blob fits the 500 KB target.
+
+### EXIF propagation
+
+Canvas `toBlob('image/jpeg')` always drops the source's APP1/Exif segment.
+To keep date / GPS / camera fields in the rendered artefacts, we splice the
+source JPEG's APP1 segment into the re-encoded blob (`copyExifSegment`,
+~30 lines, no extra CDN dep):
+
+| Artefact | EXIF when `!anon` | EXIF when `anon` |
+| -------- | ----------------- | ---------------- |
+| `original.<ext>` (raw) | preserved (untouched) | n/a — `anon` forces re-encode |
+| `original.jpg` (compressed) | propagated from source | stripped |
+| `original.jpg` (anon only) | n/a | stripped |
+| `large.jpg` | propagated from source | stripped |
+| `thumb.jpg` | always stripped | always stripped |
+
+`thumb.jpg` deliberately stays clean — it's the public 256 px preview and
+shouldn't carry GPS. `anon` is the single privacy switch; when set, every
+re-encoded output is bare.
+
+Limitation: APP1 splicing only works when the source is itself a JPEG. HEIC /
+PNG / WebP sources skip the copy silently (returns the target blob unchanged).
 
 ### Defaults panel
 

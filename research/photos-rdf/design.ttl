@@ -1,0 +1,99 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix prov:    <http://www.w3.org/ns/prov#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix schema:  <https://schema.org/> .
+@prefix sh:      <http://www.w3.org/ns/shacl#> .
+
+# Self-description of the photos-rdf module. Narrative rationale lives in
+# DESIGN.md; this graph captures the dependency skeleton and is self-validated
+# by the SHACL shape at the bottom (run `pyshacl design.ttl -s design.ttl`).
+#
+# Convention: relative IRIs name actual files in this directory. PROV-O is
+# the spine — Entity (file), Plan (script source), Activity (build step).
+# Each Activity carries an rdfs:seeAlso back to its DESIGN.md anchor; the
+# shape enforces this.
+
+# ---- Source artefacts ---------------------------------------------------
+
+<ontology.ttl> a prov:Entity ;
+    dcterms:title "Vocabulary (ph:)" ;
+    rdfs:seeAlso <DESIGN.md#1-vocabulary-strategy> .
+
+<shapes.ttl> a prov:Entity ;
+    dcterms:title "SHACL shapes" ;
+    rdfs:seeAlso <DESIGN.md#2-shapes--validation> ;
+    prov:wasDerivedFrom <ontology.ttl> .
+
+<data/tours.csv> a prov:Entity ;
+    dcterms:title "Tour spreadsheet dump (input)" .
+
+<data/initial-data.ttl> a prov:Entity ;
+    dcterms:title "Bootstrap series + person data" .
+
+<build-tours.py> a prov:Plan, schema:SoftwareSourceCode ;
+    dcterms:title "Tours converter (CSV → Turtle)" .
+
+<upload-form.html> a prov:Plan, schema:SoftwareSourceCode ;
+    dcterms:title "Upload form (RDF + kit-ZIP builder)" .
+
+# ---- Build-time ---------------------------------------------------------
+
+<#buildTours> a prov:Activity ;
+    rdfs:label "Run build-tours.py" ;
+    rdfs:seeAlso <DESIGN.md#4-build-pipeline-build-tourspy> ;
+    prov:used <data/tours.csv>, <ontology.ttl> ;
+    prov:wasAssociatedWith <build-tours.py> ;
+    prov:generated <data/tours.ttl> .
+
+<data/tours.ttl> a prov:Entity ;
+    dcterms:title "Generated tour graph" ;
+    prov:wasGeneratedBy <#buildTours> .
+
+# ---- Runtime (in-browser session) ---------------------------------------
+
+<#uploadSession> a prov:Activity ;
+    rdfs:label "User session producing an update kit" ;
+    rdfs:seeAlso <DESIGN.md#5-upload-form-upload-formhtml> ;
+    prov:used <ontology.ttl>, <shapes.ttl>,
+              <data/tours.ttl>, <data/initial-data.ttl> ;
+    prov:wasAssociatedWith <upload-form.html> ;
+    prov:generated <#updateKit> .
+
+<#updateKit> a prov:Entity ;
+    dcterms:title "Update kit ZIP (update.ttl + photos/<phash>/{original,large,thumb})" ;
+    rdfs:seeAlso <DESIGN.md#update-kit-zip> .
+
+# ---- Self-reference -----------------------------------------------------
+
+<design.ttl> a prov:Entity ;
+    dcterms:title "Module self-description (this file)" ;
+    rdfs:seeAlso <DESIGN.md> .
+
+# ---- Self-validation ----------------------------------------------------
+
+<#ActivityShape> a sh:NodeShape ;
+    sh:targetClass prov:Activity ;
+    sh:property [
+        sh:path rdfs:seeAlso ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "Activity must link back to a DESIGN.md anchor."
+    ] ;
+    sh:property [
+        sh:path prov:used ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Activity declares no inputs."
+    ] ;
+    sh:property [
+        sh:path prov:generated ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Activity declares no outputs."
+    ] ;
+    sh:property [
+        sh:path prov:wasAssociatedWith ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Activity should name the script/plan that carries it out."
+    ] .

@@ -169,6 +169,13 @@ try {
   JSZip = (await import('https://esm.sh/jszip@3.10.1')).default;
 } catch (_) { console.warn('JSZip indisponível — download de kit ZIP desativado.'); }
 
+// heic2any: HEIC → JPEG no cliente. Chrome/Firefox não decodificam HEIC
+// nativamente; sem isto, `createImageBitmap` falha em arquivos de iPhone.
+let heic2any = null;
+try {
+  heic2any = (await import('https://esm.sh/heic2any@0.0.4')).default;
+} catch (_) { console.warn('heic2any indisponível — uploads HEIC só funcionarão no Safari.'); }
+
 // ===================== Helpers básicos =================================
 function turtle_escape(s) {
   return s.replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/\n/g, '\\n');
@@ -285,6 +292,40 @@ async function makeThumbnail(bitmap, dim = 256) {
 async function anonymizeJpeg(bitmap, q = 0.92) {
   // re-encoda sem usar EXIF da origem → strip de metadados
   return await encodeJpeg(drawToCanvas(bitmap, Math.max(bitmap.width, bitmap.height)), q);
+}
+
+// Copia o APP1/Exif do JPEG de origem para um blob JPEG já re-encodado pelo
+// canvas (que sempre nasce sem metadados). Se a origem não for JPEG ou não
+// tiver Exif, devolve o blob alvo intacto.
+async function copyExifSegment(sourceFile, targetBlob) {
+  const src = new Uint8Array(await sourceFile.arrayBuffer());
+  if (src.length < 4 || src[0] !== 0xFF || src[1] !== 0xD8) return targetBlob;
+
+  let exifSeg = null;
+  for (let i = 2; i < src.length - 4; ) {
+    if (src[i] !== 0xFF) break;
+    const marker = src[i + 1];
+    if (marker === 0xDA || marker === 0xD9) break;   // SOS / EOI — acabou o cabeçalho
+    const segLen = (src[i + 2] << 8) | src[i + 3];
+    if (segLen < 2) break;
+    if (marker === 0xE1 &&
+        src[i + 4] === 0x45 && src[i + 5] === 0x78 &&    // 'E' 'x'
+        src[i + 6] === 0x69 && src[i + 7] === 0x66 &&    // 'i' 'f'
+        src[i + 8] === 0x00 && src[i + 9] === 0x00) {
+      exifSeg = src.slice(i, i + 2 + segLen);
+      break;
+    }
+    i += 2 + segLen;
+  }
+  if (!exifSeg) return targetBlob;
+
+  const tgt = new Uint8Array(await targetBlob.arrayBuffer());
+  if (tgt[0] !== 0xFF || tgt[1] !== 0xD8) return targetBlob;
+  const out = new Uint8Array(2 + exifSeg.length + (tgt.length - 2));
+  out.set(tgt.subarray(0, 2), 0);
+  out.set(exifSeg, 2);
+  out.set(tgt.subarray(2), 2 + exifSeg.length);
+  return new Blob([out], { type: 'image/jpeg' });
 }
 
 // ===================== Catálogo (tours + persons) ======================
@@ -597,7 +638,32 @@ function notify(html, kind = 'warn') {
 }
 function clearNotices() { $('#notices').innerHTML = ''; }
 
+function isHeicFile(file) {
+  const t = (file.type || '').toLowerCase();
+  if (t === 'image/heic' || t === 'image/heif') return true;
+  return /\.(heic|heif)$/i.test(file.name);
+}
+
 async function createCard(file, defaults) {
+  // 0) HEIC → JPEG. Substituímos `file` para que o resto do pipeline (pHash,
+  //    EXIF, compressão, splicer Exif) trate como JPEG. A conversão preserva
+  //    os metadados, então o splicer continua propagando-os para large/original.
+  if (isHeicFile(file)) {
+    if (!heic2any) {
+      notify(`<strong>${file.name}</strong>: HEIC requer heic2any (CDN indisponível).`, 'err');
+      return null;
+    }
+    try {
+      const out = await heic2any({ blob: file, toType: 'image/jpeg', quality: 0.92 });
+      const blob = Array.isArray(out) ? out[0] : out;
+      const newName = file.name.replace(/\.(heic|heif)$/i, '.jpg');
+      file = new File([blob], newName, { type: 'image/jpeg' });
+    } catch (e) {
+      notify(`<strong>${file.name}</strong>: conversão HEIC falhou (${e.message}).`, 'err');
+      return null;
+    }
+  }
+
   // 1) Decodifica e computa pHash ANTES de criar DOM/TS,
   //    para podermos rejeitar duplicatas barato.
   let bitmap, phash;
@@ -824,6 +890,7 @@ async function buildKit() {
     let originalBlob, originalName;
     if (comp) {
       originalBlob = await compressToTarget(card.bitmap, COMPRESS_TARGET_BYTES);
+      if (!anon) originalBlob = await copyExifSegment(card.file, originalBlob);
       originalName = 'original.jpg';
     } else if (anon) {
       originalBlob = await anonymizeJpeg(card.bitmap);
@@ -835,8 +902,10 @@ async function buildKit() {
     }
     folder.file(originalName, originalBlob);
 
-    // Large (≤500 kB) — sempre
-    folder.file('large.jpg', await compressToTarget(card.bitmap, COMPRESS_TARGET_BYTES));
+    // Large (≤500 kB) — sempre; propaga Exif da origem se não anonimizado
+    let largeBlob = await compressToTarget(card.bitmap, COMPRESS_TARGET_BYTES);
+    if (!anon) largeBlob = await copyExifSegment(card.file, largeBlob);
+    folder.file('large.jpg', largeBlob);
 
     // Thumbnail — sempre
     folder.file('thumb.jpg', await makeThumbnail(card.bitmap));

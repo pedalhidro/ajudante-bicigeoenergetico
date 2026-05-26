@@ -1,0 +1,227 @@
+@prefix dcterms: <http://purl.org/dc/terms/> .
+@prefix ph:      <https://pedalhidrografi.co/terms#> .
+@prefix rdfs:    <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sh:      <http://www.w3.org/ns/shacl#> .
+@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+
+# One-time inventory of design decisions implicit in DESIGN.md prose.
+# Each ph:Decision surfaces a choice + rationale + alternatives + DESIGN.md
+# anchor. Status: ph:Accepted, ph:Superseded, ph:Deprecated, ph:Proposed.
+# Self-validates: `pyshacl decisions.ttl -s decisions.ttl`.
+#
+# Dates are best-effort retroactive — refine from git history if it matters.
+
+# ===== Ontology / shapes decisions ======================================
+
+<#decReifySeries> a ph:Decision ;
+    dcterms:title "Reify Tour↔EventSeries via ph:Association" ;
+    ph:rationale "A Tour can belong to multiple series (e.g. PH-83 was also BP-3) with per-series sequence numbers. A single direct predicate can't carry that fan-out cleanly." ;
+    ph:alternativesConsidered
+        "Direct schema:organizer Tour → Series (the original, replaced — see decOriginalSeriesOrganizer)",
+        "Per-series predicates (ph:phSequence, ph:bpSequence, …) — exhaustive and brittle" ;
+    ph:appliesTo <ontology.ttl> ;
+    ph:supersedes <#decOriginalSeriesOrganizer> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-02-20"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#reification-of-series-membership> .
+
+<#decOriginalSeriesOrganizer> a ph:Decision ;
+    dcterms:title "schema:organizer for Tour → Series membership (original)" ;
+    ph:rationale "Initial modeling reused schema:organizer to point at the series Association. Semantically wrong: organizer means 'who organized', not 'what series'. Worked until multi-series tours appeared." ;
+    ph:status ph:Superseded ;
+    ph:supersededBy <#decReifySeries> ;
+    dcterms:date "2026-01-15"^^xsd:date .
+
+<#decLicenseAsIri> a ph:Decision ;
+    dcterms:title "License values are IRIs, not strings" ;
+    ph:rationale "Canonical Creative Commons URLs are dereferenceable and machine-comparable; SHACL enforces `sh:nodeKind sh:IRI`." ;
+    ph:alternativesConsidered "Free-text shorthand ('cc-by-sa-4.0') — needs normalization, no dereference, easier to typo" ;
+    ph:appliesTo <shapes.ttl> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-02-20"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#2-shapes--validation> .
+
+<#decImageIriIsPhash> a ph:Decision ;
+    dcterms:title "Image IRI is phd:image_<full 16-hex pHash>" ;
+    ph:rationale "Near-duplicate uploads collide on the IRI, producing the cluster behavior the app expects (same photo across voices is recognized as one entity)." ;
+    ph:alternativesConsidered
+        "UUIDv4 per upload — no clustering; separate ph:cluster predicate needed",
+        "SHA-256 of bytes — collapses identical files only, not re-encodings" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-03-01"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#iri-schemes> .
+
+# ===== Build / validation decisions =====================================
+
+<#decMergeDataAndOnt> a ph:Decision ;
+    dcterms:title "SHACL validation always passes (data + ont) as data_graph" ;
+    ph:rationale "pyshacl's ont_graph makes axioms available for inference but does NOT expose instance triples in it to sh:class checks. Discovered when ph:rwgps (declared only in ontology.ttl) wasn't matched by RouteReferenceShape." ;
+    ph:alternativesConsidered "Duplicate vocab-level instances into every data file — DRY violation" ;
+    ph:appliesTo <shapes.ttl> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-03-10"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#validation-pipeline-gotcha> .
+
+# ===== UX behavior decisions ============================================
+
+<#decPhashOverSha> a ph:Decision ;
+    dcterms:title "64-bit perceptual hash (pHash) for image identity" ;
+    ph:rationale "Goal is near-duplicate clustering, not byte equality. Hacker-Factor-style pHash (32×32 grey → 2D DCT → top-left 8×8 vs median) is robust to brightness/contrast/mild rotation and re-encoding." ;
+    ph:alternativesConsidered
+        "SHA-256 — only matches identical bytes; re-encoded twins look new",
+        "dHash (gradient) — works but more sensitive to small crops than pHash" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-03-01"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#perceptual-hash-phash> .
+
+<#decPhashDupThreshold> a ph:Decision ;
+    dcterms:title "PHASH_DUP_THRESHOLD = 5 (Hamming)" ;
+    ph:rationale "Empirical calibration: 0 = identical; 5 = 'same photo processed differently' (re-encoded, slightly cropped); ≥10 starts collapsing legitimately distinct burst-mode frames." ;
+    ph:alternativesConsidered
+        "Threshold 0 — too strict, rejects re-encoded versions",
+        "Threshold 10 — collapses sequential burst frames that should stay distinct" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-03-01"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#perceptual-hash-phash> .
+
+<#decAutoDetectWindow> a ph:Decision ;
+    dcterms:title "Tour auto-detect window: photo ∈ [tourStart − 2h, tourStart + 12h]" ;
+    ph:rationale "Tours start mornings; photos can be uploaded throughout the day and evening. −2h covers pre-ride staging; +12h covers post-ride coverage without overlapping the next day's tour." ;
+    ph:alternativesConsidered
+        "Symmetric ±6h — misses late-evening uploads",
+        "Same-calendar-day — fragile across timezone edges" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-03-01"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#tour-auto-detection> .
+
+<#decDefaultsNonRetroactive> a ph:Decision ;
+    dcterms:title "Defaults panel applies at card-creation only, never retroactively" ;
+    ph:rationale "Avoids surprise mutation of cards the user has already edited per-card. Re-upload re-applies." ;
+    ph:alternativesConsidered "Retroactive sync — surprises users mid-edit; complicates undo" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-03-15"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#defaults-panel> .
+
+<#decExifPropagation> a ph:Decision ;
+    dcterms:title "EXIF propagates to large.jpg and compressed original.jpg; thumb.jpg always stripped" ;
+    ph:rationale "Canvas re-encode strips APP1 by default. Splicing the source's APP1 preserves date/GPS/camera in the visible artefacts. Thumb stays bare — it's the public 256 px preview and shouldn't leak GPS. Anonymize remains the single privacy switch that strips everywhere." ;
+    ph:alternativesConsidered
+        "Strip EXIF everywhere — loses date/GPS that users explicitly want kept",
+        "Preserve in thumb too — leaks GPS in a public preview" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-05-25"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#exif-propagation> .
+
+<#decHeicReplaceFile> a ph:Decision ;
+    dcterms:title "HEIC → JPEG conversion replaces card.file; downstream pipeline stays JPEG-only" ;
+    ph:rationale "Pipeline simplicity: pHash, EXIF parse, compression, APP1 splicer all assume JPEG. libheif preserves metadata into the converted JPEG, so the existing splicer transparently propagates EXIF as well — one code path, two source formats." ;
+    ph:alternativesConsidered
+        "Separate HEIC code path everywhere — duplicates compression / splicing logic",
+        "Reject HEIC outright — alienates iPhone uploaders, the dominant source of photos" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-05-25"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#cdn-dependencies> .
+
+<#decApp1InlineSplice> a ph:Decision ;
+    dcterms:title "Splice JPEG APP1 by hand (no piexifjs)" ;
+    ph:rationale "~30 lines of segment surgery vs. a ~25 KB CDN dep that needs binary-string round-trips. Source = canvas-re-encoded JPEG = exactly the shape the hand-rolled splicer needs." ;
+    ph:alternativesConsidered "piexifjs — full read/write, but adds a dep plus binary-string conversion step" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-05-25"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#exif-propagation> .
+
+# ===== Layout / surface decisions =======================================
+
+<#decUploadZoneBelow> a ph:Decision ;
+    dcterms:title "Upload zone sits below the card grid (not as a fixed toolbar)" ;
+    ph:rationale "Picker moves downward as cards accumulate — affordance follows the workspace. Notices live in the picker fieldset so messages are adjacent to the action that caused them." ;
+    ph:alternativesConsidered
+        "Sticky toolbar at top — always visible but disconnected from new cards",
+        "Floating action button bottom-right — saves space but requires extra interaction" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-03-15"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#card-lifecycle> .
+
+<#decCardGridAutofit> a ph:Decision ;
+    dcterms:title "Cards in CSS Grid auto-fit, minmax(360 px, 1fr)" ;
+    ph:rationale "Single-breakpoint reflow without media queries. 360 px is the minimum width that keeps the lat/lon row from ellipsizing." ;
+    ph:alternativesConsidered
+        "Fixed N-column layout per breakpoint — needs media queries; brittle",
+        "Flexbox wrap — won't equalize column widths" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-03-15"^^xsd:date .
+
+<#decPickerBusyGuard> a ph:Decision ;
+    dcterms:title "pickerBusy flag guards against double `change` events" ;
+    ph:rationale "Safari fires `change` twice on a single file dialog. A boolean re-entry guard is cheaper than debouncing and avoids hiding the underlying concurrency." ;
+    ph:alternativesConsidered
+        "setTimeout debounce — adds latency",
+        "UA-sniff Safari and skip the second event — fragile" ;
+    ph:appliesTo <upload-form.html> ;
+    ph:status ph:Accepted ;
+    dcterms:date "2026-03-15"^^xsd:date ;
+    rdfs:seeAlso <DESIGN.md#card-lifecycle> .
+
+# ===== Vocabulary helpers ===============================================
+
+ph:Decision a rdfs:Class ;
+    rdfs:label "Design decision" ;
+    rdfs:comment "A documented choice with rationale, alternatives, and status. Surfaces implicit ADRs from DESIGN.md prose so they are queryable and SHACL-checkable." .
+
+ph:Accepted    a ph:DecisionStatus ; rdfs:label "Accepted" .
+ph:Superseded  a ph:DecisionStatus ; rdfs:label "Superseded" .
+ph:Deprecated  a ph:DecisionStatus ; rdfs:label "Deprecated" .
+ph:Proposed    a ph:DecisionStatus ; rdfs:label "Proposed" .
+
+# ===== Self-validation ==================================================
+
+<#DecisionShape> a sh:NodeShape ;
+    sh:targetClass ph:Decision ;
+    sh:property [
+        sh:path dcterms:title ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "Decision must have dcterms:title."
+    ] ;
+    sh:property [
+        sh:path ph:rationale ;
+        sh:minCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "Decision must explain *why* (ph:rationale)."
+    ] ;
+    sh:property [
+        sh:path ph:status ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:severity sh:Violation ;
+        sh:message "Decision must have exactly one ph:status."
+    ] ;
+    sh:property [
+        sh:path ph:alternativesConsidered ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Decision should declare at least one alternative considered."
+    ] ;
+    sh:property [
+        sh:path dcterms:date ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:datatype xsd:date ;
+        sh:message "Decision should carry a dcterms:date so it can be ordered."
+    ] ;
+    sh:property [
+        sh:path rdfs:seeAlso ;
+        sh:minCount 1 ;
+        sh:severity sh:Warning ;
+        sh:message "Decision should link back to its DESIGN.md anchor."
+    ] .

@@ -121,6 +121,12 @@ ph:intensityClassification a owl:DatatypeProperty ;
 # Propriedades — Foto (ph:Image)
 # =====================================================================
 
+ph:Upload a owl:Class ;
+    rdfs:label "Envio"@pt ;
+    rdfs:comment
+        "Atividade server-side: o ato de receber + persistir um ph:Image. Cada upload aparece como uma activity própria, com timestamp do envio."@pt ;
+    rdfs:subClassOf prov:Activity .
+
 ph:anonymized a owl:DatatypeProperty ;
     rdfs:label "anonimizada"@pt ;
     rdfs:comment

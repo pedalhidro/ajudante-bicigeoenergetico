@@ -109,7 +109,7 @@ ph:TourShape a sh:NodeShape ;
         sh:datatype xsd:string ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-        sh:message "Passeio precisa de nome (schema:dateCreated)."@pt ;
+        sh:message "Passeio precisa de nome (dcterms:title)."@pt ;
     ] ;
     sh:property [
         sh:path dcterms:date ;
@@ -117,7 +117,7 @@ ph:TourShape a sh:NodeShape ;
         sh:datatype xsd:dateTime ;
         sh:minCount 1 ;
         sh:maxCount 1 ;
-        sh:message "Passeio precisa de data-hora (schema:dateCreated)."@pt ;
+        sh:message "Passeio precisa de data-hora (dcterms:date)."@pt ;
     ] ;
     sh:property [
         sh:path ph:linkRoute ;
