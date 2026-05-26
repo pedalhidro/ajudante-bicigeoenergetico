@@ -1,15 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!--
+    Pedal Hidrográfico — app icon (v3, "wild watershed").
+    Sem coroa central. Bacias hidrográficas assimétricas: rios em ciano
+    (com elos de corrente) descendo em vários ângulos, cumeadas em marrom
+    tracejado dividindo as bacias, selas amarelas marcando os pontos onde
+    a cumeada baixa e a água troca de bacia, mais piquetes de pico nos
+    cantos. Sem simetria — o caos lembra uma carta topográfica de campo.
+  -->
   <defs>
-    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#1a2440"/>
-      <stop offset="38%" stop-color="#5a3050"/>
-      <stop offset="62%" stop-color="#e85a3e"/>
-      <stop offset="80%" stop-color="#ffb547"/>
-      <stop offset="100%" stop-color="#ffd07a"/>
+    <linearGradient id="earth" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#8a5a37"/>
+      <stop offset="55%"  stop-color="#c08c5d"/>
+      <stop offset="100%" stop-color="#e6b889"/>
     </linearGradient>
+    <radialGradient id="sun" cx="0.28" cy="0.22" r="0.42">
+      <stop offset="0%"   stop-color="#ffe066" stop-opacity="0.55"/>
+      <stop offset="55%"  stop-color="#ffa730" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#ffa730" stop-opacity="0"/>
+    </radialGradient>
     <linearGradient id="water" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%"  stop-color="#2da9ff"/>
-      <stop offset="100%" stop-color="#1d4f7a"/>
+      <stop offset="0%"   stop-color="#3aa3d8"/>
+      <stop offset="100%" stop-color="#1d6a9c"/>
     </linearGradient>
     <clipPath id="round">
       <rect width="512" height="512" rx="96" ry="96"/>
@@ -17,95 +28,116 @@
   </defs>
 
   <g clip-path="url(#round)">
-    <!-- Sky: navy → magenta → orange → yellow (Paulista sunset) -->
-    <rect width="512" height="512" fill="url(#sky)"/>
+    <!-- Fundo terra -->
+    <rect width="512" height="512" fill="url(#earth)"/>
 
-    <!-- Setting sun -->
-    <circle cx="370" cy="195" r="46" fill="#fff5cc" opacity="0.95"/>
-    <circle cx="370" cy="195" r="74" fill="#ffd380" opacity="0.32"/>
-
-    <!-- Far rolling hills -->
-    <path d="M -10 270 Q 90 230 180 250 T 360 240 T 522 260 L 522 330 L -10 330 Z"
-          fill="#1c2540" opacity="0.7"/>
-
-    <!-- Closer hills -->
-    <path d="M -10 320 Q 80 290 180 305 T 360 300 T 522 318 L 522 380 L -10 380 Z"
-          fill="#0d1424"/>
-
-    <!-- City skyline: mix of tall, short, narrow, wide buildings to
-         suggest São Paulo's contrasts (wealthy towers + small blocks). -->
-    <g fill="#080c18">
-      <!-- Left district -->
-      <rect x="38"  y="285" width="22" height="42"/>
-      <rect x="65"  y="270" width="26" height="57"/>
-      <rect x="95"  y="252" width="30" height="75"/>
-      <rect x="128" y="232" width="32" height="95"/>
-      <rect x="138" y="216" width="12" height="16"/>
-      <!-- Edifício Itália-style with triangle top -->
-      <rect x="166" y="245" width="40" height="82"/>
-      <polygon points="166,245 206,245 186,220"/>
-      <!-- Banespa-style with stepped crown -->
-      <rect x="214" y="252" width="36" height="75"/>
-      <rect x="223" y="234" width="20" height="18"/>
-      <rect x="229" y="222" width="8"  height="12"/>
-      <!-- Smaller residential cluster -->
-      <rect x="258" y="278" width="22" height="49"/>
-      <rect x="284" y="270" width="26" height="57"/>
-      <!-- Edifício Copan curve approximation -->
-      <path d="M 318 258 Q 350 252 384 258 Q 392 290 384 327 L 318 327 Q 310 290 318 258 Z"/>
-      <!-- Right district -->
-      <rect x="394" y="278" width="22" height="49"/>
-      <rect x="420" y="262" width="28" height="65"/>
-      <rect x="427" y="248" width="14" height="14"/>
-      <rect x="454" y="280" width="22" height="47"/>
-      <rect x="480" y="270" width="20" height="57"/>
+    <!-- Curvas de nível "tortas" — heterogêneas, sugerem relevo irregular -->
+    <g fill="none" stroke="#5e3b1f" stroke-opacity="0.17" stroke-width="2.5">
+      <path d="M -20 40  Q 90 30  180 60  Q 280 90  380 50  T 540 60"/>
+      <path d="M -20 95  Q 80 80  200 100 Q 320 120 430 90  T 540 100"/>
+      <path d="M -20 150 Q 100 140 220 155 Q 340 175 460 145 T 540 150"/>
+      <path d="M -20 360 Q 80 345 200 380 Q 320 400 430 365 T 540 375"/>
+      <path d="M -20 420 Q 100 405 220 435 Q 340 450 460 425 T 540 435"/>
+      <path d="M -20 478 Q 90 470 200 485 Q 320 495 430 478 T 540 482"/>
     </g>
 
-    <!-- Warm window lights (sparse) -->
-    <g fill="#ffe26b">
-      <rect x="143" y="260" width="3" height="3"/>
-      <rect x="150" y="276" width="3" height="3"/>
-      <rect x="143" y="292" width="3" height="3"/>
-      <rect x="150" y="308" width="3" height="3"/>
-      <rect x="178" y="270" width="3" height="3"/>
-      <rect x="190" y="290" width="3" height="3"/>
-      <rect x="226" y="280" width="3" height="3"/>
-      <rect x="240" y="295" width="3" height="3"/>
-      <rect x="333" y="278" width="3" height="3"/>
-      <rect x="350" y="295" width="3" height="3"/>
-      <rect x="365" y="280" width="3" height="3"/>
-      <rect x="430" y="280" width="3" height="3"/>
-      <rect x="438" y="295" width="3" height="3"/>
+    <!-- Halo solar no canto sup. esq. — energia descentrada -->
+    <circle cx="140" cy="115" r="200" fill="url(#sun)"/>
+
+    <!-- ── CUMEADAS (ridges) ──────────────────────────────────────────────
+         Três cumeadas em ângulos e comprimentos diferentes, marrom escuro
+         tracejado. Dividem o mapa em sub-bacias irregulares. -->
+    <g fill="none" stroke="#4a230f" stroke-width="15"
+       stroke-linecap="round" stroke-dasharray="22 15">
+      <!-- Cumeada principal — diagonal NO → SE, "Serra" do mapa -->
+      <path d="M 30 90 Q 180 105 290 200 Q 380 290 488 360"/>
+      <!-- Cumeada secundária — pé da serra subindo do SO -->
+      <path d="M 40 480 Q 110 410 175 365 Q 215 340 250 320"/>
+      <!-- Cumeada lateral — encosta nordeste -->
+      <path d="M 480 60 Q 430 160 420 240"/>
+    </g>
+    <!-- Highlight terra-claro nas cristas (suga luz no topo do dorso) -->
+    <g fill="none" stroke="#e6b889" stroke-width="4"
+       stroke-linecap="round" stroke-dasharray="3 33">
+      <path d="M 30 90 Q 180 105 290 200 Q 380 290 488 360"/>
+      <path d="M 40 480 Q 110 410 175 365 Q 215 340 250 320"/>
+      <path d="M 480 60 Q 430 160 420 240"/>
     </g>
 
-    <!-- Urban stream / hydrography accent -->
-    <path d="M -10 360 Q 80 340 180 360 T 380 365 T 522 350 L 522 472 Q 380 458 280 472 T 80 466 T -10 472 Z"
-          fill="url(#water)"/>
-    <path d="M 30 384 Q 100 376 180 384 T 360 390 T 500 382"
-          fill="none" stroke="#a3d9ff" stroke-width="2" opacity="0.7"/>
-    <path d="M 50 410 Q 130 404 200 410 T 380 414 T 480 406"
-          fill="none" stroke="#a3d9ff" stroke-width="1.5" opacity="0.5"/>
-    <path d="M 70 432 Q 150 426 220 432 T 400 436"
-          fill="none" stroke="#a3d9ff" stroke-width="1.2" opacity="0.4"/>
+    <!-- ── RIOS / corrente ────────────────────────────────────────────────
+         Múltiplos sistemas, ângulos diversos, tributários longos e curtos.
+         Cruzam as cumeadas só nas selas (boas práticas topo) — mas sem
+         purismo geométrico. -->
+    <g fill="none" stroke="url(#water)" stroke-width="22"
+       stroke-linecap="round" stroke-linejoin="round">
+      <!-- Rio principal: nasce no NE, desce em SW através do "alvéolo"
+           entre as duas cumeadas. -->
+      <path d="M 470 30 Q 425 80 395 145 Q 370 210 335 270 Q 295 340 230 395 Q 165 445 80 488"/>
+      <!-- Tributário grande do norte -->
+      <path d="M 290 40 Q 320 90 360 130 Q 380 145 395 145"/>
+      <!-- Tributário do leste -->
+      <path d="M 510 200 Q 460 215 415 230 Q 385 240 370 230 Q 360 220 335 270"/>
+      <!-- Tributário curto do interior -->
+      <path d="M 200 230 Q 260 250 295 270 Q 320 285 335 270"/>
+      <!-- Tributário do oeste, vindo de muito longe -->
+      <path d="M 20 260 Q 90 290 160 305 Q 200 315 230 395"/>
+      <!-- Sub-tributário do oeste, curto -->
+      <path d="M 30 380 Q 90 405 140 420 Q 170 435 165 445"/>
 
-    <!-- Bicycle (foreground, white silhouette) -->
-    <g transform="translate(150, 432)" fill="none" stroke="#ffffff"
-       stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="0"   cy="0" r="42"/>
-      <circle cx="142" cy="0" r="42"/>
-      <line x1="0"  y1="0"   x2="70" y2="-32"/>
-      <line x1="70" y1="-32" x2="142" y2="0"/>
-      <line x1="70" y1="-32" x2="94" y2="0"/>
-      <line x1="0"  y1="0"   x2="94" y2="0"/>
-      <line x1="70" y1="-32" x2="74" y2="-52"/>
-      <line x1="94" y1="0"   x2="124" y2="-46"/>
-      <line x1="108" y1="-32" x2="134" y2="-32"/>
+      <!-- Segundo sistema, no canto SE — bacia menor independente -->
+      <path d="M 360 510 Q 395 460 425 415 Q 450 370 470 320"/>
+      <!-- Tributário do segundo sistema -->
+      <path d="M 480 500 Q 450 460 425 415"/>
+    </g>
+    <!-- Elos da corrente (pinos claros) sobre os leitos -->
+    <g fill="none" stroke="#bde6ff" stroke-width="8"
+       stroke-linecap="round" stroke-dasharray="3 20">
+      <path d="M 470 30 Q 425 80 395 145 Q 370 210 335 270 Q 295 340 230 395 Q 165 445 80 488"/>
+      <path d="M 290 40 Q 320 90 360 130 Q 380 145 395 145"/>
+      <path d="M 510 200 Q 460 215 415 230 Q 385 240 370 230 Q 360 220 335 270"/>
+      <path d="M 200 230 Q 260 250 295 270 Q 320 285 335 270"/>
+      <path d="M 20 260 Q 90 290 160 305 Q 200 315 230 395"/>
+      <path d="M 30 380 Q 90 405 140 420 Q 170 435 165 445"/>
+      <path d="M 360 510 Q 395 460 425 415 Q 450 370 470 320"/>
+      <path d="M 480 500 Q 450 460 425 415"/>
     </g>
 
-    <!-- Energy bolt (kJ accent) -->
-    <g transform="translate(248, 408)">
-      <polygon points="0,-20 14,-20 7,0 20,0 -3,34 5,8 -10,8"
-               fill="#ffd03a" stroke="#0a0f1c" stroke-width="2"/>
+    <!-- ── SELAS (saddle points) ──────────────────────────────────────────
+         Onde a cumeada baixa e o rio cruza: pequena cruz amarela (eixo
+         da cumeada) × cruz azul (eixo do vale) + losango central. -->
+    <g>
+      <!-- Sela sobre a cumeada principal, na altura da curva NE -->
+      <g transform="translate(175, 110) rotate(15)">
+        <line x1="-22" y1="0" x2="22" y2="0" stroke="#ffd03a" stroke-width="5" stroke-linecap="round"/>
+        <line x1="0" y1="-22" x2="0" y2="22" stroke="#1d6a9c" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+        <polygon points="0,-12 12,0 0,12 -12,0" fill="#ffd03a" stroke="#4a230f" stroke-width="2"/>
+      </g>
+      <!-- Sela onde rio principal cruza a cumeada principal -->
+      <g transform="translate(305, 245) rotate(-35)">
+        <line x1="-22" y1="0" x2="22" y2="0" stroke="#ffd03a" stroke-width="5" stroke-linecap="round"/>
+        <line x1="0" y1="-22" x2="0" y2="22" stroke="#1d6a9c" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+        <polygon points="0,-12 12,0 0,12 -12,0" fill="#ffd03a" stroke="#4a230f" stroke-width="2"/>
+      </g>
+      <!-- Sela na cumeada lateral NE -->
+      <g transform="translate(434, 195) rotate(70)">
+        <line x1="-20" y1="0" x2="20" y2="0" stroke="#ffd03a" stroke-width="5" stroke-linecap="round"/>
+        <line x1="0" y1="-20" x2="0" y2="20" stroke="#1d6a9c" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+        <polygon points="0,-10 10,0 0,10 -10,0" fill="#ffd03a" stroke="#4a230f" stroke-width="2"/>
+      </g>
+      <!-- Sela na cumeada secundária SO -->
+      <g transform="translate(140, 400) rotate(50)">
+        <line x1="-20" y1="0" x2="20" y2="0" stroke="#ffd03a" stroke-width="5" stroke-linecap="round"/>
+        <line x1="0" y1="-20" x2="0" y2="20" stroke="#1d6a9c" stroke-width="4" stroke-linecap="round" opacity="0.85"/>
+        <polygon points="0,-10 10,0 0,10 -10,0" fill="#ffd03a" stroke="#4a230f" stroke-width="2"/>
+      </g>
+    </g>
+
+    <!-- ── PICOS — triangulinhos nos cantos altos (peak benchmarks) ─────── -->
+    <g fill="#4a230f" stroke="#e6b889" stroke-width="2.5" stroke-linejoin="round">
+      <polygon points="35,80  20,110 56,110"/>
+      <polygon points="495,55 478,90 514,90"/>
+      <polygon points="495,360 478,395 514,395"/>
+      <polygon points="232,308 215,340 252,340"/>
     </g>
   </g>
 </svg>

@@ -23,15 +23,133 @@ import {
   storage,
 } from './lib/utils.js';
 
+// ─── Settings ────────────────────────────────────────────────────────────────
+// Tudo aqui é tunável pelo modal de Configurações (gear no topbar). Defaults
+// vivem em SETTINGS_DEFAULTS; o objeto `settings` é o estado vivo, persistido
+// em localStorage e exportável/importável como JSON-LD.
+const SETTINGS_KEY = 'phidro:settings';
+const SETTINGS_DEFAULTS = {
+  photoSource: 'pi',                    // 'pi' | 'cdn' | 'auto' | 'local'
+  spotlight: {
+    enabled: false,
+    boost: 5.0,
+    peakSec: 2,
+    peakCount: 1,
+    pulseShape: 7,
+    echoAmp: 0.4,
+    echoOffset: 0.5,
+    tickMs: 200,
+  },
+  markerLayout: {
+    minScaleFloor: 0.4,
+    minScaleCeil: 0.9,
+    rampStart: 13,
+    rampEnd: 18,
+    hoverScale: 3.3,                    // ×40px = tamanho do photo-dot no hover
+  },
+  mapDefaults: {
+    startZoom: 12,                      // aplicado no load inicial
+    baseLayer: 'osm',                   // 'osm' | 'satellite'
+  },
+};
+function _deepMerge(base, over) {
+  if (!over || typeof over !== 'object') return base;
+  const out = Array.isArray(base) ? [...base] : { ...base };
+  for (const k of Object.keys(over)) {
+    const v = over[k];
+    if (v && typeof v === 'object' && !Array.isArray(v)
+        && base && typeof base[k] === 'object' && !Array.isArray(base[k])) {
+      out[k] = _deepMerge(base[k], v);
+    } else {
+      out[k] = v;
+    }
+  }
+  return out;
+}
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY);
+    if (!raw) return JSON.parse(JSON.stringify(SETTINGS_DEFAULTS));
+    return _deepMerge(SETTINGS_DEFAULTS, JSON.parse(raw));
+  } catch {
+    return JSON.parse(JSON.stringify(SETTINGS_DEFAULTS));
+  }
+}
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch {}
+}
+const settings = loadSettings();
+// Migração: fonte de imagens ficava em chave separada — preserva valor antigo.
+{
+  const legacy = localStorage.getItem('phidro:photoSource');
+  if (legacy && settings.photoSource === SETTINGS_DEFAULTS.photoSource) {
+    settings.photoSource = legacy;
+  }
+}
+
 // ─── Map ─────────────────────────────────────────────────────────────────────
-const map = L.map('map', { zoomControl: true }).setView(SP, 12);
+const map = L.map('map', { zoomControl: true })
+  .setView(SP, settings.mapDefaults.startZoom);
+
+// Popups de foto que não caberiam confortavelmente na viewport são re-exibidos
+// como modal centralizado. Tentar reposicionar o popup do Leaflet via CSS não
+// funciona porque `.leaflet-map-pane` recebe `transform` durante pan/zoom,
+// virando containing block pra `position: fixed`. Interceptar o popupopen,
+// medir o tamanho e promover pro modal quando não couber é o caminho robusto.
+function showPhotoFallbackModal(innerHtml) {
+  let modal = document.getElementById('photo-fallback-modal');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'photo-fallback-modal';
+    modal.className = 'modal photo-fallback-modal';
+    modal.hidden = true;
+    modal.addEventListener('click', (ev) => {
+      if (ev.target === modal) modal.hidden = true;
+    });
+    document.body.appendChild(modal);
+  }
+  modal.innerHTML =
+    '<div class="modal-content photo-fallback-content">' +
+      '<button class="close photo-fallback-close" type="button" aria-label="Fechar">×</button>' +
+      innerHtml +
+    '</div>';
+  modal.querySelector('.photo-fallback-close').addEventListener('click', () => {
+    modal.hidden = true;
+  });
+  modal.hidden = false;
+}
+function popupFitsViewport(el) {
+  const rect = el.getBoundingClientRect();
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const margin = 16; // folga mínima nas bordas
+  return (
+    rect.left >= margin &&
+    rect.top >= margin &&
+    rect.right <= vw - margin &&
+    rect.bottom <= vh - margin
+  );
+}
+map.on('popupopen', (e) => {
+  const popup = e.popup;
+  const el = popup.getElement?.();
+  if (!el || !el.classList.contains('photo-popup-wrap')) return;
+  // Aguarda o layout assentar (img pode estar sem dimensões iniciais) antes de
+  // medir; se mesmo então não couber, promove pro modal.
+  requestAnimationFrame(() => {
+    if (popupFitsViewport(el)) return;
+    const inner = el.querySelector('.photo-popup');
+    if (!inner) return;
+    el.style.visibility = 'hidden';
+    showPhotoFallbackModal(inner.outerHTML);
+    setTimeout(() => map.closePopup(popup), 0);
+  });
+});
 
 const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 19,
   attribution: '&copy; OpenStreetMap contributors',
-}).addTo(map);
-
-// Esri World Imagery — free, CORS-friendly. Note y/x order in the URL.
+});
 const satellite = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
   {
@@ -40,6 +158,8 @@ const satellite = L.tileLayer(
       'Imagery © Esri, Maxar, Earthstar Geographics, and the GIS User Community',
   },
 );
+// Camada base inicial vem do settings.mapDefaults.baseLayer.
+(settings.mapDefaults.baseLayer === 'satellite' ? satellite : osm).addTo(map);
 
 const rmsampa = L.tileLayer('https://telhas.pedalhidrografi.co/rmsampa-v2/{z}/{x}/{y}.png', {
   maxZoom: 19,
@@ -337,7 +457,7 @@ const TOURS_TTL_REL     = 'data/tours.ttl';                // catálogo de passe
 // Default 'pi' (mesma origem). 'auto' tentaria CDN também — útil em prod,
 // mas pra dev local gera DNS errors barulhentos quando o CDN não existe.
 // O usuário pode trocar via 🗂 Fonte….
-let photoSource = localStorage.getItem('phidro:photoSource') || 'pi';
+let photoSource = settings.photoSource;
 // Quando local: kit ZIP descompactado em memória, com blob URLs por arquivo.
 let localKit = null;   // { ttlText, files: Map<path,blob URL> }
 
@@ -477,21 +597,14 @@ function updatePhotoScale() {
 const PHOTO_BASE_RADIUS = 20;   // metade do diâmetro nominal do .photo-dot (40px)
 const PHOTO_RELAX_ITERS = 8;
 
-// Piso da escala por densidade dependente do zoom: em zooms altos sobra
-// espaço na tela, então clusters não precisam encolher tanto; em zooms
-// baixos o aperto é maior. Rampa linear entre RAMP_START..RAMP_END,
-// saturando em FLOOR antes e CEIL depois.
-const PHOTO_MIN_SCALE_FLOOR      = 0.4;   // piso em zooms baixos (z ≤ RAMP_START)
-const PHOTO_MIN_SCALE_CEIL       = 0.9;   // teto em zooms altos  (z ≥ RAMP_END)
-const PHOTO_MIN_SCALE_RAMP_START = 13;    // zoom onde começa a soltar
-const PHOTO_MIN_SCALE_RAMP_END   = 18;    // zoom onde bate no teto
-
+// Piso da escala por densidade dependente do zoom — todos os parâmetros
+// vêm de settings.markerLayout (configuráveis no modal de Configurações).
 function photoMinScaleForZoom(z) {
-  const span = PHOTO_MIN_SCALE_RAMP_END - PHOTO_MIN_SCALE_RAMP_START;
-  const t = (z - PHOTO_MIN_SCALE_RAMP_START) / span;
-  const ramp = PHOTO_MIN_SCALE_FLOOR
-    + (PHOTO_MIN_SCALE_CEIL - PHOTO_MIN_SCALE_FLOOR) * t;
-  return Math.max(PHOTO_MIN_SCALE_FLOOR, Math.min(PHOTO_MIN_SCALE_CEIL, ramp));
+  const { minScaleFloor, minScaleCeil, rampStart, rampEnd } = settings.markerLayout;
+  const span = Math.max(0.0001, rampEnd - rampStart);
+  const t = (z - rampStart) / span;
+  const ramp = minScaleFloor + (minScaleCeil - minScaleFloor) * t;
+  return Math.max(minScaleFloor, Math.min(minScaleCeil, ramp));
 }
 
 function relaxPhotoMarkers() {
@@ -529,7 +642,7 @@ function relaxPhotoMarkers() {
     // pelo loop em photoSpotlightTick) modula um boost no scale. Raio
     // efetivo cresce junto, então a relaxação empurra vizinhos suavemente.
     const intensity = a.marker._spotIntensity || 0;
-    a.scale *= 1 + (PHOTO_SPOTLIGHT_BOOST - 1) * intensity;
+    a.scale *= 1 + (settings.spotlight.boost - 1) * intensity;
   }
 
   // 1.5) pré-dispersão de fotos exatamente co-localizadas (mesmo GPS).
@@ -599,37 +712,11 @@ updatePhotoScale();
 // Cada marcador tem uma fase φ ∈ [0,1) constante; ao longo do tempo, sua
 // intensidade segue um pulso gaussiano periódico. As fases são distribuídas
 // aleatoriamente, então em qualquer instante alguns marcadores estão perto
-// do pico (boost ~ PHOTO_SPOTLIGHT_BOOST) e outros em repouso. O loop atualiza
+// do pico (boost ~ settings.spotlight.boost) e outros em repouso. O loop atualiza
 // _spotIntensity e re-chama relaxPhotoMarkers, que ajusta tamanhos e nudges
 // — as transições CSS suavizam tudo. Pausa durante pan pra não brigar com
 // o gesto.
-// Tunables independentes:
-//   PEAK_SEC    duração aproximada de cada pico em segundos reais — controla
-//               a velocidade da transição (maior = subida/descida mais
-//               arrastadas). Não depende da quantidade de marcadores visíveis.
-//   PEAK_COUNT  alvo de quantos marcadores ficam perto do pico ao mesmo tempo.
-//   BOOST       multiplicador de escala no pico.
-//   PULSE_SHAPE expoente do super-gaussiano: 2 = gaussiana suave (sobe/desce
-//               cedo), valores maiores ficam mais "topo plano com bordas
-//               íngremes" (∞ vira onda quadrada). 4–6 é um meio-termo bom.
-//   TICK_MS     5Hz — entre ticks, transições CSS interpolam suavemente.
-//
-// O período de cada marcador é derivado: cada um passa PEAK_SEC perto do pico
-// por ciclo, e com fases uniformes isso põe ~PEAK_COUNT ativos por vez —
-// então period = N × PEAK_SEC / PEAK_COUNT.
-const PHOTO_SPOTLIGHT_BOOST        = 5.0;
-const PHOTO_SPOTLIGHT_PEAK_SEC     = 2;
-const PHOTO_SPOTLIGHT_PEAK_COUNT   = 1;
-const PHOTO_SPOTLIGHT_PULSE_SHAPE  = 7;
-// "Echo": cada marcador ganha um segundo pico menor a ECHO_OFFSET do pico
-// principal — encurta o vale percebido sem levantar o baseline (entre os
-// dois picos a intensidade ainda cai a zero, então o tamanho de repouso fica
-// no default 1×).
-//   ECHO_AMP    altura do echo relativa ao principal (0 = desliga, 1 = igual)
-//   ECHO_OFFSET posição do echo no ciclo (0.5 = lado oposto do principal)
-const PHOTO_SPOTLIGHT_ECHO_AMP     = 0.4;
-const PHOTO_SPOTLIGHT_ECHO_OFFSET  = 0.5;
-const PHOTO_SPOTLIGHT_TICK_MS      = 200;
+// Todos os tunables vivem em settings.spotlight (modal de Configurações).
 
 let photoSpotlightPaused = false;
 map.on('movestart', () => { photoSpotlightPaused = true; });
@@ -651,44 +738,37 @@ function photoSpotlightTick() {
   }
   if (visible.length === 0) return;
 
-  // Período derivado: cada pico dura ≈PEAK_SEC, e queremos ~PEAK_COUNT
-  // marcadores ativos simultaneamente. Com fases uniformes:
-  //   active ≈ N × PEAK_SEC / period   →   period = N × PEAK_SEC / PEAK_COUNT
-  // Floor em PEAK_SEC pra evitar período < pico (acontece se N ≤ PEAK_COUNT).
+  const sp = settings.spotlight;
+  // Período derivado: cada pico dura ≈peakSec, e queremos ~peakCount ativos.
   const period = Math.max(
-    PHOTO_SPOTLIGHT_PEAK_SEC,
-    visible.length * PHOTO_SPOTLIGHT_PEAK_SEC / PHOTO_SPOTLIGHT_PEAK_COUNT);
-  const peakFrac = Math.min(0.5, PHOTO_SPOTLIGHT_PEAK_SEC / period);
+    sp.peakSec,
+    visible.length * sp.peakSec / Math.max(0.001, sp.peakCount));
+  const peakFrac = Math.min(0.5, sp.peakSec / period);
   const halfWidth = peakFrac / 2;
 
   const t = performance.now() / 1000 / period;
   for (const m of visible) {
     const x = ((t + m._spotPhase) % 1 + 1) % 1;     // posição na onda [0,1)
     const d = Math.min(x, 1 - x);                    // distância circular ao pico
-    // Super-gaussiana: exp(-(d/half)^p). p=2 = gaussiana; p grande → quadrado.
-    const main = Math.exp(-Math.pow(d / halfWidth, PHOTO_SPOTLIGHT_PULSE_SHAPE));
-    // Echo: mesma forma, deslocado por ECHO_OFFSET no ciclo, amplitude menor.
-    // max(main, echo) combina — cada marcador tem 2 momentos visíveis por ciclo.
-    const xEcho = ((x - PHOTO_SPOTLIGHT_ECHO_OFFSET) % 1 + 1) % 1;
+    const main = Math.exp(-Math.pow(d / halfWidth, sp.pulseShape));
+    const xEcho = ((x - sp.echoOffset) % 1 + 1) % 1;
     const dEcho = Math.min(xEcho, 1 - xEcho);
-    const echo = PHOTO_SPOTLIGHT_ECHO_AMP *
-      Math.exp(-Math.pow(dEcho / halfWidth, PHOTO_SPOTLIGHT_PULSE_SHAPE));
+    const echo = sp.echoAmp *
+      Math.exp(-Math.pow(dEcho / halfWidth, sp.pulseShape));
     m._spotIntensity = Math.max(main, echo);
   }
   relaxPhotoMarkers();
 }
 
-// Toggle persistente no topbar: ✨ liga/desliga o spotlight contínuo.
+// Toggle persistente no topbar ✨ + interruptor pro modal de Configurações.
 // Quando desliga: para o timer, zera intensidades e re-relaxa pra que os
 // marcadores voltem ao tamanho/posição que a relaxação por densidade definiria.
-const PHOTO_ANIM_KEY = 'phidro:photoAnim';
-let photoAnimEnabled = localStorage.getItem(PHOTO_ANIM_KEY) !== 'off';
 let photoSpotlightTimer = null;
 
 function applyPhotoAnim() {
-  if (photoAnimEnabled) {
+  if (settings.spotlight.enabled) {
     if (!photoSpotlightTimer) {
-      photoSpotlightTimer = setInterval(photoSpotlightTick, PHOTO_SPOTLIGHT_TICK_MS);
+      photoSpotlightTimer = setInterval(photoSpotlightTick, settings.spotlight.tickMs);
     }
   } else {
     if (photoSpotlightTimer) {
@@ -698,15 +778,17 @@ function applyPhotoAnim() {
     for (const m of photoMarkers) m._spotIntensity = 0;
     relaxPhotoMarkers();
   }
+  // Mantém o botão visual sincronizado.
+  const btn = document.getElementById('photo-anim-btn');
+  if (btn) btn.setAttribute('aria-pressed', String(settings.spotlight.enabled));
 }
 
 const photoAnimBtn = document.getElementById('photo-anim-btn');
 if (photoAnimBtn) {
-  photoAnimBtn.setAttribute('aria-pressed', String(photoAnimEnabled));
+  photoAnimBtn.setAttribute('aria-pressed', String(settings.spotlight.enabled));
   photoAnimBtn.addEventListener('click', () => {
-    photoAnimEnabled = !photoAnimEnabled;
-    localStorage.setItem(PHOTO_ANIM_KEY, photoAnimEnabled ? 'on' : 'off');
-    photoAnimBtn.setAttribute('aria-pressed', String(photoAnimEnabled));
+    settings.spotlight.enabled = !settings.spotlight.enabled;
+    saveSettings();
     applyPhotoAnim();
   });
 }
@@ -1155,7 +1237,7 @@ function buildPhotoMarkers(photos) {
         `<dl class="photo-details">${rows}</dl>` +
         (actions ? `<div class="photo-actions">${actions}</div>` : '') +
       `</div>`,
-      { maxWidth: 360, className: 'photo-popup-wrap' },
+      { maxWidth: 520, className: 'photo-popup-wrap', autoPan: false },
     );
     photoMarkers.push(m);
   }
@@ -1174,6 +1256,8 @@ function setPhotoSource(src) {
   if (!['auto', 'pi', 'cdn', 'local'].includes(src)) return;
   photoSource = src;
   try { localStorage.setItem('phidro:photoSource', src); } catch {}
+  settings.photoSource = src;
+  saveSettings();
   updatePhotoSourceStatus(`Fonte: ${src}.`);
   reloadPhotos();
 }
@@ -1602,7 +1686,7 @@ function addUploadedPhoto(p) {
         ? ` · ${Math.round(p.bearing)}° ${cardinal(p.bearing)}`
         : '') +
       `</div></div>`,
-    { maxWidth: 320, className: 'photo-popup-wrap' },
+    { maxWidth: 520, className: 'photo-popup-wrap', autoPan: false },
   );
   m.addTo(map);
   uploadedMarkers.push(m);
@@ -1701,34 +1785,93 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && uploadModal && !uploadModal.hidden) closeUploadModal();
 });
 
-// ─── Modal "Fonte do acervo" + import/export ──────────────────────────────
-const photosSourceBtn   = document.getElementById('photos-source-btn');
-const photosSourceModal = document.getElementById('photos-source-modal');
-const photosSourceClose = document.getElementById('photos-source-close');
-const photosImportBtn   = document.getElementById('photos-import-btn');
-const photosImportInput = document.getElementById('photos-import-input');
+// ─── Modal de Configurações ───────────────────────────────────────────────
+const settingsBtn        = document.getElementById('settings-btn');
+const settingsModal      = document.getElementById('settings-modal');
+const settingsClose      = document.getElementById('settings-close');
+const photosImportBtn    = document.getElementById('photos-import-btn');
+const photosImportInput  = document.getElementById('photos-import-input');
 const photosExportTtlBtn = document.getElementById('photos-export-ttl-btn');
 const photosExportKitBtn = document.getElementById('photos-export-kit-btn');
-const photosReloadBtn   = document.getElementById('photos-reload-btn');
+const photosReloadBtn    = document.getElementById('photos-reload-btn');
 
-function openPhotosSource() {
-  if (!photosSourceModal) return;
-  // Marca o rádio com a fonte atual.
-  for (const r of photosSourceModal.querySelectorAll('input[name="photos-source"]')) {
+// Aplica TODOS os settings vivos (sem reload). Chamado quando algo muda no
+// modal ou quando carrega um JSON-LD importado.
+function applyPhotoHoverScale() {
+  const s = settings.markerLayout?.hoverScale ?? 3.3;
+  document.documentElement.style.setProperty('--photo-hover-scale', String(s));
+}
+function applyAllSettings() {
+  applyPhotoAnim();      // liga/desliga animação + tickMs novo
+  relaxPhotoMarkers();   // novos floor/ceil/boost pegam efeito agora
+  applyPhotoHoverScale();
+}
+applyPhotoHoverScale();
+
+// Lê/escreve em settings por caminho "a.b.c".
+function getSettingPath(path) {
+  return path.split('.').reduce((o, k) => o?.[k], settings);
+}
+function setSettingPath(path, value) {
+  const parts = path.split('.');
+  let o = settings;
+  for (let i = 0; i < parts.length - 1; i++) o = o[parts[i]];
+  o[parts[parts.length - 1]] = value;
+}
+function syncSettingsControl(el) {
+  const val = getSettingPath(el.dataset.setting);
+  if (el.type === 'checkbox') {
+    el.checked = !!val;
+  } else if (el.type === 'range' || el.type === 'number') {
+    el.value = String(val);
+    const out = el.parentElement?.querySelector('output');
+    if (out) out.textContent = el.value;
+  } else {
+    el.value = String(val);
+  }
+}
+function wireSettingsControls() {
+  if (!settingsModal) return;
+  for (const el of settingsModal.querySelectorAll('[data-setting]')) {
+    syncSettingsControl(el);
+    el.addEventListener('input', () => {
+      const path = el.dataset.setting;
+      let v;
+      if (el.type === 'checkbox') v = el.checked;
+      else if (el.type === 'range' || el.type === 'number') v = parseFloat(el.value);
+      else v = el.value;
+      setSettingPath(path, v);
+      const out = el.parentElement?.querySelector('output');
+      if (out && el.type === 'range') out.textContent = el.value;
+      saveSettings();
+      applyAllSettings();
+    });
+  }
+}
+
+function openSettings() {
+  if (!settingsModal) return;
+  // Radios da fonte de imagens (não usam data-setting porque setPhotoSource
+  // faz mais que só mexer no objeto).
+  for (const r of settingsModal.querySelectorAll('input[name="photos-source"]')) {
     r.checked = (r.value === photoSource);
   }
   updatePhotoSourceStatus(lastTtlOrigin ? 'OK' : 'sem TTL carregado');
-  photosSourceModal.hidden = false;
+  for (const el of settingsModal.querySelectorAll('[data-setting]')) {
+    syncSettingsControl(el);
+  }
+  settingsModal.hidden = false;
 }
-function closePhotosSource() {
-  if (photosSourceModal) photosSourceModal.hidden = true;
+function closeSettings() {
+  if (settingsModal) settingsModal.hidden = true;
 }
-photosSourceBtn?.addEventListener('click', openPhotosSource);
-photosSourceClose?.addEventListener('click', closePhotosSource);
-photosSourceModal?.addEventListener('click', (e) => {
-  if (e.target === photosSourceModal) closePhotosSource();
+
+settingsBtn?.addEventListener('click', openSettings);
+settingsClose?.addEventListener('click', closeSettings);
+settingsModal?.addEventListener('click', (e) => {
+  if (e.target === settingsModal) closeSettings();
 });
-for (const r of photosSourceModal?.querySelectorAll('input[name="photos-source"]') || []) {
+for (const r of settingsModal?.querySelectorAll('input[name="photos-source"]') || []) {
   r.addEventListener('change', () => setPhotoSource(r.value));
 }
 photosImportBtn?.addEventListener('click', () => photosImportInput?.click());
@@ -1744,6 +1887,72 @@ photosExportKitBtn?.addEventListener('click', () => {
   downloadKit().catch(err => showToast(`Falha no kit: ${err.message}`));
 });
 photosReloadBtn?.addEventListener('click', () => reloadPhotos());
+wireSettingsControls();
+
+// Export / Import dos settings em JSON-LD.
+const SETTINGS_JSONLD_CONTEXT = {
+  '@vocab': 'https://pedalhidrografi.co/terms/settings#',
+  ph:        'https://pedalhidrografi.co/terms#',
+};
+function downloadSettingsJsonLd() {
+  const doc = {
+    '@context': SETTINGS_JSONLD_CONTEXT,
+    '@type': 'AppSettings',
+    generatedAt: new Date().toISOString(),
+    ...JSON.parse(JSON.stringify(settings)),
+  };
+  const blob = new Blob([JSON.stringify(doc, null, 2)],
+    { type: 'application/ld+json' });
+  const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `phidro-settings-${stamp}.jsonld`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  showToast('Configurações exportadas.');
+}
+async function importSettingsJsonLd(file) {
+  const text = await file.text();
+  let doc;
+  try { doc = JSON.parse(text); }
+  catch { throw new Error('JSON inválido'); }
+  const { '@context': _c, '@type': _t, generatedAt: _g, ...rest } = doc;
+  const merged = _deepMerge(SETTINGS_DEFAULTS, _deepMerge(settings, rest));
+  // Cuidado: a fonte de imagens muda via setPhotoSource pra disparar reload.
+  const newPhotoSource = merged.photoSource;
+  Object.assign(settings, merged);
+  saveSettings();
+  if (newPhotoSource && newPhotoSource !== photoSource) {
+    setPhotoSource(newPhotoSource);
+  }
+  for (const el of settingsModal?.querySelectorAll('[data-setting]') || []) {
+    syncSettingsControl(el);
+  }
+  applyAllSettings();
+  showToast('Configurações importadas.');
+}
+document.getElementById('settings-export-btn')?.addEventListener(
+  'click', downloadSettingsJsonLd);
+const settingsImportInput = document.getElementById('settings-import-input');
+document.getElementById('settings-import-btn')?.addEventListener(
+  'click', () => settingsImportInput?.click());
+settingsImportInput?.addEventListener('change', async () => {
+  const f = settingsImportInput.files && settingsImportInput.files[0];
+  if (!f) return;
+  try { await importSettingsJsonLd(f); }
+  catch (err) { showToast(`Falha no import: ${err.message}`); }
+  settingsImportInput.value = '';
+});
+document.getElementById('settings-reset-btn')?.addEventListener('click', () => {
+  if (!confirm('Restaurar todos os parâmetros para os padrões?')) return;
+  Object.assign(settings, JSON.parse(JSON.stringify(SETTINGS_DEFAULTS)));
+  saveSettings();
+  for (const el of settingsModal?.querySelectorAll('[data-setting]') || []) {
+    syncSettingsControl(el);
+  }
+  applyAllSettings();
+  showToast('Padrões restaurados.');
+});
 
 // ─── Cicloinfra (OSM cycling infrastructure) overlay ─────────────────────────
 // Live-queries Overpass for everything that's safe-ish for a bicycle:
@@ -2211,9 +2420,25 @@ const menuBtn = document.getElementById('menu-btn');
 const SIDEBAR_HIDDEN_KEY = 'phidro:sidebarHidden';
 const isMobileViewport = () => window.matchMedia('(max-width: 760px)').matches;
 
-// Restore persisted desktop state on boot.
-if (localStorage.getItem(SIDEBAR_HIDDEN_KEY) === '1') {
-  document.body.classList.add('sidebar-hidden');
+// Boot defaults para a sidebar no desktop:
+//   - Se existir preferência persistida, ela manda (1 = oculta, 0 = visível).
+//   - Sem preferência: oculta automaticamente quando a viewport for pequena
+//     demais — não cabem ~4 rotas verticalmente OU a tela não tem largura pra
+//     pelo menos 4× a sidebar (320px cada).
+// No mobile, ignoramos `.sidebar-hidden` (que `display:none`-aria a sidebar
+// e quebraria o drawer); o drawer começa fechado por outros meios.
+const SIDEBAR_AUTO_HIDE_MIN_HEIGHT = 400;   // ~50px/rota × 4 + cabeçalho
+const SIDEBAR_AUTO_HIDE_MIN_WIDTH  = 320 * 4; // 4× largura da sidebar
+function defaultDesktopSidebarHidden() {
+  return (
+    window.innerHeight < SIDEBAR_AUTO_HIDE_MIN_HEIGHT ||
+    window.innerWidth  < SIDEBAR_AUTO_HIDE_MIN_WIDTH
+  );
+}
+if (!isMobileViewport()) {
+  const persisted = localStorage.getItem(SIDEBAR_HIDDEN_KEY);
+  const shouldHide = persisted !== null ? persisted === '1' : defaultDesktopSidebarHidden();
+  if (shouldHide) document.body.classList.add('sidebar-hidden');
 }
 updateMenuBtnPressed();
 
@@ -2325,9 +2550,10 @@ async function boot() {
       lineJoin: 'round',
     });
 
+    const nums = entryNumbers(entry);
     const popupHtml =
       `<strong>${escapeHtml(buildLabel(entry))}</strong><br>` +
-      (numberLabel ? `${escapeHtml(numberLabel)} · ` : '') +
+      (nums.length ? `${formatNumbersHtml(entry)}<br>` : '') +
       `Route ${entry.id}` +
       (entry.igPost ? `<br><a href="#" class="popup-open-modal" data-route-id="${escapeHtml(key)}">Open IG post</a>` : '');
     layer.bindPopup(popupHtml);
@@ -2336,14 +2562,15 @@ async function boot() {
 
     // Plain-text number overlay (no background) at the route's midpoint.
     let badge = null;
-    if (numberLabel) {
+    if (nums.length) {
       const mid = entry.latlngs[Math.floor(entry.latlngs.length / 2)];
+      const iconH = 18 * nums.length;
       badge = L.marker(mid, {
         icon: L.divIcon({
           className: 'route-number-icon',
-          html: `<span class="route-number-text">${escapeHtml(numberLabel)}</span>`,
-          iconSize: [60, 18],
-          iconAnchor: [30, 9],
+          html: `<span class="route-number-text">${formatNumbersHtml(entry)}</span>`,
+          iconSize: [60, iconH],
+          iconAnchor: [30, iconH / 2],
         }),
         interactive: true,
         keyboard: false,
@@ -2385,9 +2612,9 @@ function addRouteToSidebar(entry) {
   const key = entry.tourIri || entry.id;
   const li = document.createElement('li');
   li.dataset.routeId = key;
-  const numberLabel = formatNumbers(entry);
+  const numbersHtml = formatNumbersHtml(entry);
   li.innerHTML = `
-    <span class="route-number sidebar-badge">${numberLabel ? escapeHtml(numberLabel) : '·'}</span>
+    <span class="route-number sidebar-badge">${numbersHtml || '·'}</span>
     <div>
       <strong>${escapeHtml(buildLabel(entry))}</strong>
     </div>
@@ -2470,13 +2697,23 @@ function buildLabel(entry) {
   return [date, name].filter(Boolean).join(' — ') || `Route ${entry.id}`;
 }
 
-// Junta todos os códigos de série atribuídos ao passeio (ex.: "PH 79 · BP 4").
-// Cai pra `entry.number` quando o backend ainda não emite `numbers`.
-function formatNumbers(entry) {
-  const nums = Array.isArray(entry.numbers) && entry.numbers.length
+// Códigos de série atribuídos ao passeio. `formatNumbers` devolve uma string
+// junta com ` · ` (contextos de texto puro como nome de arquivo); a variante
+// `_Html` escapa cada código e usa `<br>` por padrão, pra empilhar verticalmente
+// em badges/popups quando o tour pertence a mais de uma série. Cai pra
+// `entry.number` quando o backend ainda não emite `numbers`.
+function entryNumbers(entry) {
+  return Array.isArray(entry.numbers) && entry.numbers.length
     ? entry.numbers
     : (entry.number?.value ? [entry.number] : []);
-  return nums.map((n) => `${n.source} ${n.value}`).join(' · ');
+}
+function formatNumbers(entry) {
+  return entryNumbers(entry).map((n) => `${n.source} ${n.value}`).join(' · ');
+}
+function formatNumbersHtml(entry, sep = '<br>') {
+  return entryNumbers(entry)
+    .map((n) => escapeHtml(`${n.source} ${n.value}`))
+    .join(sep);
 }
 
 function renderStatus(drawn, total, generatedAt) {
@@ -2767,9 +3004,9 @@ const DEFAULT_PARAMS = {
   // pra Open-Meteo se desligado ou se a célula vier nodata/404.
   useFabdem: true,
   // Roteamento "menor energia" (FABDEM + Dijkstra assimétrico):
-  energyAlpha: 1,           // peso da distância no custo
-  energyBeta: 5,            // peso do desnível positivo
-  energyEta: 0.5,           // fração do ganho de descida recuperada (0..1)
+  energyAlpha: 0.008,       // peso da distância no custo
+  energyBeta: 1,            // peso do desnível positivo
+  energyEta: 0.2,           // fração do ganho de descida recuperada (0..1)
   energySearchMarginPct: 20, // % de margem em torno da bbox dos endpoints
 };
 
@@ -2895,11 +3132,11 @@ function exitDrawingMode() {
 
   for (const [key, r] of routes) {
     const entry = r.entry;
-    const numberLabel = formatNumbers(entry);
+    const numsHtml = formatNumbersHtml(entry);
     if (r.layer) {
       const popupHtml =
         `<strong>${escapeHtml(buildLabel(entry))}</strong><br>` +
-        (numberLabel ? `${escapeHtml(numberLabel)} · ` : '') +
+        (numsHtml ? `${numsHtml}<br>` : '') +
         `Route ${entry.id}` +
         (entry.igPost
           ? `<br><a href="#" class="popup-open-modal" data-route-id="${escapeHtml(key)}">Open IG post</a>`

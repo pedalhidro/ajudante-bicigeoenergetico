@@ -33,7 +33,7 @@
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <link rel="icon" href="icon-192.png" sizes="192x192" type="image/png" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-    <title>Ajudante cartográfica-energética para passeios topo hidrográficos na Grande São Paulo</title>
+    <title>Ajudante cartográfica-energética de passeios topohidrográficos</title>
     <link
       rel="stylesheet"
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
@@ -49,11 +49,11 @@
   <body class="rotas-page">
     <header class="topbar">
       <div class="title">
-        <h1>Ajudante cartográfica-energética para passeios topo hidrográficos na Grande São Paulo</h1>
+        <h1>Ajudante cartográfica-energética de passeios topohidrográficos</h1>
       </div>
       <nav class="topbar-actions">
       <button id="layers-btn" type="button" class="secondary-btn" title="Mostrar/ocultar camadas" aria-label="Mostrar/ocultar camadas" aria-pressed="true">⧉</button>
-      <button id="photo-anim-btn" type="button" class="secondary-btn" title="Ligar/desligar animação dos marcadores de foto" aria-label="Animação dos marcadores" aria-pressed="true">✨</button>
+      <button id="photo-anim-btn" type="button" class="secondary-btn" title="Ligar/desligar animação dos marcadores de foto" aria-label="Animação dos marcadores" aria-pressed="false">✨</button>
       <button id="menu-btn" type="button" class="menu-btn secondary-btn" title="Mostrar rotas" aria-label="Mostrar rotas">☰</button>
       <input type="file" id="photos-import-input" accept=".ttl,.zip,text/turtle,application/zip" hidden />
       <button id="upload-btn" type="button" class="secondary-btn" title="Enviar imagens ao acervo" aria-label="Enviar imagens">⬆🖼︎</button>
@@ -61,18 +61,17 @@
       <button id="edit-gpx-btn" type="button" class="secondary-btn" title="Editar GPX — carregar um arquivo .gpx" aria-label="Editar GPX">✎🗺︎</button>
       <button id="trace-btn" type="button" class="secondary-btn" title="Traçar GPX" aria-label="Traçar GPX">＋🗺︎</button>
       <button id="help-btn" type="button" class="secondary-btn" title="Como usar" aria-label="Instruções">?</button>
-      <button id="photos-source-btn" type="button" class="secondary-btn" title="Fonte do acervo de imagens (Pi / CDN / Local)" aria-label="Fonte do acervo de imagens">⚙</button>
+      <button id="settings-btn" type="button" class="secondary-btn" title="Configurações" aria-label="Configurações">⚙</button>
       </nav>
     </header>
 
     <main id="map">
       <button id="header-toggle" type="button" class="header-toggle leaflet-bar leaflet-control" title="Ocultar cabeçalho" aria-label="Ocultar cabeçalho" aria-pressed="false">▲</button>
       <div id="trace-controls" class="trace-controls" hidden>
-        <button type="button" id="trace-undo" disabled title="Desfazer (Cmd/Ctrl+Z)">↶ Undo</button>
-        <button type="button" id="trace-redo" disabled title="Refazer (Cmd/Ctrl+Shift+Z)">↷ Redo</button>
+        <button type="button" id="trace-undo" disabled title="Desfazer (Cmd/Ctrl+Z)" aria-label="Desfazer">↶</button>
+        <button type="button" id="trace-redo" disabled title="Refazer (Cmd/Ctrl+Shift+Z)" aria-label="Refazer">↷</button>
         <label class="trace-toggle" title="Como conectar pontos consecutivos">
-          <span>Rota</span>
-          <select id="trace-routing-mode">
+          <select id="trace-routing-mode" aria-label="Modo de roteamento">
             <option value="straight">Reta (menor distância)</option>
             <option value="cycling">OSM ciclismo</option>
             <option value="foot">OSM a pé</option>
@@ -81,8 +80,9 @@
           </select>
         </label>
         <button type="button" id="params-btn" class="params-btn" title="Parâmetros da simulação" aria-label="Parâmetros">⚙</button>
-        <span class="trace-metrics" id="trace-metrics">0,00 km · 0,0 kJ</span>
         <button type="button" id="trace-save" class="trace-save" title="Salvar GPX" aria-label="Salvar GPX">⤓🗺︎</button>
+        <span class="trace-break" aria-hidden="true"></span>
+        <span class="trace-metrics" id="trace-metrics">0,00 km · 0,0 kJ</span>
       </div>
     </main>
 
@@ -146,6 +146,17 @@
             <li>O embed do Instagram não mostra comentários (limitação do próprio IG).</li>
             <li>Roteamento usa o servidor público do OSRM, com limite de requisições. Pode falhar — nesse caso o segmento vira linha reta.</li>
             <li>A elevação vem do Open-Meteo, com cache local. Pontos sem elevação são tratados como plano.</li>
+          </ul>
+
+          <h3>Fontes de dados &amp; atribuição</h3>
+          <ul>
+            <li>Tiles base: <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">© OpenStreetMap contributors</a> (ODbL).</li>
+            <li>Satélite: <a href="https://www.esri.com" target="_blank" rel="noopener">Esri World Imagery</a> — Maxar, Earthstar Geographics, GIS User Community.</li>
+            <li>Topografia colorida: rasterização própria (Pedal Hidrográfico) sobre o MDT LiDAR de São Paulo — dados brutos pela <a href="https://geosampa.prefeitura.sp.gov.br" target="_blank" rel="noopener">PMSP/GeoSampa</a> (2017) e processamento em MDT pelo <a href="https://centrodametropole.fflch.usp.br" target="_blank" rel="noopener">CEM-USP</a> — e sobre o <a href="https://www.igc.sp.gov.br" target="_blank" rel="noopener">MDT do IGC-SP</a> 1:10.000 (2010, Instituto Geográfico e Cartográfico do Estado de São Paulo).</li>
+            <li>SARA Brasil 1930: mosaico aerofotográfico do <a href="https://geosampa.prefeitura.sp.gov.br" target="_blank" rel="noopener">GeoSampa</a> (Prefeitura de São Paulo).</li>
+            <li>Elevação: <a href="https://open-meteo.com" target="_blank" rel="noopener">Open-Meteo</a> (FABDEM / Copernicus DEM).</li>
+            <li>Roteamento ciclismo/a-pé: <a href="https://project-osrm.org" target="_blank" rel="noopener">OSRM</a> sobre OSM.</li>
+            <li>Infra cicloviária: <a href="https://overpass-api.de" target="_blank" rel="noopener">Overpass API</a> sobre OSM.</li>
           </ul>
 
           <p class="help-credit">feito por Cláudio · pedido e dirigido pelos neogeógrafos hidrográficos</p>
@@ -296,28 +307,129 @@
       </div>
     </div>
 
-    <!-- Photo data source modal: Pi / CDN / Local + import/export buttons -->
-    <div id="photos-source-modal" class="modal" hidden>
-      <div class="modal-content">
+    <!-- Settings modal (gear ⚙ no topbar): tabs ao lado esquerdo, conteúdo à direita -->
+    <div id="settings-modal" class="modal" hidden>
+      <div class="modal-content settings-modal-content">
         <header>
-          <h2>Fonte do acervo de imagens</h2>
-          <button class="close" id="photos-source-close" type="button" aria-label="Fechar">&times;</button>
+          <h2>Configurações</h2>
+          <button class="close" id="settings-close" type="button" aria-label="Fechar">&times;</button>
         </header>
-        <div class="modal-body">
-          <p class="muted">De onde o app puxa o arquivo TTL das imagens.</p>
-          <div class="photos-source-options">
-            <label><input type="radio" name="photos-source" value="auto"> Auto (tenta Pi → CDN)</label>
-            <label><input type="radio" name="photos-source" value="pi"> Pi (mesma origem)</label>
-            <label><input type="radio" name="photos-source" value="cdn"> CDN</label>
-            <label><input type="radio" name="photos-source" value="local"> Local (importar kit .zip ou .ttl)</label>
-          </div>
-          <p class="muted" id="photos-source-status">—</p>
-          <div id="photos-source-actions" style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.75rem">
-            <button type="button" id="photos-import-btn">📂 Importar (.ttl / .zip)</button>
-            <button type="button" id="photos-export-ttl-btn">⬇ Baixar .ttl</button>
-            <button type="button" id="photos-export-kit-btn">⬇ Baixar kit (.zip)</button>
-            <button type="button" id="photos-reload-btn">↻ Recarregar</button>
-          </div>
+        <div class="settings-grid">
+          <!-- Acervo de imagens -->
+          <section class="settings-section">
+            <h3>Acervo de imagens</h3>
+            <p class="muted">De onde o app puxa o arquivo TTL.</p>
+            <div class="photos-source-options">
+              <label><input type="radio" name="photos-source" value="auto"> Auto (tenta Pi → CDN)</label>
+              <label><input type="radio" name="photos-source" value="pi"> Pi (mesma origem)</label>
+              <label><input type="radio" name="photos-source" value="cdn"> CDN</label>
+              <label><input type="radio" name="photos-source" value="local"> Local (importar kit .zip ou .ttl)</label>
+            </div>
+            <p class="muted" id="photos-source-status">—</p>
+            <div class="settings-actions">
+              <button type="button" id="photos-import-btn">📂 Importar (.ttl / .zip)</button>
+              <button type="button" id="photos-export-ttl-btn">⬇ Baixar .ttl</button>
+              <button type="button" id="photos-export-kit-btn">⬇ Baixar kit (.zip)</button>
+              <button type="button" id="photos-reload-btn">↻ Recarregar</button>
+            </div>
+          </section>
+
+          <!-- Animação dos marcadores -->
+          <section class="settings-section" data-section="spotlight">
+            <h3>Animação dos marcadores</h3>
+            <label class="settings-row"><input type="checkbox" data-setting="spotlight.enabled"> Ligar animação contínua</label>
+            <label class="settings-row">
+              <span>Multiplicador no pico (BOOST)</span>
+              <input type="range" data-setting="spotlight.boost" min="1" max="10" step="0.1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Duração do pico (s)</span>
+              <input type="range" data-setting="spotlight.peakSec" min="0.5" max="8" step="0.1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Quantos picos simultâneos</span>
+              <input type="range" data-setting="spotlight.peakCount" min="1" max="6" step="1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Forma do pulso (2=gauss, ∞=quadrado)</span>
+              <input type="range" data-setting="spotlight.pulseShape" min="2" max="12" step="1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Amplitude do echo</span>
+              <input type="range" data-setting="spotlight.echoAmp" min="0" max="1" step="0.05">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Posição do echo (fração do ciclo)</span>
+              <input type="range" data-setting="spotlight.echoOffset" min="0.1" max="0.9" step="0.05">
+              <output></output>
+            </label>
+          </section>
+
+          <!-- Layout dos marcadores -->
+          <section class="settings-section" data-section="markerLayout">
+            <h3>Layout dos marcadores</h3>
+            <p class="muted">Tamanho relativo dos pontos em clusters, em função do zoom.</p>
+            <label class="settings-row">
+              <span>Piso da escala (zoom baixo)</span>
+              <input type="range" data-setting="markerLayout.minScaleFloor" min="0.1" max="1" step="0.05">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Teto da escala (zoom alto)</span>
+              <input type="range" data-setting="markerLayout.minScaleCeil" min="0.1" max="1" step="0.05">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Início da rampa (zoom)</span>
+              <input type="range" data-setting="markerLayout.rampStart" min="10" max="18" step="1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Fim da rampa (zoom)</span>
+              <input type="range" data-setting="markerLayout.rampEnd" min="10" max="20" step="1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Tamanho no hover (× base 40px)</span>
+              <input type="range" data-setting="markerLayout.hoverScale" min="1.5" max="5" step="0.1">
+              <output></output>
+            </label>
+          </section>
+
+          <!-- Padrões do mapa -->
+          <section class="settings-section" data-section="mapDefaults">
+            <h3>Padrões do mapa</h3>
+            <p class="muted">Aplicados no carregamento da página.</p>
+            <label class="settings-row">
+              <span>Zoom inicial</span>
+              <input type="range" data-setting="mapDefaults.startZoom" min="8" max="18" step="1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Camada base padrão</span>
+              <select data-setting="mapDefaults.baseLayer">
+                <option value="osm">OpenStreetMap</option>
+                <option value="satellite">Satélite (Esri)</option>
+              </select>
+            </label>
+          </section>
+
+          <!-- Importar / exportar -->
+          <section class="settings-section">
+            <h3>Configurações — exportar / importar</h3>
+            <p class="muted">JSON-LD com todos os parâmetros acima.</p>
+            <div class="settings-actions">
+              <button type="button" id="settings-export-btn">⬇ Exportar JSON-LD</button>
+              <button type="button" id="settings-import-btn">📂 Importar JSON-LD</button>
+              <input type="file" id="settings-import-input" accept=".jsonld,.json,application/ld+json,application/json" hidden />
+              <button type="button" id="settings-reset-btn">↺ Restaurar padrões</button>
+            </div>
+          </section>
         </div>
       </div>
     </div>
