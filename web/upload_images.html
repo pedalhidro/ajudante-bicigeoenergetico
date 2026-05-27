@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Upload de imagens (ao vivo) — Pedal Hidrográfico</title>
+<title>Upload de imagens e vídeos — Pedal Hidrográfico</title>
 <style>
   body { font-family: system-ui, sans-serif; max-width: 1400px; margin: 1.5rem auto; padding: 0 1rem; color: #222; }
   h1 { font-size: 1.4rem; margin: 0 0 .25rem; }
@@ -81,13 +81,36 @@
   /* Tom Select compactado dentro dos cards */
   .ts-wrapper { font-size: .85rem; }
   .card .ts-control { padding: .2rem .3rem !important; min-height: 0; }
+
+  /* Card de vídeo: prévia + trim sliders */
+  .card-video-preview {
+    width: 100%; max-height: 220px; background: #000;
+    border-radius: 4px; display: block;
+  }
+  .trim-row {
+    display: grid; grid-template-columns: 40px 1fr auto; align-items: center;
+    gap: .35rem; margin: .3rem 0 .1rem;
+  }
+  .trim-row > span { font-size: .72rem; color: #666; }
+  .trim-steppers { display: flex; gap: .15rem; }
+  .trim-step-btn {
+    background: #f0f0f0; border: 1px solid #888; border-radius: 3px;
+    padding: 0 .3rem; cursor: pointer; font-family: ui-monospace, monospace; font-size: .75rem;
+  }
+  .trim-step-btn:hover { background: #e0e0e0; }
+  .trim-times {
+    display: flex; justify-content: space-between; gap: .4rem;
+    font-family: ui-monospace, monospace; font-size: .7rem; color: #666;
+    margin-top: .25rem;
+  }
+  .trim-times .warn { color: #c00; }
 </style>
 <link href="./lib/tom-select.min.css" rel="stylesheet">
 </head>
 <body>
 
-<h1>Upload de imagens (ao vivo)</h1>
-<p class="lede">Cada imagem é enviada individualmente para <code>POST /upload-image</code> no Pi — validação SHACL acontece a cada envio, com feedback por card.</p>
+<h1>Upload de imagens e vídeos (ao vivo)</h1>
+<p class="lede">Cada arquivo vira um card — imagens vão pra <code>POST /upload-image</code>, vídeos pra <code>POST /upload-video</code> (transcodados em 360p/720p webm no navegador). Tipo é detectado automaticamente.</p>
 
 <form id="form">
 
@@ -96,7 +119,7 @@
 
   <!-- Upload zone único (sempre após o grid; "desce" conforme cards são adicionados) -->
   <fieldset id="upload-zone">
-    <legend>Adicionar imagens</legend>
+    <legend>Adicionar imagens e vídeos</legend>
     <div class="upload-row">
       <div>
         <label style="font-weight:600;margin-top:0">Padrões da Atribuição</label>
@@ -129,12 +152,12 @@
 
       <div>
         <label for="files">Arquivos</label>
-        <input type="file" id="files" accept="image/*" multiple>
-        <small id="filesStatus">Selecione imagens — pHash e EXIF são extraídos; duplicatas (pHash ≤ 5) são rejeitadas.</small>
+        <input type="file" id="files" accept="image/*,video/*" multiple>
+        <small id="filesStatus">Imagens: pHash e EXIF, dedup por pHash ≤ 5. Vídeos: transcodados em 360p+720p webm, trim por card (máx 30 s).</small>
         <small id="catalogStatus">Carregando catálogo…</small>
         <div id="notices" style="margin: .5rem 0;"></div>
         <div style="margin-top: .5rem">
-          <button type="button" id="clearAll" disabled>Limpar todas as imagens</button>
+          <button type="button" id="clearAll" disabled>Limpar todos os cards</button>
         </div>
       </div>
     </div>
@@ -247,14 +270,7 @@ function dct1d(input, N) {
   }
   return out;
 }
-function computePHash(bitmap) {
-  const N = 32;
-  const c = document.createElement('canvas');
-  c.width = N; c.height = N;
-  const ctx = c.getContext('2d');
-  ctx.drawImage(bitmap, 0, 0, N, N);
-  const data = ctx.getImageData(0, 0, N, N).data;
-
+function pHashFromRgba(data, N) {
   // Grayscale matrix (linha-major)
   const m = new Float32Array(N * N);
   for (let i = 0; i < N * N; i++) {
@@ -291,6 +307,64 @@ function computePHash(bitmap) {
     hex += byte.toString(16).padStart(2, '0');
   }
   return hex;
+}
+
+function computePHash(bitmap) {
+  const N = 32;
+  const c = document.createElement('canvas');
+  c.width = N; c.height = N;
+  c.getContext('2d').drawImage(bitmap, 0, 0, N, N);
+  const data = c.getContext('2d').getImageData(0, 0, N, N).data;
+  return pHashFromRgba(data, N);
+}
+
+// pHash de vídeo: amostra N quadros uniformes na duração, computa pHash
+// de cada, e funde via voto majoritário por bit. Resultado é um pHash de
+// 16 hex análogo ao de imagens — entra como IRI do clip (phd:video_<vhash>).
+// Robusto a re-encoding: cortar/recomprimir o mesmo vídeo devolve pHash igual.
+async function computeVideoPHash(file, N = 8) {
+  const v = document.createElement('video');
+  const url = URL.createObjectURL(file);
+  v.src = url; v.muted = true; v.playsInline = true; v.preload = 'auto';
+  try {
+    await new Promise((res, rej) => {
+      v.addEventListener('loadedmetadata', res, { once: true });
+      v.addEventListener('error', () => rej(new Error('vídeo não carregou pro pHash')), { once: true });
+    });
+    const dur = Math.max(0.1, v.duration || 0.1);
+    const C = document.createElement('canvas');
+    const SIDE = 32;
+    C.width = SIDE; C.height = SIDE;
+    const ctx = C.getContext('2d');
+    const bitsHistogram = new Uint16Array(64);
+    for (let i = 0; i < N; i++) {
+      // Pula o frame inicial absoluto (muitas vezes preto) e o final-final.
+      const t = Math.min(Math.max(0.05, ((i + 0.5) / N) * dur), Math.max(0.05, dur - 0.05));
+      v.currentTime = t;
+      await new Promise((r) => v.addEventListener('seeked', r, { once: true }));
+      ctx.drawImage(v, 0, 0, SIDE, SIDE);
+      const data = ctx.getImageData(0, 0, SIDE, SIDE).data;
+      const hex = pHashFromRgba(data, SIDE);
+      for (let row = 0; row < 8; row++) {
+        const byte = parseInt(hex.substr(row * 2, 2), 16);
+        for (let b = 0; b < 8; b++) {
+          if (byte & (1 << (7 - b))) bitsHistogram[row * 8 + b]++;
+        }
+      }
+    }
+    const half = N / 2;
+    let out = '';
+    for (let row = 0; row < 8; row++) {
+      let byte = 0;
+      for (let b = 0; b < 8; b++) {
+        if (bitsHistogram[row * 8 + b] > half) byte |= (1 << (7 - b));
+      }
+      out += byte.toString(16).padStart(2, '0');
+    }
+    return out;
+  } finally {
+    URL.revokeObjectURL(url);
+  }
 }
 
 // ===================== Processamento de imagem =========================
@@ -422,8 +496,11 @@ async function loadCatalog() {
   const types = new Map(), titles = new Map(), dts = new Map(), names = new Map();
   const inSE = new Map(), aSer = new Map(), aSeq = new Map();
   // pHashes já presentes no servidor — usados pra rejeitar re-uploads.
+  // Imagens e vídeos vivem em namespaces de IRI distintos (image_ vs video_).
   const existingPhashes = new Set();
+  const existingVhashes = new Set();
   const IMAGE_IRI_PREFIX = 'https://pedalhidrografi.co/data/image_';
+  const VIDEO_IRI_PREFIX = 'https://pedalhidrografi.co/data/video_';
   // tours.ttl tem os passeios; uploads.ttl tem as imagens (e seus phash via IRI).
   for (const url of ['./data/tours.ttl', './data/uploads.ttl']) {
     try {
@@ -443,6 +520,11 @@ async function loadCatalog() {
           const ph = s.slice(IMAGE_IRI_PREFIX.length);
           if (/^[0-9a-f]{16}$/i.test(ph)) existingPhashes.add(ph.toLowerCase());
         }
+        // Vídeos — `phd:video_<vhash16>`.
+        if (s.startsWith(VIDEO_IRI_PREFIX)) {
+          const vh = s.slice(VIDEO_IRI_PREFIX.length);
+          if (/^[0-9a-f]{16}$/i.test(vh)) existingVhashes.add(vh.toLowerCase());
+        }
       }
     } catch (e) {
       console.warn(`Catálogo: ${url} indisponível —`, e.message);
@@ -460,7 +542,7 @@ async function loadCatalog() {
     }
     if (ts.has(SCHEMA + 'Person')) persons.set(s, { name: names.get(s) || s });
   }
-  return { tours, persons, existingPhashes };
+  return { tours, persons, existingPhashes, existingVhashes };
 }
 
 // ===================== Estado global ===================================
@@ -473,6 +555,7 @@ const personSelects = [];                  // todas as instâncias TomSelect lig
 // pHashes (16-hex) das imagens já no servidor — preenchido pelo bootstrap
 // do catálogo. Usado para rejeitar re-uploads antes de chamar o backend.
 const existingPhashes = [];
+const existingVhashes = [];
 
 const TOUR_WINDOW_BEFORE_MS =  2 * 3600 * 1000;
 const TOUR_WINDOW_AFTER_MS  = 12 * 3600 * 1000;
@@ -496,8 +579,9 @@ let pickerBusy  = false;   // guarda contra re-entrada do handler de #files
 
 // ===================== Bootstrap catálogo ==============================
 try {
-  const { tours, persons, existingPhashes: srvHashes } = await loadCatalog();
+  const { tours, persons, existingPhashes: srvHashes, existingVhashes: srvVHashes } = await loadCatalog();
   for (const h of srvHashes) existingPhashes.push(h);
+  for (const h of srvVHashes) existingVhashes.push(h);
   for (const [iri, m] of tours) {
     const assocStr = m.assocs.map(a => fmtAssoc(a.label, a.n)).join(' & ');
     const head = m.dateTime ? `${m.dateTime}: ` : '';
@@ -516,7 +600,7 @@ try {
   personOptions.sort((a, b) => a.text.localeCompare(b.text, 'pt-BR'));
   if (tours.size || persons.size) {
     $('#catalogStatus').innerHTML =
-      `<span class="ok">Catálogo: ${tours.size} passeios, ${persons.size} pessoas, ${existingPhashes.length} imagens.</span>`;
+      `<span class="ok">Catálogo: ${tours.size} passeios, ${persons.size} pessoas, ${existingPhashes.length} imagens, ${existingVhashes.length} vídeos.</span>`;
   } else {
     $('#catalogStatus').innerHTML = `<span class="warn">Catálogo vazio.</span>`;
   }
@@ -707,10 +791,119 @@ function buildCardElem(displayIdx, file) {
   return elem;
 }
 
+// Card pra vídeo. Mesma grade, mesmas seções de atribuição — troca o
+// painel de "Saída" pelo trim/preview e remove anonimizar/comprimir.
+function buildVideoCardElem(displayIdx, file) {
+  const elem = document.createElement('div');
+  elem.className = 'card';
+  elem.dataset.kind = 'video';
+  elem.innerHTML = `
+    <div class="card-header">
+      <img class="card-thumb" alt="">
+      <div class="card-meta">
+        <strong></strong>
+        <span class="hash">— vídeo —</span>
+      </div>
+      <button type="button" class="card-remove" title="Remover deste lote" aria-label="Remover">×</button>
+    </div>
+
+    <div class="card-section">
+      <h4>Recorte (máx 30 s)</h4>
+      <video class="card-video-preview" muted controls playsinline preload="metadata"></video>
+      <div class="trim-row">
+        <span>Início</span>
+        <input type="range" data-field="trim-start" min="0" max="100" step="0.01" value="0">
+        <div class="trim-steppers">
+          <button type="button" class="trim-step-btn" data-step="-1"      data-trim="start" title="−1s">⟨⟨</button>
+          <button type="button" class="trim-step-btn" data-step="-0.033"  data-trim="start" title="−1 frame">⟨</button>
+          <button type="button" class="trim-step-btn" data-step="0.033"   data-trim="start" title="+1 frame">⟩</button>
+          <button type="button" class="trim-step-btn" data-step="1"       data-trim="start" title="+1s">⟩⟩</button>
+        </div>
+      </div>
+      <div class="trim-row">
+        <span>Fim</span>
+        <input type="range" data-field="trim-end" min="0" max="100" step="0.01" value="100">
+        <div class="trim-steppers">
+          <button type="button" class="trim-step-btn" data-step="-1"      data-trim="end" title="−1s">⟨⟨</button>
+          <button type="button" class="trim-step-btn" data-step="-0.033"  data-trim="end" title="−1 frame">⟨</button>
+          <button type="button" class="trim-step-btn" data-step="0.033"   data-trim="end" title="+1 frame">⟩</button>
+          <button type="button" class="trim-step-btn" data-step="1"       data-trim="end" title="+1s">⟩⟩</button>
+        </div>
+      </div>
+      <div class="trim-times">
+        <span>Início: <strong data-out="start">0,00s</strong></span>
+        <span>Duração: <strong data-out="dur">0,00s</strong></span>
+        <span>Fim: <strong data-out="end">0,00s</strong></span>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <h4>Quando / Onde</h4>
+      <label class="required">Data e hora</label>
+      <input type="datetime-local" data-field="date" step="1" required>
+      <div class="row">
+        <div>
+          <label class="required">Latitude</label>
+          <input type="number" data-field="lat" step="any" min="-90" max="90" required>
+        </div>
+        <div>
+          <label class="required">Longitude</label>
+          <input type="number" data-field="lon" step="any" min="-180" max="180" required>
+        </div>
+      </div>
+      <button type="button" class="pick-on-map" style="margin-top:.35rem;padding:.25rem .5rem;font-size:.8rem;">
+        🗺 Escolher no mapa
+      </button>
+    </div>
+
+    <div class="card-section">
+      <h4>Saída</h4>
+      <div class="opts">
+        <label><input type="checkbox" data-field="audio-only"> Apenas áudio (sem trilha de vídeo)</label>
+      </div>
+    </div>
+
+    <div class="card-section">
+      <h4>Atribuição</h4>
+      <label>Passeio</label>
+      <select data-field="tour"><option value="">— nenhum —</option></select>
+      <small class="tour-auto-status"></small>
+
+      <label>Autoras</label>
+      <select multiple data-field="author" placeholder="busca ou digita…"></select>
+
+      <label>Quem subiu</label>
+      <select multiple data-field="provider" placeholder="busca ou digita…"></select>
+
+      <label>Licença</label>
+      <select data-field="license">
+        <option value="https://creativecommons.org/licenses/by-sa/4.0/" selected>CC BY-SA 4.0</option>
+        <option value="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</option>
+        <option value="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</option>
+        <option value="https://creativecommons.org/licenses/by-nc/4.0/">CC BY-NC 4.0</option>
+        <option value="https://creativecommons.org/publicdomain/zero/1.0/">CC0 1.0</option>
+      </select>
+    </div>
+
+    <div class="card-section">
+      <h4>Envio</h4>
+      <div style="display:flex;gap:.4rem;align-items:center;flex-wrap:wrap">
+        <button type="button" class="card-send" disabled>📤 Processar &amp; enviar</button>
+        <small class="card-send-status">pendente</small>
+      </div>
+    </div>
+  `;
+  $('.card-meta strong', elem).textContent = `${displayIdx}. ${file.name}`;
+  populateTourSelect($('[data-field="tour"]', elem));
+  return elem;
+}
+
 function removeCard(card) {
   destroyPersonSelect(card.authorTs);
   destroyPersonSelect(card.providerTs);
   try { URL.revokeObjectURL($('.card-thumb', card.elem).src); } catch (_) {}
+  const previewEl = $('.card-video-preview', card.elem);
+  if (previewEl?.src) { try { URL.revokeObjectURL(previewEl.src); } catch (_) {} }
   card.elem.remove();
   const i = cards.indexOf(card);
   if (i >= 0) cards.splice(i, 1);
@@ -731,7 +924,8 @@ function showTtlPreview() {
   const blocks = cards.map((card, i) => {
     if (!card.phash) return `# ─── ${i + 1}: ${card.file.name} — pHash ainda não pronto ───`;
     const head = `# ─── ${i + 1}/${cards.length}: ${card.file.name} (${card.phash}) ───`;
-    return `${head}\n${buildSingleImageTtl(card)}`;
+    const body = card.kind === 'video' ? buildSingleClipTtl(card) : buildSingleImageTtl(card);
+    return `${head}\n${body}`;
   });
   pre.textContent = blocks.join('\n\n');
   pre.hidden = false;
@@ -755,7 +949,272 @@ function isHeicFile(file) {
   return /\.(heic|heif)$/i.test(file.name);
 }
 
+function isVideoFile(file) {
+  const t = (file.type || '').toLowerCase();
+  if (t.startsWith('video/')) return true;
+  return /\.(mp4|m4v|mov|webm|mkv|avi)$/i.test(file.name);
+}
+
+// ===================== Vídeo: extração de metadados ====================
+// Procura ISO 6709 ("+DD.DDDD+DDD.DDDD[+ALT]/") nas pontas do arquivo.
+// Em MOV/MP4 da Apple, o moov vem no início (faststart) ou no fim.
+async function tryExtractVideoGps(f) {
+  const N = 16 * 1024 * 1024;
+  const slices = [
+    f.slice(0, Math.min(N, f.size)),
+    f.size > N ? f.slice(Math.max(0, f.size - N)) : null,
+  ].filter(Boolean);
+  const re = /([+-]\d{1,3}\.\d{2,})([+-]\d{1,3}\.\d{2,})(?:([+-]\d+\.\d+))?\//;
+  for (const sl of slices) {
+    const text = new TextDecoder('latin1').decode(await sl.arrayBuffer());
+    const m = re.exec(text);
+    if (!m) continue;
+    const lat = parseFloat(m[1]);
+    const lng = parseFloat(m[2]);
+    if (Math.abs(lat) <= 90 && Math.abs(lng) <= 180) return { lat, lng };
+  }
+  return null;
+}
+
+// Extrai data/hora de gravação dos metadados do MOV/MP4. Tenta, em ordem:
+//   1) ISO 8601 com FUSO HORÁRIO em qualquer lugar do moov — recording
+//      time gravado por iPhones (chave `com.apple.quicktime.creationdate`)
+//      sempre traz TZ. As outras datas do MP4 (mvhd/tkhd modification)
+//      são binárias e UTC implícito, então o filtro "com TZ" naturalmente
+//      isola a hora de gravação.
+//      Nota: a string da CHAVE e o VALOR ficam em atoms separados
+//      (`keys` vs `ilst`), então NÃO procuramos pelo nome da chave —
+//      procuramos diretamente por uma datetime com TZ.
+//   2) Atom binário `mvhd`: uint32 BE seg. desde 1904-01-01 UTC (v0) ou
+//      uint64 (v1). Só usado se não houver ISO+TZ — em iPhones isso vira
+//      a hora do "save"/edit, não da gravação; nas câmeras simples sem
+//      Apple metadata costuma ser a hora certa.
+async function tryExtractVideoCreationDate(f) {
+  const N = 16 * 1024 * 1024;
+  const slices = [
+    f.slice(0, Math.min(N, f.size)),
+    f.size > N ? f.slice(Math.max(0, f.size - N)) : null,
+  ].filter(Boolean);
+  // Datetime com FUSO obrigatório: `YYYY-MM-DDTHH:MM:SS[+HHMM|+HH:MM|Z]`.
+  // `g` pra varrer todos os hits — escolhemos o mais antigo entre 1990–2050
+  // (mvhd "modification" do iPhone às vezes aparece como ISO num atom legado
+  // junto de mtime real; a gravação é a mais antiga das duas).
+  const ISO_TZ_RE = /(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:?\d{2})/g;
+  const QT_EPOCH_OFFSET = 2_082_844_800;
+
+  let earliestIso = null;
+  for (const sl of slices) {
+    const buf  = await sl.arrayBuffer();
+    const text = new TextDecoder('latin1').decode(buf);
+    ISO_TZ_RE.lastIndex = 0;
+    let m;
+    while ((m = ISO_TZ_RE.exec(text))) {
+      const iso = `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}${m[7]}`;
+      const dt = new Date(iso);
+      if (isNaN(dt.getTime())) continue;
+      // Sanidade: 1990–2050.
+      const y = dt.getUTCFullYear();
+      if (y < 1990 || y > 2050) continue;
+      if (!earliestIso || dt < earliestIso) earliestIso = dt;
+    }
+  }
+  if (earliestIso) return dateToLocalInput(earliestIso);
+
+  // Fallback binário (câmeras sem Apple metadata).
+  for (const sl of slices) {
+    const buf  = await sl.arrayBuffer();
+    const view = new DataView(buf);
+    const bytes = new Uint8Array(buf);
+    for (let i = 0; i < bytes.length - 20; i++) {
+      if (bytes[i] !== 0x6d || bytes[i+1] !== 0x76 ||
+          bytes[i+2] !== 0x68 || bytes[i+3] !== 0x64) continue;
+      const version = bytes[i + 4];
+      let qtSec = 0;
+      if (version === 0) {
+        qtSec = view.getUint32(i + 8, false);
+      } else if (version === 1) {
+        const hi = view.getUint32(i + 8, false);
+        const lo = view.getUint32(i + 12, false);
+        qtSec = hi * 0x100000000 + lo;
+      } else {
+        continue;
+      }
+      if (!qtSec) continue;
+      const unix = qtSec - QT_EPOCH_OFFSET;
+      if (unix < 631_152_000 || unix > 2_524_608_000) continue;
+      const dt = new Date(unix * 1000);
+      if (!isNaN(dt.getTime())) return dateToLocalInput(dt);
+    }
+  }
+  return null;
+}
+
+// Decodifica o 1º quadro do vídeo num blob JPEG (thumb do card).
+async function videoFirstFrameBlob(file) {
+  const v = document.createElement('video');
+  const url = URL.createObjectURL(file);
+  v.src = url; v.muted = true; v.playsInline = true; v.preload = 'metadata';
+  try {
+    await new Promise((res, rej) => {
+      v.addEventListener('loadedmetadata', res, { once: true });
+      v.addEventListener('error', () => rej(new Error('vídeo não pôde carregar')), { once: true });
+    });
+    // Seek pra ~5% da duração — evita o frame todo preto da partida.
+    v.currentTime = Math.min(Math.max(0.2, v.duration * 0.05), Math.max(0.2, v.duration - 0.1));
+    await new Promise((res) => v.addEventListener('seeked', res, { once: true }));
+    const W = Math.min(320, v.videoWidth || 320);
+    const H = Math.round((v.videoHeight || 180) * (W / (v.videoWidth || 320)));
+    const c = document.createElement('canvas');
+    c.width = W; c.height = H;
+    c.getContext('2d').drawImage(v, 0, 0, W, H);
+    return await new Promise((r) => c.toBlob(r, 'image/jpeg', 0.8));
+  } finally {
+    URL.revokeObjectURL(url);
+  }
+}
+
+// ===================== Vídeo: transcodificação =========================
+// MediaRecorder grava SÓ o canvas re-escalado (sem áudio — a faixa de
+// áudio sai em um arquivo separado em alta qualidade pra não passar duas
+// vezes pelo encoder lossy). Saída webm/vp9 ou vp8.
+async function transcodeAtShortSide(blob, startSec, endSec, shortSide, onProgress) {
+  return new Promise(async (resolve, reject) => {
+    const video = document.createElement('video');
+    const url = URL.createObjectURL(blob);
+    video.src = url;
+    video.muted = true;          // sem mixar áudio: webm sai apenas com vídeo
+    video.playsInline = true;
+    video.preload = 'auto';
+    try {
+      await new Promise((r, rej) => {
+        video.addEventListener('loadedmetadata', r, { once: true });
+        video.addEventListener('error', () => rej(new Error('vídeo não carregou')), { once: true });
+      });
+      const iw = video.videoWidth, ih = video.videoHeight;
+      if (!iw || !ih) throw new Error('vídeo sem dimensões');
+      const aspect = iw / ih;
+      let outW, outH;
+      if (iw >= ih) { outH = shortSide; outW = Math.round(shortSide * aspect); }
+      else          { outW = shortSide; outH = Math.round(shortSide / aspect); }
+      outW -= outW % 2; outH -= outH % 2;
+      const canvas = document.createElement('canvas');
+      canvas.width = outW; canvas.height = outH;
+      const ctx = canvas.getContext('2d');
+      const videoStream = canvas.captureStream(30);
+      const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9'
+        : (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
+            ? 'video/webm;codecs=vp8' : 'video/webm');
+      const recorder = new MediaRecorder(videoStream, {
+        mimeType: mime,
+        videoBitsPerSecond: shortSide >= 720 ? 1_600_000 : 700_000,
+      });
+      const chunks = [];
+      recorder.ondataavailable = (e) => { if (e.data?.size) chunks.push(e.data); };
+      recorder.onerror = (e) => reject(e.error || new Error('recorder error'));
+      video.currentTime = startSec;
+      await new Promise((r) => video.addEventListener('seeked', r, { once: true }));
+      let stopped = false;
+      recorder.start(250);
+      video.play();
+      let raf = 0;
+      const dur = Math.max(0.001, endSec - startSec);
+      const render = () => {
+        if (stopped) return;
+        if (video.currentTime >= endSec || video.ended) {
+          stopped = true;
+          recorder.stop();
+          try { video.pause(); } catch (_) {}
+          return;
+        }
+        ctx.drawImage(video, 0, 0, outW, outH);
+        if (onProgress) onProgress(Math.min(1, (video.currentTime - startSec) / dur));
+        raf = requestAnimationFrame(render);
+      };
+      raf = requestAnimationFrame(render);
+      recorder.onstop = () => {
+        cancelAnimationFrame(raf);
+        URL.revokeObjectURL(url);
+        resolve(new Blob(chunks, { type: 'video/webm' }));
+      };
+    } catch (e) {
+      URL.revokeObjectURL(url);
+      reject(e);
+    }
+  });
+}
+
+// Extrai o áudio do trecho [startSec, endSec] como opus dentro de webm
+// — 192 kbps é perceptualmente transparente pra material falado/ambiente
+// e mantém arquivos pequenos. Sem WAV: arquivos seriam ~5 MB por 30 s,
+// e o gateway de upload do Pi tem ceiling baixo.
+async function extractAudio(blob, startSec, endSec, onProgress) {
+  return new Promise(async (resolve, reject) => {
+    const video = document.createElement('video');
+    const url = URL.createObjectURL(blob);
+    video.src = url;
+    video.muted = false;
+    video.playsInline = true;
+    video.preload = 'auto';
+    try {
+      await new Promise((r, rej) => {
+        video.addEventListener('loadedmetadata', r, { once: true });
+        video.addEventListener('error', () => rej(new Error('mídia não carregou')), { once: true });
+      });
+      const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const audioSrc = audioCtx.createMediaElementSource(video);
+      const audioDest = audioCtx.createMediaStreamDestination();
+      audioSrc.connect(audioDest);
+      const mime = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
+        ? 'audio/webm;codecs=opus'
+        : 'audio/webm';
+      const recorder = new MediaRecorder(audioDest.stream, {
+        mimeType: mime,
+        audioBitsPerSecond: 192_000,
+      });
+      const chunks = [];
+      recorder.ondataavailable = (e) => { if (e.data?.size) chunks.push(e.data); };
+      recorder.onerror = (e) => reject(e.error || new Error('audio recorder error'));
+      video.currentTime = startSec;
+      await new Promise((r) => video.addEventListener('seeked', r, { once: true }));
+      let stopped = false;
+      recorder.start(250);
+      video.play();
+      const dur = Math.max(0.001, endSec - startSec);
+      let raf = 0;
+      const tick = () => {
+        if (stopped) return;
+        if (video.currentTime >= endSec || video.ended) {
+          stopped = true;
+          recorder.stop();
+          try { video.pause(); } catch (_) {}
+          return;
+        }
+        if (onProgress) onProgress(Math.min(1, (video.currentTime - startSec) / dur));
+        raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+      recorder.onstop = () => {
+        cancelAnimationFrame(raf);
+        try { audioSrc.disconnect(); } catch (_) {}
+        try { audioCtx.close(); } catch (_) {}
+        URL.revokeObjectURL(url);
+        resolve(new Blob(chunks, { type: 'audio/webm' }));
+      };
+    } catch (e) {
+      URL.revokeObjectURL(url);
+      reject(e);
+    }
+  });
+}
+
+
 async function createCard(file, defaults) {
+  if (isVideoFile(file)) return createVideoCard(file, defaults);
+  return createImageCard(file, defaults);
+}
+
+async function createImageCard(file, defaults) {
   // 0) HEIC → JPEG. Substituímos `file` para que o resto do pipeline (pHash,
   //    EXIF, compressão, splicer Exif) trate como JPEG. A conversão preserva
   //    os metadados, então o splicer continua propagando-os para large/original.
@@ -823,6 +1282,7 @@ async function createCard(file, defaults) {
   $('#cards').appendChild(elem);
 
   const card = {
+    kind: 'image',
     index: cardCounter, file, phash, bitmap, elem,
     authorTs: null, providerTs: null, skipAutoDetect: false,
   };
@@ -896,6 +1356,181 @@ async function createCard(file, defaults) {
   return { ok: true, card };
 }
 
+async function createVideoCard(file, defaults) {
+  // 1) Computa pHash de vídeo (8 quadros amostrados, voto majoritário por
+  //    bit). Mesma forma (16 hex) que o pHash de imagem — entra no IRI como
+  //    `phd:video_<vhash>`, dedup análogo ao de imagens.
+  let vhash;
+  try {
+    vhash = await computeVideoPHash(file, 8);
+  } catch (e) {
+    notify(`<strong>${file.name}</strong>: não consegui calcular pHash de vídeo (${e.message}).`, 'err');
+    return { ok: false, reason: 'vhash-failed' };
+  }
+  // Dedup contra cards do lote já criados.
+  for (const existing of cards) {
+    if (!existing.phash) continue;
+    const dist = hammingDistance(vhash, existing.phash);
+    if (dist <= PHASH_DUP_THRESHOLD) {
+      notify(
+        `<strong>${file.name}</strong> rejeitado — pHash de vídeo similar a ` +
+        `<em>${existing.file.name}</em> (distância ${dist} ≤ ${PHASH_DUP_THRESHOLD}).`,
+        'warn',
+      );
+      return { ok: false, reason: 'duplicate' };
+    }
+  }
+  // Dedup contra vídeos já no servidor.
+  for (const srv of existingVhashes) {
+    const dist = hammingDistance(vhash, srv);
+    if (dist <= PHASH_DUP_THRESHOLD) {
+      notify(
+        `<strong>${file.name}</strong> rejeitado — já existe no servidor ` +
+        `(<code>video_${srv}</code>, distância pHash ${dist} ≤ ${PHASH_DUP_THRESHOLD}).`,
+        'warn',
+      );
+      return { ok: false, reason: 'duplicate' };
+    }
+  }
+
+  cardCounter += 1;
+  const elem = buildVideoCardElem(cardCounter, file);
+  $('#cards').appendChild(elem);
+
+  const card = {
+    kind: 'video',
+    index: cardCounter, file, elem,
+    phash: vhash,           // alinha o nome com cards de imagem pra dedup compartilhada
+    clipId: vhash,          // IRI: phd:video_<vhash>
+    authorTs: null, providerTs: null, skipAutoDetect: false,
+    duration: 0,
+    processed: null,        // { audio, blob360, blob720 } depois do processamento
+    uploaded: false,
+  };
+  cards.push(card);
+  $('.hash', elem).textContent = `pHash: ${vhash}`;
+
+  card.authorTs   = initPersonSelect($('[data-field="author"]',   elem));
+  card.providerTs = initPersonSelect($('[data-field="provider"]', elem));
+
+  // Padrões do lote
+  if (defaults.tour) {
+    $('[data-field="tour"]', elem).value = defaults.tour;
+    card.skipAutoDetect = true;
+  }
+  if (defaults.license) $('[data-field="license"]', elem).value = defaults.license;
+  if (defaults.authors?.length)   card.authorTs.setValue(defaults.authors);
+  if (defaults.providers?.length) card.providerTs.setValue(defaults.providers);
+
+  // Listeners
+  $('[data-field="tour"]', elem).addEventListener('change', () => { card.skipAutoDetect = true; });
+  const dateInput = $('[data-field="date"]', elem);
+  dateInput.addEventListener('change', () => autoDetectTour(card));
+  dateInput.addEventListener('input',  () => autoDetectTour(card));
+  $('.card-remove', elem).addEventListener('click', () => removeCard(card));
+  $('.card-send',   elem).addEventListener('click', () => uploadCard(card));
+  $('.pick-on-map', elem).addEventListener('click', () => {
+    const latI = $('[data-field="lat"]', elem);
+    const lonI = $('[data-field="lon"]', elem);
+    const lat = parseFloat(latI.value);
+    const lon = parseFloat(lonI.value);
+    openMapPicker(
+      Number.isFinite(lat) ? lat : null,
+      Number.isFinite(lon) ? lon : null,
+      (newLat, newLon) => {
+        latI.value = newLat.toFixed(6);
+        lonI.value = newLon.toFixed(6);
+        latI.dispatchEvent(new Event('change', { bubbles: true }));
+        lonI.dispatchEvent(new Event('change', { bubbles: true }));
+      },
+    );
+  });
+
+  // Prévia do vídeo + trim sliders
+  const preview = $('.card-video-preview', elem);
+  const tStart  = $('[data-field="trim-start"]', elem);
+  const tEnd    = $('[data-field="trim-end"]',   elem);
+  const outStart = $('[data-out="start"]', elem);
+  const outEnd   = $('[data-out="end"]',   elem);
+  const outDur   = $('[data-out="dur"]',   elem);
+  preview.src = URL.createObjectURL(file);
+
+  function fmtSec(s) {
+    return (Math.round(s * 100) / 100).toFixed(2).replace('.', ',') + 's';
+  }
+  function updateTrimLabels() {
+    let s = Math.max(0, Math.min(parseFloat(tStart.value) || 0, card.duration));
+    let e = Math.max(0, Math.min(parseFloat(tEnd.value)   || 0, card.duration));
+    if (e < s) [s, e] = [e, s];
+    if (e - s > 30) e = s + 30;
+    tStart.value = String(s);
+    tEnd.value   = String(e);
+    outStart.textContent = fmtSec(s);
+    outEnd.textContent   = fmtSec(e);
+    const dur = e - s;
+    outDur.textContent = fmtSec(dur);
+    outDur.parentElement.classList.toggle('warn', dur > 30 || dur < 0.1);
+    if (document.activeElement === tStart) preview.currentTime = s;
+    else if (document.activeElement === tEnd) preview.currentTime = e;
+  }
+  preview.addEventListener('loadedmetadata', () => {
+    card.duration = preview.duration || 0;
+    tStart.max = String(card.duration);
+    tEnd.max   = String(card.duration);
+    tEnd.value = String(Math.min(30, card.duration));
+    tStart.value = '0';
+    updateTrimLabels();
+    setCardSendEnabled(card, true);
+  });
+  tStart.addEventListener('input', updateTrimLabels);
+  tEnd.addEventListener('input',   updateTrimLabels);
+  for (const btn of elem.querySelectorAll('.trim-step-btn')) {
+    btn.addEventListener('click', () => {
+      const step = parseFloat(btn.dataset.step);
+      const which = btn.dataset.trim;
+      const inp = which === 'start' ? tStart : tEnd;
+      const cur = parseFloat(inp.value) || 0;
+      inp.value = String(Math.max(0, Math.min(card.duration, cur + step)));
+      inp.focus();
+      updateTrimLabels();
+    });
+  }
+
+  // Thumb do card: 1º frame decodificado.
+  videoFirstFrameBlob(file)
+    .then(blob => { if (blob) $('.card-thumb', elem).src = URL.createObjectURL(blob); })
+    .catch(() => { /* sem thumb — placeholder cinza */ });
+
+  // Extração best-effort de GPS + data/hora de gravação dos metadados do
+  // vídeo (Apple `com.apple.quicktime.creationdate` ou qualquer ISO 8601
+  // achado nas pontas do moov). Sem fallback pro file.lastModified — esse
+  // costuma ser a hora do copy/transferência, não da gravação; deixar em
+  // branco força o usuário a preencher manualmente em vez de subir errado.
+  setCardStatus(card, 'lendo metadados…', 'warn');
+  try {
+    const [gps, recDate] = await Promise.all([
+      tryExtractVideoGps(file).catch(() => null),
+      tryExtractVideoCreationDate(file).catch(() => null),
+    ]);
+    if (gps) {
+      $('[data-field="lat"]', elem).value = gps.lat.toFixed(6);
+      $('[data-field="lon"]', elem).value = gps.lng.toFixed(6);
+    }
+    if (recDate) {
+      dateInput.value = recDate;
+      autoDetectTour(card);
+    }
+    const bits = [];
+    if (gps) bits.push(`GPS ${gps.lat.toFixed(4)},${gps.lng.toFixed(4)}`);
+    if (recDate) bits.push(`gravado ${recDate.replace('T', ' ')}`);
+    if (!recDate) bits.push('sem data nos metadados — preencha manualmente');
+    setCardStatus(card, bits.join(' · '), recDate ? '' : 'warn');
+  } catch (e) {
+    setCardStatus(card, 'metadados: ' + e.message, 'warn');
+  }
+  return { ok: true, card };
+}
+
 function readDefaults() {
   return {
     tour:      $('#d-tour').value,
@@ -917,16 +1552,16 @@ $('#files').addEventListener('change', async (e) => {
     if (!files.length) return;
     clearNotices();                  // mensagens antigas saem antes do novo lote
     const defaults = readDefaults();
-    const tally = { ok: 0, duplicate: 0, 'decode-error': 0,
+    const tally = { ok: 0, duplicate: 0, 'decode-error': 0, 'vhash-failed': 0,
                     'heic-unavailable': 0, 'heic-convert-failed': 0 };
     for (const f of files) {         // sequencial: dedup precisa ver os recém-aceitos
       const r = await createCard(f, defaults);
       const key = r?.ok ? 'ok' : (r?.reason || 'decode-error');
       tally[key] = (tally[key] || 0) + 1;
     }
-    const parts = [`+${tally.ok} imagem(ns)`];
-    if (tally.duplicate)             parts.push(`<span class="warn">${tally.duplicate} duplicada(s)</span>`);
-    const errs = tally['decode-error'] + tally['heic-unavailable'] + tally['heic-convert-failed'];
+    const parts = [`+${tally.ok} card(s)`];
+    if (tally.duplicate)             parts.push(`<span class="warn">${tally.duplicate} duplicado(s)</span>`);
+    const errs = tally['decode-error'] + tally['heic-unavailable'] + tally['heic-convert-failed'] + tally['vhash-failed'];
     if (errs)                        parts.push(`<span class="err">${errs} com erro</span>`);
     parts.push(`(total: ${cards.length}).`);
     $('#filesStatus').innerHTML = parts.join(' · ');
@@ -937,9 +1572,9 @@ $('#files').addEventListener('change', async (e) => {
   }
 });
 
-// Botão "Limpar todas as imagens"
+// Botão "Limpar todos os cards"
 $('#clearAll').addEventListener('click', () => {
-  if (cards.length && !confirm(`Remover todas as ${cards.length} imagem(ns)?`)) return;
+  if (cards.length && !confirm(`Remover todos os ${cards.length} card(s)?`)) return;
   for (const c of [...cards]) removeCard(c);
   cardCounter = 0;
   clearNotices();
@@ -1008,6 +1643,72 @@ function buildSingleImageTtl(card) {
   return `${prefixes}\n${decls}\n${buildImageBlock(card).ttl}\n`;
 }
 
+// Constrói o bloco TTL para 1 clipe (ph:Video).
+function buildClipBlock(card) {
+  const elem = card.elem;
+  const dateXsd = localToXsdDateTime($('[data-field="date"]', elem).value);
+  const lat   = $('[data-field="lat"]', elem).value;
+  const lon   = $('[data-field="lon"]', elem).value;
+  const tour    = $('[data-field="tour"]',    elem).value.trim();
+  const license = $('[data-field="license"]', elem).value;
+  const audioOnly = $('[data-field="audio-only"]', elem).checked;
+  const authors   = card.authorTs.getValue();
+  const providers = card.providerTs.getValue();
+  // Trim window — duração é o que de fato vai parar no arquivo.
+  const tStart = parseFloat($('[data-field="trim-start"]', elem).value) || 0;
+  const tEnd   = parseFloat($('[data-field="trim-end"]',   elem).value) || 0;
+  const durSec = Math.max(0, tEnd - tStart);
+  const isoDur = `PT${Math.round(durSec * 100) / 100}S`;
+
+  const id = card.clipId;
+  const audioFile = `${id}.audio.webm`;
+  const thumbFile = `${id}.thumb.jpg`;
+  const props = [
+    `a ph:Video`,
+    `dcterms:date "${dateXsd}"^^xsd:dateTime`,
+    `dcterms:license <${license}>`,
+    `schema:locationCreated [\n        a schema:GeoCoordinates ;\n        schema:latitude "${lat}"^^xsd:decimal ;\n        schema:longitude "${lon}"^^xsd:decimal\n    ]`,
+    `schema:duration "${isoDur}"^^xsd:duration`,
+    `ph:audio "${audioFile}"`,
+    `schema:thumbnail "${thumbFile}"`,
+  ];
+  const resolutions = ['"audio"'];
+  if (!audioOnly) {
+    props.push(`ph:video360p "${id}.360p.webm"`);
+    props.push(`ph:video720p "${id}.720p.webm"`);
+    resolutions.push('"360p"', '"720p"');
+  }
+  props.push(`ph:availableResolution ${resolutions.join(', ')}`);
+  if (tour)         props.push(`ph:capturedDuring ${tour}`);
+  for (const a of authors)   props.push(`prov:wasAttributedTo ${a}`);
+  for (const p of providers) props.push(`pav:providedBy ${p}`);
+  const iri  = `phd:video_${id}`;
+  const body = props.map(p => `    ${p}`).join(' ;\n');
+  return { iri, ttl: `${iri}\n${body} .` };
+}
+
+// TTL auto-suficiente para 1 clipe: prefixos + pessoas novas + bloco.
+function buildSingleClipTtl(card) {
+  const prefixes = [
+    '@prefix dcterms: <http://purl.org/dc/terms/> .',
+    '@prefix pav:     <http://purl.org/pav/> .',
+    '@prefix ph:      <https://pedalhidrografi.co/terms#> .',
+    '@prefix phd:     <https://pedalhidrografi.co/data/> .',
+    '@prefix prov:    <http://www.w3.org/ns/prov#> .',
+    '@prefix schema:  <https://schema.org/> .',
+    '@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .',
+  ].join('\n');
+  const used = new Set();
+  for (const v of [...card.authorTs.getValue(), ...card.providerTs.getValue()]) {
+    if (newPersons.has(v)) used.add(v);
+  }
+  const personDecls = [...used].map(iri =>
+    `${iri} a schema:Person ;\n    schema:alternateName "${turtle_escape(newPersons.get(iri))}" .`
+  ).join('\n\n');
+  const decls = personDecls ? `\n# Pessoas novas\n${personDecls}\n` : '';
+  return `${prefixes}\n${decls}\n${buildClipBlock(card).ttl}\n`;
+}
+
 // Constrói as 3 variantes da imagem em blobs (mesma lógica do kit ZIP do
 // modo lote: respeita Anonimizar / Comprimir; large/thumb sempre derivam
 // do bitmap em memória).
@@ -1052,6 +1753,11 @@ function setCardSendEnabled(card, enabled) {
 }
 
 async function uploadCard(card) {
+  if (card.kind === 'video') return uploadVideoCard(card);
+  return uploadImageCard(card);
+}
+
+async function uploadImageCard(card) {
   if (!card.phash || !card.bitmap) {
     setCardStatus(card, 'erro: imagem não pronta', 'err');
     return false;
@@ -1085,6 +1791,74 @@ async function uploadCard(card) {
     }
     card.uploaded = true;
     setCardStatus(card, `✓ enviada (phash ${data.phash || card.phash})`, 'ok');
+    return true;
+  } catch (e) {
+    setCardStatus(card, `erro de rede: ${e.message}`, 'err');
+    setCardSendEnabled(card, true);
+    return false;
+  }
+}
+
+const UPLOAD_VIDEO_URL = './upload-video';
+
+async function uploadVideoCard(card) {
+  if (!card.clipId || !card.file) {
+    setCardStatus(card, 'erro: vídeo não pronto', 'err');
+    return false;
+  }
+  if (!$('#form').reportValidity()) return false;
+  const elem = card.elem;
+  const audioOnly = $('[data-field="audio-only"]', elem).checked;
+  const tStart = parseFloat($('[data-field="trim-start"]', elem).value) || 0;
+  const tEnd   = parseFloat($('[data-field="trim-end"]',   elem).value) || 0;
+  if (tEnd - tStart <= 0.1) {
+    setCardStatus(card, 'recorte muito curto', 'err');
+    return false;
+  }
+  if (tEnd - tStart > 30.5) {
+    setCardStatus(card, 'recorte > 30 s', 'err');
+    return false;
+  }
+
+  setCardSendEnabled(card, false);
+  let ttl, audioBlob, thumbBlob = null, blob360 = null, blob720 = null;
+  try {
+    setCardStatus(card, 'extraindo thumbnail…', 'warn');
+    thumbBlob = await videoFirstFrameBlob(card.file).catch(() => null);
+    setCardStatus(card, 'extraindo áudio (opus 192k)…', 'warn');
+    audioBlob = await extractAudio(card.file, tStart, tEnd);
+    if (!audioOnly) {
+      setCardStatus(card, 'transcodando 720p…', 'warn');
+      blob720 = await transcodeAtShortSide(card.file, tStart, tEnd, 720);
+      setCardStatus(card, 'transcodando 360p…', 'warn');
+      blob360 = await transcodeAtShortSide(card.file, tStart, tEnd, 360);
+    }
+    ttl = buildSingleClipTtl(card);
+  } catch (e) {
+    setCardStatus(card, `falha local: ${e.message}`, 'err');
+    setCardSendEnabled(card, true);
+    return false;
+  }
+
+  const fd = new FormData();
+  fd.append('ttl', ttl);
+  fd.append('id',  card.clipId);
+  fd.append('audio', audioBlob, `${card.clipId}.audio.webm`);
+  if (thumbBlob) fd.append('thumb', thumbBlob, `${card.clipId}.thumb.jpg`);
+  if (blob360) fd.append('video360', blob360, `${card.clipId}.360p.webm`);
+  if (blob720) fd.append('video720', blob720, `${card.clipId}.720p.webm`);
+  setCardStatus(card, 'enviando…', 'warn');
+  try {
+    const res = await fetch(UPLOAD_VIDEO_URL, { method: 'POST', body: fd });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const detail = (data.details || []).join('; ') || data.error || `HTTP ${res.status}`;
+      setCardStatus(card, `erro: ${detail}`, 'err');
+      setCardSendEnabled(card, true);
+      return false;
+    }
+    card.uploaded = true;
+    setCardStatus(card, `✓ enviado (video_${card.clipId})`, 'ok');
     return true;
   } catch (e) {
     setCardStatus(card, `erro de rede: ${e.message}`, 'err');

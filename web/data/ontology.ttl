@@ -29,6 +29,40 @@ ph:Image a owl:Class ;
         "Fotografia tirada durante um passeio. Entidade PROV-O (atribuída a uma autora, gerada por um passeio) e schema:ImageObject (licença, hash, coordenada)."@pt ;
     rdfs:subClassOf prov:Entity, schema:ImageObject .
 
+ph:Video a owl:Class ;
+    rdfs:label "Vídeo"@pt ;
+    rdfs:comment
+        "Captura A/V curta gravada durante um passeio. Compartilha com ph:Image as exigências de procedência, coordenada, data, autoria e licença, mas NÃO requer direção (exif:gpsImgDirection) nem focal eq. 35mm (exif:focalLengthIn35mmFilm) — não fazem sentido pra vídeo. Adiciona schema:duration e ph:availableResolution. Quando ph:availableResolution só contém 'audio', é uma captura puramente sonora (sem trilha de vídeo)."@pt ;
+    rdfs:subClassOf prov:Entity, schema:MediaObject .
+
+ph:availableResolution a owl:DatatypeProperty ;
+    rdfs:label "resolução disponível"@pt ;
+    rdfs:comment
+        "Resolução(ões) em que o vídeo está disponível no armazenamento. Use uma das constantes: 'audio' (apenas áudio, sem vídeo), '360p', '480p', '720p', '1080p'. Múltiplos valores são esperados (ex.: 'audio', '360p', '720p')."@pt ;
+    rdfs:domain ph:Video ;
+    rdfs:range xsd:string .
+
+ph:audio a owl:DatatypeProperty ;
+    rdfs:label "trilha de áudio"@pt ;
+    rdfs:comment
+        "Caminho relativo (sob web/clips/) para a faixa de áudio do clipe, em WAV PCM (sem compressão lossy adicional)."@pt ;
+    rdfs:domain ph:Video ;
+    rdfs:range xsd:string .
+
+ph:video360p a owl:DatatypeProperty ;
+    rdfs:label "webm 360p"@pt ;
+    rdfs:comment
+        "Caminho relativo (sob web/clips/) para o webm 360p sem áudio."@pt ;
+    rdfs:domain ph:Video ;
+    rdfs:range xsd:string .
+
+ph:video720p a owl:DatatypeProperty ;
+    rdfs:label "webm 720p"@pt ;
+    rdfs:comment
+        "Caminho relativo (sob web/clips/) para o webm 720p sem áudio."@pt ;
+    rdfs:domain ph:Video ;
+    rdfs:range xsd:string .
+
 ph:RouteReference a owl:Class ;
     rdfs:label "Referência a rota externa"@pt ;
     rdfs:comment

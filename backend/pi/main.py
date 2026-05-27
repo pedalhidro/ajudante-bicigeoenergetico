@@ -559,6 +559,196 @@ def upload_image():
     return jsonify(phash=phash, files=written, activity=upload_local, ok=True)
 
 
+def validate_video_ttl(ttl_text):
+    """Espelha validate_image_ttl pra ph:Video: verifica que tem exatamente
+    1 ph:Video com IRI phd:video_<vhash16>, e dispara SHACL contra shapes+
+    ontology+catálogo (catálogo é mesclado MENOS os triples do próprio vídeo
+    em curso, pra que re-uploads não disparem violações de cardinalidade).
+    Retorna (ok, vhash, errors)."""
+    v = _load_validator()
+    from rdflib import URIRef, Namespace, BNode
+    data = v["Graph"]().parse(data=ttl_text, format="turtle")
+
+    RDFT = URIRef("http://www.w3.org/1999/02/22-rdf-syntax-ns#type")
+    videos = list(data.subjects(RDFT, URIRef(PH_NS + "Video")))
+    if len(videos) != 1:
+        return False, None, [
+            f"TTL deve conter exatamente 1 ph:Video (achou {len(videos)})"
+        ]
+    video_iri = str(videos[0])
+    if not video_iri.startswith(PHD_NS + "video_"):
+        return False, None, [
+            f"IRI do Video deve começar com phd:video_ (atual: {video_iri})"
+        ]
+    vhash = video_iri[len(PHD_NS + "video_"):]
+    if not vhash or not all(c in "0123456789abcdef" for c in vhash.lower()):
+        return False, vhash, [f"vhash inválido na IRI: {vhash}"]
+
+    vid_uri = URIRef(video_iri)
+    catalog = _load_catalog()
+    vid_bnodes = set()
+    queue = [vid_uri]
+    while queue:
+        cur = queue.pop()
+        for _s, _p, o in catalog.triples((cur, None, None)):
+            if isinstance(o, BNode) and o not in vid_bnodes:
+                vid_bnodes.add(o)
+                queue.append(o)
+    exclude = vid_bnodes | {vid_uri}
+    merged = data + v["ont"]
+    for s, p, o in catalog:
+        if s not in exclude:
+            merged.add((s, p, o))
+    conforms, results_graph, _txt = v["pyshacl"].validate(
+        merged, shacl_graph=v["shapes"], inference="rdfs", advanced=True)
+    if conforms:
+        return True, vhash, []
+
+    own_subjects = set(data.subjects())
+    SH = Namespace("http://www.w3.org/ns/shacl#")
+    errors = []
+    for r in results_graph.subjects(SH.resultSeverity, SH.Violation):
+        focus = next(results_graph.objects(r, SH.focusNode), None)
+        if focus is None or focus in own_subjects:
+            msg = next(results_graph.objects(r, SH.resultMessage), None)
+            errors.append(str(msg) if msg else "(sem mensagem)")
+    if not errors:
+        return True, vhash, []
+    return False, vhash, errors
+
+
+@app.post("/upload-video")
+def upload_video():
+    """Recebe um clipe já processado no browser:
+      - `audio`     : opus dentro de webm (sempre presente, alta qualidade)
+      - `video360`  : webm 360p sem trilha de áudio (opcional, audio-only mode)
+      - `video720`  : webm 720p sem trilha de áudio (opcional, audio-only mode)
+      - `ttl`       : TTL auto-suficiente com 1 ph:Video e seus metadados
+      - `id`        : pHash de vídeo (16 hex)
+    Valida com SHACL (ph:VideoShape), persiste os arquivos em `clips/<id>.*`
+    e mescla os triples no único `data/uploads.ttl` (que serve imagens E
+    vídeos — namespaces de IRI distinguem: phd:image_ vs phd:video_)."""
+    ttl_text = request.form.get("ttl")
+    if not ttl_text:
+        f = request.files.get("ttl")
+        if f:
+            ttl_text = f.read().decode("utf-8", errors="replace")
+    if not ttl_text:
+        return jsonify(error="ttl ausente"), 400
+
+    vid_id = (request.form.get("id") or "").strip().lower()
+    if not vid_id or len(vid_id) != 16 or not all(c in "0123456789abcdef" for c in vid_id):
+        return jsonify(error="id inválido (esperado vhash de 16 hex)"), 400
+
+    # Audio é obrigatório (a SHACL VideoShape exige ph:audio).
+    audio_file = request.files.get("audio")
+    if not audio_file:
+        return jsonify(error="audio ausente (sempre obrigatório)"), 400
+
+    # Valida antes de gravar — evita lixo em disco se o TTL não bate com a id.
+    ok, vhash, errors = validate_video_ttl(ttl_text)
+    if not ok and not vhash:
+        return jsonify(error="; ".join(errors)), 400
+    if vhash != vid_id:
+        return jsonify(error=f"id (form) {vid_id} != vhash (ttl) {vhash}"), 400
+    if not ok:
+        return jsonify(error="SHACL violations", details=errors), 422
+
+    # Grava: audio.webm sempre; webms só se vieram (audio-only mode); thumb
+    # opcional (mas o app espera ele pra renderizar o marker como photo-style).
+    written = []
+    audio_key = f"clips/{vid_id}.audio.webm"
+    STORE.write_bytes(audio_key, audio_file.read(), content_type="audio/webm")
+    written.append(audio_key)
+    thumb_file = request.files.get("thumb")
+    if thumb_file:
+        thumb_key = f"clips/{vid_id}.thumb.jpg"
+        STORE.write_bytes(thumb_key, thumb_file.read(), content_type="image/jpeg")
+        written.append(thumb_key)
+    for form_field, key_suffix in (("video360", "360p.webm"), ("video720", "720p.webm")):
+        f = request.files.get(form_field)
+        if not f:
+            continue
+        key = f"clips/{vid_id}.{key_suffix}"
+        STORE.write_bytes(key, f.read(), content_type="video/webm")
+        written.append(key)
+
+    # Persiste TTL em uploads.ttl — mesma file dos uploads de imagem. Dedup
+    # por IRI (re-upload sobrescreve triples antigos do mesmo vhash).
+    try:
+        from rdflib import URIRef, BNode, Graph as RdfGraph
+        vid_iri = URIRef(PHD_NS + f"video_{vid_id}")
+        existing_text = STORE.read_text(KEY_UPLOADS) or ""
+        catalog = RdfGraph()
+        if existing_text:
+            catalog.parse(data=existing_text, format="turtle")
+        to_remove_subjects = {vid_iri}
+        queue = [vid_iri]
+        while queue:
+            cur = queue.pop()
+            for _s, _p, o in list(catalog.triples((cur, None, None))):
+                if isinstance(o, BNode) and o not in to_remove_subjects:
+                    to_remove_subjects.add(o)
+                    queue.append(o)
+        for subj in to_remove_subjects:
+            for triple in list(catalog.triples((subj, None, None))):
+                catalog.remove(triple)
+        catalog.parse(data=ttl_text, format="turtle")
+        STORE.write_text(KEY_UPLOADS, catalog.serialize(format="turtle"))
+        register_upload_in_manifest("uploads.ttl")  # idempotente
+    except Exception as e:  # noqa: BLE001
+        return jsonify(error=f"persistência ttl: {e}", id=vid_id, files=written), 500
+
+    print(f"[upload-video] id={vid_id} files={written}")
+    return jsonify(id=vid_id, files=written, ok=True)
+
+
+def remove_video_from_uploads(vhash):
+    """Lê os caminhos dos arquivos do vídeo, purga triples (vídeo + bnodes
+    alcançáveis), persiste, e devolve (paths, n_triples) — pra que o caller
+    delete os blobs no STORE."""
+    existing = STORE.read_text(KEY_UPLOADS)
+    if not existing:
+        return [], 0
+    from rdflib import URIRef
+    v = _load_validator()
+    vid_iri = URIRef(PHD_NS + "video_" + vhash)
+    catalog = v["Graph"]()
+    catalog.parse(data=existing, format="turtle")
+    SCHEMA = "https://schema.org/"
+    paths = []
+    for pred in (PH_NS + "audio", PH_NS + "video360p", PH_NS + "video720p",
+                 SCHEMA + "thumbnail"):
+        for o in catalog.objects(vid_iri, URIRef(pred)):
+            paths.append(str(o))
+    n = _purge_subject(catalog, vid_iri)
+    STORE.write_text(KEY_UPLOADS, catalog.serialize(format="turtle"))
+    return paths, n
+
+
+@app.post("/delete-video/<vhash>")
+def delete_video(vhash):
+    vhash = (vhash or "").strip().lower()
+    if not vhash or len(vhash) != 16 or not all(c in "0123456789abcdef" for c in vhash):
+        return jsonify(error="vhash inválido"), 400
+    try:
+        paths, removed_triples = remove_video_from_uploads(vhash)
+        _invalidate_catalog()
+    except Exception as e:  # noqa: BLE001
+        return jsonify(error=f"persistência ttl: {e}", vhash=vhash), 500
+    removed_files = 0
+    for rel in paths:
+        # `rel` é relativo a web/clips/ (ex.: "audio/IMG_X.m4a", "IMG_X.360p.mp4").
+        key = f"clips/{rel}"
+        try:
+            STORE.delete(key)
+            removed_files += 1
+        except Exception as e:  # noqa: BLE001
+            print(f"[delete-video] aviso ao remover {key}: {e}")
+    print(f"[delete-video] vhash={vhash} files={removed_files} triples={removed_triples}")
+    return jsonify(vhash=vhash, files=removed_files, triples=removed_triples)
+
+
 @app.post("/delete-image/<phash>")
 def delete_image(phash):
     phash = (phash or "").strip().lower()

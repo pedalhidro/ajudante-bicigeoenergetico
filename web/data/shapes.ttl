@@ -101,6 +101,99 @@ ph:ImageShape a sh:NodeShape ;
         sh:message "Se declarado, ph:compressed deve ser booleano."@pt ;
     ] .
 
+ph:VideoShape a sh:NodeShape ;
+    sh:targetClass ph:Video ;
+    sh:property [
+        sh:path dcterms:date ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:dateTime ;
+        sh:message "Vídeo precisa de um único timestamp (dcterms:date)."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:locationCreated ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:class schema:GeoCoordinates ;
+        sh:message "Vídeo precisa de uma única coordenada GPS (schema:locationCreated → schema:GeoCoordinates)."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:duration ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:duration ;
+        sh:message "Vídeo precisa de duração (schema:duration, xsd:duration ex.: PT12.34S)."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:availableResolution ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:datatype xsd:string ;
+        sh:in ( "audio" "360p" "480p" "720p" "1080p" ) ;
+        sh:message "Vídeo precisa declarar ao menos uma resolução em ph:availableResolution (audio/360p/480p/720p/1080p)."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:audio ;
+        sh:severity sh:Violation ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Vídeo precisa de um arquivo de áudio (ph:audio)."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:video360p ;
+        sh:severity sh:Warning ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Se declarado, ph:video360p deve ser único."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:video720p ;
+        sh:severity sh:Warning ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Se declarado, ph:video720p deve ser único."@pt ;
+    ] ;
+    sh:property [
+        sh:path schema:thumbnail ;
+        sh:severity sh:Warning ;
+        sh:maxCount 1 ;
+        sh:datatype xsd:string ;
+        sh:message "Ideal: declarar schema:thumbnail (caminho relativo a web/clips/) pra marker do mapa."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:capturedDuring ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:class ph:Tour ;
+        sh:message "Ideal: associar o vídeo a um passeio."@pt ;
+    ] ;
+    sh:property [
+        sh:path prov:wasAttributedTo ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:class schema:Person ;
+        sh:message "Vídeo de autora (prov:wasAttributedTo)."@pt ;
+    ] ;
+    sh:property [
+        sh:path dcterms:license ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:maxCount 1 ;
+        sh:nodeKind sh:IRI ;
+        sh:message "Vídeo precisa de exatamente uma licença (IRI, ex.: CC BY-SA 4.0)."@pt ;
+    ] ;
+    sh:property [
+        sh:path pav:providedBy ;
+        sh:severity sh:Warning ;
+        sh:minCount 1 ;
+        sh:class schema:Person ;
+        sh:message "Vídeo precisa de proveniência (pav:providedBy)."@pt ;
+    ] .
+
 ph:TourShape a sh:NodeShape ;
     sh:targetClass ph:Tour ;
     sh:property [

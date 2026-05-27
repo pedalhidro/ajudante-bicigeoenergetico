@@ -126,42 +126,28 @@ if (settings.spotlight) settings.spotlight.enabled = false;
 const map = L.map('map', { zoomControl: true })
   .setView(SP, settings.mapDefaults.startZoom);
 
-// Popups de foto que não caberiam confortavelmente na viewport são re-exibidos
-// como modal centralizado. Tentar reposicionar o popup do Leaflet via CSS não
-// funciona porque `.leaflet-map-pane` recebe `transform` durante pan/zoom,
-// virando containing block pra `position: fixed`. Interceptar o popupopen,
-// medir o tamanho e promover pro modal quando não couber é o caminho robusto.
+// Preview de foto/vídeo: popup do Leaflet quando cabe na viewport; senão
+// (tipicamente mobile portrait), promovemos pra um modal bottom-sheet
+// centralizado. O Leaflet sozinho não dá uma UX boa em mobile — o popup
+// fica espremido contra as bordas, hit-area pequena pro fechar, e o
+// autoPan acaba escondendo o marker. O modal resolve isso.
 
-// Quando o modal de foto abre no mobile, o mapa pode estar centralizando o
-// marcador clicado bem no meio da tela — escondido atrás da folha de baixo.
-// Pra deixar o cone de visada visível, panejamos o mapa de forma que o dot
-// fique horizontalmente e verticalmente centralizado na faixa visível —
-// entre a base do cabeçalho (topo do container do mapa) e o topo do modal.
-// Ao fechar, voltamos pra view anterior.
 let savedMapViewForPhoto = null;
 function panMapAbovePhotoSheet(latlng, modal) {
   if (!latlng) return;
   // Salva a view só na primeira chamada de uma sessão — chamadas seguintes
-  // (ex.: avançando entre clipes) já estão num estado deslocado, e queremos
-  // restaurar pra ANTES de tudo isso quando o modal fechar.
+  // (ex.: avançando entre clipes) já estão num estado deslocado.
   if (!savedMapViewForPhoto) {
     savedMapViewForPhoto = { center: map.getCenter(), zoom: map.getZoom() };
   }
   const mapEl = map.getContainer();
   const mapRect = mapEl.getBoundingClientRect();
-  // Importante: medimos a `.modal-content` (a folha em si, ancorada no rodapé
-  // da viewport), NÃO o `.modal` (que é o overlay full-screen com inset:0).
-  // Sem isso, modalRect.top viria sempre 0 e o cálculo colocaria o dot no
-  // canto superior do mapa.
   const sheet = modal && !modal.hidden ? modal.querySelector('.modal-content') : null;
   const modalRect = sheet
     ? sheet.getBoundingClientRect()
     : { top: window.innerHeight };
-  // Faixa visível do mapa (em coords da viewport): do topo do container até
-  // o topo do modal (ou base da viewport, se não há modal aberto).
   const visTop = Math.max(0, mapRect.top);
   const visBottom = Math.min(modalRect.top, mapRect.bottom);
-  // Centro vertical da faixa, em coords do container do mapa.
   const desiredY = (visTop + visBottom) / 2 - mapRect.top;
   const desiredX = mapEl.clientWidth / 2;
   const pt = map.latLngToContainerPoint(latlng);
@@ -171,6 +157,23 @@ function panMapAbovePhotoSheet(latlng, modal) {
     map.panBy([dx, dy], { animate: true, duration: 0.25 });
   }
 }
+// Pausa qualquer <video>/<audio> dentro do container — usado tanto no
+// fechamento do popup do Leaflet quanto do fallback modal pra evitar
+// áudio tocando em background depois que o dialog fecha.
+function pauseMediaIn(root) {
+  if (!root) return;
+  for (const el of root.querySelectorAll?.('video, audio') || []) {
+    try { el.pause(); } catch (_) {}
+  }
+}
+
+// Leaflet só fecha o popup detachando o DOM; em alguns browsers o <video>
+// continua tocando antes do GC. Pausa explícita no popupclose.
+map.on('popupclose', (e) => {
+  const el = e.popup?.getElement?.();
+  if (el) pauseMediaIn(el);
+});
+
 function restoreMapViewAfterPhoto() {
   if (!savedMapViewForPhoto) return;
   const { center, zoom } = savedMapViewForPhoto;
@@ -186,6 +189,7 @@ function showPhotoFallbackModal(innerHtml) {
     modal.hidden = true;
     modal.addEventListener('click', (ev) => {
       if (ev.target === modal) {
+        pauseMediaIn(modal);
         modal.hidden = true;
         restoreMapViewAfterPhoto();
       }
@@ -198,6 +202,7 @@ function showPhotoFallbackModal(innerHtml) {
       innerHtml +
     '</div>';
   modal.querySelector('.photo-fallback-close').addEventListener('click', () => {
+    pauseMediaIn(modal);
     modal.hidden = true;
     restoreMapViewAfterPhoto();
   });
@@ -207,7 +212,7 @@ function popupFitsViewport(el) {
   const rect = el.getBoundingClientRect();
   const vw = window.innerWidth;
   const vh = window.innerHeight;
-  const margin = 16; // folga mínima nas bordas
+  const margin = 16;
   return (
     rect.left >= margin &&
     rect.top >= margin &&
@@ -219,17 +224,14 @@ map.on('popupopen', (e) => {
   const popup = e.popup;
   const el = popup.getElement?.();
   if (!el || !el.classList.contains('photo-popup-wrap')) return;
-  // Se o modal de fallback já estiver aberto (de uma marker anterior),
-  // fecha antes — evita ter dois previews visíveis e o map-view snap-back
-  // ficar apontando pra view de antes-do-modal anterior.
+  // Se já tem um modal aberto (de outro marker), fecha — evita dois previews
+  // visíveis e o snap-back de map view ficar incoerente.
   const existingModal = document.getElementById('photo-fallback-modal');
   if (existingModal && !existingModal.hidden) {
+    pauseMediaIn(existingModal);
     existingModal.hidden = true;
     restoreMapViewAfterPhoto();
   }
-  // Checa se cabe na viewport; se não, promove pro modal. A medição roda
-  // uma vez após o layout assentar (rAF) e, se houver `<img loading=lazy>`
-  // sem dimensões ainda, re-checa quando a imagem terminar de carregar.
   const promoteIfNeeded = () => {
     if (!el.isConnected || el.style.visibility === 'hidden') return;
     if (popupFitsViewport(el)) return;
@@ -238,17 +240,19 @@ map.on('popupopen', (e) => {
     el.style.visibility = 'hidden';
     showPhotoFallbackModal(inner.outerHTML);
     setTimeout(() => map.closePopup(popup), 0);
-    // Espera o modal terminar de renderizar pra medir o topo dele com
-    // precisão; só então panejamos o mapa pra centralizar o dot na faixa
-    // visível entre topbar e topo do modal.
     const latlng = popup.getLatLng?.();
     const modal = document.getElementById('photo-fallback-modal');
     requestAnimationFrame(() => panMapAbovePhotoSheet(latlng, modal));
   };
+  // Espera o layout assentar, e re-checa quando a img/video terminar de
+  // baixar (sem dimensões a primeira medição erra).
   requestAnimationFrame(promoteIfNeeded);
-  const img = el.querySelector('.photo-popup img');
-  if (img && !img.complete) {
-    img.addEventListener('load', () => requestAnimationFrame(promoteIfNeeded), { once: true });
+  const media = el.querySelector('.photo-popup img, .photo-popup video');
+  if (media) {
+    const evt = media.tagName === 'VIDEO' ? 'loadedmetadata' : 'load';
+    if (!media.complete && !(media.duration > 0)) {
+      media.addEventListener(evt, () => requestAnimationFrame(promoteIfNeeded), { once: true });
+    }
   }
 });
 
@@ -610,6 +614,10 @@ let photoSource = settings.photoSource;
 let localKit = null;   // { ttlText, files: Map<path,blob URL> }
 
 let photoMarkers   = [];
+// Declarado cedo (não na seção de clipes) porque relaxPhotoMarkers o lê,
+// e essa função pode rodar via applyPhotoAnim/zoomend antes da seção de
+// clipes inicializar — let na TDZ jogava ReferenceError.
+let clipsMarkers   = [];
 let photosLoaded   = false;
 let photosLoading  = null;
 let photosVisible  = false;
@@ -658,6 +666,32 @@ document.addEventListener('click', (ev) => {
         del.disabled = false; del.textContent = 'Excluir ✕';
         alert(`Falha ao excluir: ${err.message}`);
       });
+    return;
+  }
+  // Botão "Excluir" no popup de vídeo: POST /delete-video/<vhash>.
+  const delV = ev.target.closest?.('.photo-popup button.video-del[data-vhash]');
+  if (delV) {
+    ev.preventDefault();
+    const vhash = delV.getAttribute('data-vhash');
+    if (!vhash) return;
+    if (!confirm('Excluir este vídeo? Remove arquivos webm/mp4/audio/thumb + triples no servidor.')) return;
+    delV.disabled = true; delV.textContent = 'Excluindo…';
+    fetch(`./delete-video/${encodeURIComponent(vhash)}`, { method: 'POST' })
+      .then(async (r) => {
+        if (!r.ok) {
+          const body = await r.text().catch(() => '');
+          throw new Error(`HTTP ${r.status}${body ? ` — ${body.slice(0, 200)}` : ''}`);
+        }
+        showToast('Vídeo excluído.');
+        map.closePopup();
+        // Recarrega o catálogo de clipes do zero pra refletir.
+        clipsCatalog = null;
+        loadClipsCatalog().then((clips) => makeClipMarkers(clips));
+      })
+      .catch((err) => {
+        delV.disabled = false; delV.textContent = 'Excluir ✕';
+        alert(`Falha ao excluir: ${err.message}`);
+      });
   }
 });
 
@@ -666,6 +700,18 @@ function ridePhotos(date) {
   return photoMarkers.filter(
     (m) => m._photo.ride && m._photo.ride.date === date,
   );
+}
+
+// Clipes do mesmo passeio — match por:
+//  (a) tourIri direto se o TTL declara ph:capturedDuring (uploads via form), OU
+//  (b) fallback: dcterms:date do clipe igual à data do passeio (clipes
+//      importados de raw/ via build-clips.py não têm ph:capturedDuring).
+function rideClips(date, tourIri) {
+  if (!clipsMarkers.length) return [];
+  return clipsMarkers.filter(({ clip }) => {
+    if (tourIri && clip.tourIri === tourIri) return true;
+    return Boolean(clip.date && clip.date === date);
+  });
 }
 
 // ── Marcador de foto: círculo, ou cone de visada quando há bússola ───────
@@ -781,7 +827,13 @@ function relaxPhotoMarkers() {
     document.body.style.getPropertyValue('--photo-scale')) || 1;
   const bounds = map.getBounds();
   const items = [];
-  for (const m of photoMarkers) {
+  // Combina fotos + clipes na mesma relaxação: vídeos clusterizam com
+  // imagens (encolhem + se afastam por densidade local). NÃO ganham
+  // `_spotIntensity`, então o boost da animação não os afeta.
+  const allMarkers = [];
+  for (const m of photoMarkers) allMarkers.push(m);
+  for (const { marker } of clipsMarkers) allMarkers.push(marker);
+  for (const m of allMarkers) {
     if (!m._icon) continue;                     // ainda não adicionado ao mapa
     if (!bounds.contains(m.getLatLng())) {
       // Limpa override em quem caiu da viewport, evita herdar valor stale.
@@ -970,12 +1022,12 @@ if (photoAnimBtn) {
 applyPhotoAnim();
 
 // ── Clips: ghost backdrop ─────────────────────────────────────────────────
-// `web/clips/clips.json` (gerado por `scripts/build-clips.py`) lista clipes
-// 360p com GPS. Quando Animação está ligada, um `<video>` sobre o mapa toca
-// segmentos aleatórios de 5s de cada clipe em laço, com áudio. O mapa não
-// move; só os marcadores de cada clipe acendem quando seu vídeo está no ar.
-const CLIPS_JSON_URL = './clips/clips.json';
-const CLIPS_DIR      = './clips/';
+// Catálogo de clipes vive em `web/data/uploads.ttl` (ph:Video). Os arquivos
+// transcodados ficam em `web/clips/`. Quando Animação está ligada, um
+// `<video>` sobre o mapa toca segmentos aleatórios de 5s de cada clipe em
+// laço, com áudio. O mapa não move; só os marcadores de cada clipe acendem
+// quando seu vídeo está no ar.
+const CLIPS_DIR = './clips/';
 // Duração do segmento e do fade são lidos do `settings.clipsGhost` em tempo
 // real — assim mudanças nos sliders de Ajustes pegam efeito no próximo clipe.
 function clipSegmentS()   { return Math.max(2, settings.clipsGhost?.segmentSec ?? 10); }
@@ -987,7 +1039,7 @@ function clipAudioFadeS() {
   return Math.max(clipFadeS(), Math.min(desired, clipSegmentS() / 2));
 }
 let clipsCatalog = null;          // [{file, lat, lng, duration, ...}]
-let clipsMarkers = [];            // [{clip, marker}]
+// clipsMarkers declarado cedo, perto de photoMarkers — ver comentário lá.
 let clipsAdvanceTimer = null;
 let clipsAudioOutTimer = null;
 let clipsCurrentIndex = -1;
@@ -1131,15 +1183,159 @@ function fadeClipVolume(v, target, durationMs)  { return fadeProp(v, 'volume',  
 
 async function loadClipsCatalog() {
   if (clipsCatalog) return clipsCatalog;
+  // Fonte única: ph:Video em web/data/uploads.ttl. Clipes processados por
+  // build-clips.py vivem em web/clips/ e são listados no TTL pelo importer
+  // scripts/import-clips-to-uploads.py (autoridade pra autoria/licença).
   try {
-    const res = await fetch(CLIPS_JSON_URL, { cache: 'no-cache' });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    clipsCatalog = await res.json();
+    clipsCatalog = await loadClipsFromUploadsTtl();
   } catch (err) {
-    console.warn('[clips] falha ao carregar catálogo:', err.message);
+    console.warn('[clips] falha ao carregar vídeos de uploads.ttl:', err.message);
     clipsCatalog = [];
   }
   return clipsCatalog;
+}
+
+// Lê `web/data/uploads.ttl` e extrai ph:Video → entradas no mesmo formato
+// do clips.json: {file, file720, audio, lat, lng, duration, …}. Arquivos
+// vivem em `web/clips/<vhash>.{audio,360p,720p}.webm`. Quando o vídeo é
+// audio-only, ph:video360p/ph:video720p ficam ausentes — o app renderiza
+// só como fonte sonora (audio loop), não como ghost-video no mapa.
+async function loadClipsFromUploadsTtl() {
+  const res = await fetch('./data/uploads.ttl', { cache: 'no-cache' });
+  if (!res.ok) return [];
+  const text = await res.text();
+  if (!text.trim()) return [];
+  await ensureN3();
+  return new Promise((resolve) => {
+    const parser = new window.N3.Parser({ format: 'text/turtle' });
+    const PH_ = 'https://pedalhidrografi.co/terms#';
+    const SCHEMA_ = 'https://schema.org/';
+    const RDF_TYPE = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
+    const subs = new Map();
+    const geos = new Map();
+    parser.parse(text, (err, quad, done) => {
+      if (err) { console.warn('[uploads-video] parse:', err.message); resolve([]); return; }
+      if (done) {
+        const clips = [];
+        for (const [_s, props] of subs) {
+          if (props.type !== PH_ + 'Video') continue;
+          const geo = props.locationCreated ? geos.get(props.locationCreated) : null;
+          if (!geo || !Number.isFinite(geo.lat) || !Number.isFinite(geo.lng)) continue;
+          // Sem áudio = não tem o que tocar; ignora.
+          if (!props.audio) continue;
+          // Mesmo schema que clips.json: paths relativos a ./clips/ (sem
+          // prefixo). playClipAt() prepende CLIPS_DIR antes de usar.
+          const file360 = props.video360p;
+          const file720 = props.video720p;
+          const audio   = props.audio;
+          const file    = file360 || file720 || audio;
+          let duration = null;
+          if (props.duration) {
+            const m = /^PT([\d.]+)S$/.exec(props.duration);
+            if (m) duration = parseFloat(m[1]);
+          }
+          // Date como YYYY-MM-DD pra bater com `ride.date` das fotos no
+          // gallery de passeio. Vem do dcterms:date (xsd:dateTime ISO 8601).
+          // `datetime` preserva a string completa pro popup ("Quando?").
+          const date = props.dateXsd ? props.dateXsd.slice(0, 10) : null;
+          clips.push({
+            iri: _s,
+            vhash: _s.startsWith('https://pedalhidrografi.co/data/video_')
+                   ? _s.slice('https://pedalhidrografi.co/data/video_'.length)
+                   : null,
+            file,
+            file720: file720 || file360 || audio,
+            audio,
+            thumb: props.thumbnail || null,
+            lat: geo.lat,
+            lng: geo.lng,
+            duration,
+            date,
+            datetime: props.dateXsd || null,
+            tourIri: props.capturedDuring,
+            license: props.license,
+            audioOnly: !file360 && !file720,
+          });
+        }
+        resolve(clips);
+        return;
+      }
+      const s = quad.subject.value;
+      const p = quad.predicate.value;
+      const o = quad.object;
+      const sub = subs.get(s) || {};
+      if (p === RDF_TYPE) sub.type = o.value;
+      else if (p === SCHEMA_ + 'latitude')   { const g = geos.get(s) || {}; g.lat = parseFloat(o.value); geos.set(s, g); }
+      else if (p === SCHEMA_ + 'longitude')  { const g = geos.get(s) || {}; g.lng = parseFloat(o.value); geos.set(s, g); }
+      else if (p === SCHEMA_ + 'duration')       sub.duration = o.value;
+      else if (p === 'http://purl.org/dc/terms/license') sub.license = o.value;
+      else if (p === SCHEMA_ + 'locationCreated') sub.locationCreated = o.value;
+      else if (p === PH_ + 'capturedDuring')     sub.capturedDuring = o.value;
+      else if (p === PH_ + 'video360p')          sub.video360p = o.value;
+      else if (p === PH_ + 'video720p')          sub.video720p = o.value;
+      else if (p === PH_ + 'audio')              sub.audio = o.value;
+      else if (p === SCHEMA_ + 'thumbnail')      sub.thumbnail = o.value;
+      else if (p === 'http://purl.org/dc/terms/date') sub.dateXsd = o.value;
+      subs.set(s, sub);
+    });
+  });
+}
+
+// Render do popup de clipe — chamado lazy no popupopen pra ver `tourCatalog`
+// (que é populado pelo loadPhotos, em paralelo com loadClipsCatalog no boot).
+function renderClipPopupHtml(c) {
+  const dur = Number.isFinite(c.duration) ? `${c.duration.toFixed(1)} s` : '—';
+  const whenHuman = c.datetime
+    ? new Date(c.datetime).toLocaleString('pt-BR', { dateStyle: 'medium', timeStyle: 'short' })
+    : '—';
+  // Mesmo render do Passeio do popup de foto: "CODE: Title" (ex.: "PH 92:
+  // Crista do Lauzane…"), com link `.ride-link` que abre o modal da rota
+  // na sidebar (delegação já existe pra .photo-popup a.ride-link).
+  let tourHtml = '—';
+  if (c.tourIri) {
+    const t = tourCatalog?.get(c.tourIri);
+    const label = t
+      ? ((t.code && t.title) ? `${t.code}: ${t.title}`
+         : (t.code || t.title || t.date || c.tourIri))
+      : c.tourIri;
+    tourHtml = `<a href="#" class="ride-link" data-route-id="${escapeHtml(c.tourIri)}">${escapeHtml(label)}</a>`;
+  }
+  const licShort = c.license
+    ? (c.license.match(/licenses\/([a-z-]+)\/(\d+\.\d+)/i)?.slice(1).join(' ').toUpperCase()
+       || c.license.match(/zero\/(\d+\.\d+)/i)?.[1]?.replace(/^/, 'CC0 ')
+       || c.license)
+    : null;
+  const license = c.license
+    ? `<a href="${escapeHtml(c.license)}" target="_blank" rel="noopener">${escapeHtml(licShort)}</a>`
+    : '—';
+  const delBtn = c.vhash
+    ? `<button type="button" class="photo-del video-del" data-vhash="${escapeHtml(c.vhash)}">Excluir ✕</button>`
+    : '';
+  const enc = (p) => p.split('/').map(encodeURIComponent).join('/');
+  const videoSrc = c.file  ? CLIPS_DIR + enc(c.file)  : '';
+  const v720Src  = c.file720 && c.file720 !== c.file ? CLIPS_DIR + enc(c.file720) : '';
+  const audioSrc = c.audio ? CLIPS_DIR + enc(c.audio) : '';
+  const playerHtml = c.audioOnly
+    ? (audioSrc ? `<audio controls preload="metadata" src="${audioSrc}"></audio>` : '')
+    : (videoSrc ? `<video controls preload="metadata" src="${videoSrc}"></video>` : '');
+  const dlChips = [];
+  if (videoSrc) dlChips.push(`<a class="photo-dl" href="${videoSrc}" download="${escapeHtml(c.file)}">Vídeo 360p ↓</a>`);
+  if (v720Src)  dlChips.push(`<a class="photo-dl" href="${v720Src}"  download="${escapeHtml(c.file720)}">Vídeo 720p ↓</a>`);
+  if (audioSrc) dlChips.push(`<a class="photo-dl" href="${audioSrc}" download="${escapeHtml((c.audio || '').split('/').pop())}">Áudio ↓</a>`);
+  const actions = [...dlChips, delBtn].filter(Boolean).join('');
+  return (
+    `<div class="photo-popup video-popup">` +
+      playerHtml +
+      `<dl class="photo-details">` +
+        `<dt>Quando</dt><dd>${whenHuman}</dd>` +
+        `<dt>Duração</dt><dd>${dur}</dd>` +
+        `<dt>Passeio</dt><dd>${tourHtml}</dd>` +
+        `<dt>Licença</dt><dd>${license}</dd>` +
+        (c.vhash ? `<dt>vHash</dt><dd><code>${escapeHtml(c.vhash)}</code></dd>` : '') +
+      `</dl>` +
+      (actions ? `<div class="photo-actions">${actions}</div>` : '') +
+    `</div>`
+  );
 }
 
 function makeClipMarkers(clips) {
@@ -1154,14 +1350,39 @@ function makeClipMarkers(clips) {
   for (let i = 0; i < clips.length; i++) {
     const c = clips[i];
     if (!Number.isFinite(c.lat) || !Number.isFinite(c.lng)) continue;
+    // Marker: círculo estilo foto com o thumb do clipe + borda red-orange.
+    // O `.clip-marker` overlay continua escondido até a animação ativar,
+    // quando ganha `.active` e pulsa em cima do dot.
+    const thumbUrl = c.thumb ? CLIPS_DIR + c.thumb : '';
+    const bg = thumbUrl
+      ? `background-image: url('${thumbUrl}'); background-size: cover; background-position: center;`
+      : 'background-color: rgba(255,87,34,0.35);';
     const icon = L.divIcon({
-      className: 'clip-marker-wrap',
-      html: '<div class="clip-marker"></div>',
-      iconSize: [24, 24],
-      iconAnchor: [12, 12],
+      className: 'photo-dot-wrap',
+      html:
+        `<div class="photo-dot photo-dot-video" style="${bg}"></div>` +
+        `<div class="clip-marker"></div>`,
+      iconSize: [40, 40],
+      iconAnchor: [20, 20],
+      popupAnchor: [0, -20],
     });
     const m = L.marker([c.lat, c.lng], { icon, interactive: true, pane: 'clipMarkers' });
-    m.on('click', () => playClipAt(i));
+    m._clip = c;
+    // Popup gerado lazy via callback — `tourCatalog` pode ainda não ter
+    // sido populado pelo loadPhotos() quando o marker é criado (boot race
+    // entre loadClipsCatalog e loadPhotos). Adiando até o popupopen, o
+    // lookup do tour title vê dados frescos.
+    m.bindPopup(() => renderClipPopupHtml(c),
+      { maxWidth: 440, className: 'photo-popup-wrap', autoPan: false });
+    // Durante a Animação, o clique no marker dispara o ghost-video player
+    // (mesma UX antiga). Fora da Animação, abre o popup normal.
+    m.on('click', () => {
+      if (settings.spotlight?.enabled && !c.audioOnly) {
+        playClipAt(i);
+      } else {
+        m.openPopup();
+      }
+    });
     m.addTo(map);
     clipsMarkers.push({ clip: c, marker: m });
   }
@@ -1177,11 +1398,20 @@ function highlightClipMarker(index) {
 
 function pickNextClipIndex() {
   if (!clipsCatalog || clipsCatalog.length === 0) return -1;
-  if (clipsCatalog.length === 1) return 0;
+  // O ghost-video player só toca clipes com trilha de vídeo de fato.
+  // Clipes `audioOnly` (sem ph:video360p/ph:video720p) vão pro audio loop, não
+  // pra ele — ver loadClipsFromUploadsTtl. Filtro idempotente: se nenhum
+  // clipe tiver vídeo, devolve -1 (animação simplesmente não roda).
+  const videoIndices = [];
+  for (let i = 0; i < clipsCatalog.length; i++) {
+    if (clipsCatalog[i].audioOnly !== true) videoIndices.push(i);
+  }
+  if (videoIndices.length === 0) return -1;
+  if (videoIndices.length === 1) return videoIndices[0];
   let next;
   let tries = 0;
   do {
-    next = Math.floor(Math.random() * clipsCatalog.length);
+    next = videoIndices[Math.floor(Math.random() * videoIndices.length)];
     tries++;
   } while (next === clipsCurrentIndex && tries < 10);
   return next;
@@ -1210,6 +1440,11 @@ function getMarkerEl(index) {
 
 function playClipAt(index) {
   if (!clipsCatalog || index < 0 || index >= clipsCatalog.length) return;
+  // Guarda defensiva: marker de clipe audio-only não deve disparar o
+  // ghost-video player (que assume trilha de vídeo). O audio loop é
+  // quem cuida desses — ver audioLoop* abaixo. Se um audio-only foi
+  // clicado durante a Animação, simplesmente avança pro próximo vídeo.
+  if (clipsCatalog[index].audioOnly === true) { advanceClip(); return; }
   const v = ensureClipsGhostVideo();
   const c = clipsCatalog[index];
   const prevIndex = clipsCurrentIndex;
@@ -1794,7 +2029,7 @@ function buildPhotoMarkers(photos) {
         `<dl class="photo-details">${rows}</dl>` +
         (actions ? `<div class="photo-actions">${actions}</div>` : '') +
       `</div>`,
-      { maxWidth: 520, className: 'photo-popup-wrap', autoPan: false },
+      { maxWidth: 440, className: 'photo-popup-wrap', autoPan: false },
     );
     photoMarkers.push(m);
   }
@@ -2001,6 +2236,38 @@ function renderRoutePhotos(entry) {
   const label = entry.number?.value
     ? `${entry.number.source} ${entry.number.value}`
     : buildLabel(entry);
+  // Carrega o catálogo de clipes em paralelo com photos pra renderizar a
+  // tira de vídeos junto. Falha silenciosamente se uploads.ttl não tiver
+  // ph:Video — apenas o strip de fotos sai.
+  loadClipsCatalog().then(() => {
+    const cms = rideClips(entry.date, entry.tourIri);
+    if (!cms.length) return;
+    const head = document.createElement('div');
+    head.className = 'route-photos-head';
+    const count = document.createElement('span');
+    count.textContent = `${cms.length} vídeo${cms.length > 1 ? 's' : ''} deste pedal`;
+    head.appendChild(count);
+    const strip = document.createElement('div');
+    strip.className = 'route-photos-strip';
+    for (const { clip, marker } of cms) {
+      const wrap = document.createElement('div');
+      wrap.className = 'route-clip';
+      const img = document.createElement('img');
+      img.src = clip.thumb ? CLIPS_DIR + clip.thumb : '';
+      img.loading = 'lazy';
+      img.alt = clip.iri || 'vídeo';
+      img.title = 'Ver no mapa';
+      img.addEventListener('click', () => {
+        closeRouteModal();
+        map.setView(marker.getLatLng(), Math.max(map.getZoom(), 15));
+        marker.openPopup();
+      });
+      wrap.appendChild(img);
+      strip.appendChild(wrap);
+    }
+    box.appendChild(head);
+    box.appendChild(strip);
+  });
   loadPhotos().then(() => {
     const ms = ridePhotos(entry.date);
     if (ms.length === 0) return;
@@ -2254,7 +2521,7 @@ function addUploadedPhoto(p) {
         ? ` · ${Math.round(p.bearing)}° ${cardinal(p.bearing)}`
         : '') +
       `</div></div>`,
-    { maxWidth: 520, className: 'photo-popup-wrap', autoPan: false },
+    { maxWidth: 440, className: 'photo-popup-wrap', autoPan: false },
   );
   m.addTo(map);
   uploadedMarkers.push(m);
@@ -3410,7 +3677,20 @@ document.addEventListener('click', (e) => {
   updateMenuBtnPressed();
 });
 
-window.addEventListener('resize', updateMenuBtnPressed);
+// Transição mobile → desktop (ex.: usuário gira pra landscape e a viewport
+// cruza 760px): mantém a sidebar oculta. Sem isto, o CSS desktop volta a
+// mostrá-la porque `.sidebar-hidden` não foi aplicado no boot mobile.
+let _wasMobileViewport = isMobileViewport();
+window.addEventListener('resize', () => {
+  const nowMobile = isMobileViewport();
+  if (_wasMobileViewport && !nowMobile) {
+    document.body.classList.add('sidebar-hidden');
+    document.body.classList.remove('sidebar-open');
+    setTimeout(() => map.invalidateSize(), 0);
+  }
+  _wasMobileViewport = nowMobile;
+  updateMenuBtnPressed();
+});
 
 function updateMenuBtnPressed() {
   if (!menuBtn) return;
