@@ -54,7 +54,29 @@ const SETTINGS_DEFAULTS = {
   clipsGhost: {
     enabled: true,                      // tocar vídeo fantasma quando Animação ligada
     segmentSec: 10,                     // duração de cada clipe em laço
-    fadeSec: 2,                         // duração do fade-in/out (imagem + áudio)
+    fadeSec: 2,                         // duração do fade-in/out da imagem
+    audioFadeSec: 4,                    // fade do áudio — geralmente mais longo que o vídeo
+    useHd: false,                       // usar a variante 720p (mais pesada) em vez da 360p
+  },
+  clipMarker: {
+    baseSizePx: 18,                     // diâmetro do anel branco em repouso
+    borderPx: 3,                        // espessura da borda
+    minScale: 0.1,                      // escala no silêncio
+    maxScale: 20,                       // escala no pico de RMS
+    intensityGain: 4,                   // multiplicador no RMS pra esticar a faixa visual
+  },
+  audioLoop: {
+    enabled: false,                     // loop ambiente só com o áudio dos clipes
+    segmentSec: 12,                     // tempo por trilha antes do crossfade
+    crossfadeSec: 5,                    // duração do crossfade entre trilhas
+  },
+  images: {
+    // Markers usam `image-set(thumb 1x, large 2x)` por padrão — em retina
+    // o browser baixa a versão `large` (~500 KB) pra nitidez. Com dezenas
+    // de markers isso estoura memória em celular. Quando OFF (padrão), o
+    // 2x não é declarado e os markers ficam no thumb mesmo em retina.
+    // Não afeta o popup de preview (que sempre usa `large`).
+    useLarge: false,
   },
 };
 function _deepMerge(base, over) {
@@ -91,6 +113,9 @@ const settings = loadSettings();
     settings.photoSource = legacy;
   }
 }
+// Animação NÃO persiste entre sessões — sempre arranca desligada. Se o
+// usuário ligar no Ajustes/botão, vale só pra sessão atual.
+if (settings.spotlight) settings.spotlight.enabled = false;
 
 // ─── Map ─────────────────────────────────────────────────────────────────────
 const map = L.map('map', { zoomControl: true })
@@ -311,14 +336,44 @@ const OVERLAY_LAYERS = [
   // Vídeo fantasma: opacidade do <video> que toca os clipes sobre o mapa
   // quando Animação está ligada. O checkbox não esconde a feature
   // (Animação faz isso); só zera a opacidade.
+  // Vídeo fantasma — o checkbox espelha `settings.clipsGhost.enabled`
+  // (start/stop da reprodução); o slider controla a opacidade visual.
   {
     id: 'clips-ghost',
     label: 'Vídeo fantasma',
     defaultVisible: true,
-    defaultPct: 40,
-    show: () => setClipsGhostOpacity(clipsGhostUserOpacity),
-    hide: () => setClipsGhostOpacity(0),
+    defaultPct: 70,
+    show: () => {
+      if (settings.clipsGhost) settings.clipsGhost.enabled = true;
+      saveSettings();
+      applyClipsGhostSettings();
+      setClipsGhostOpacity(clipsGhostUserOpacity);
+    },
+    hide: () => {
+      if (settings.clipsGhost) settings.clipsGhost.enabled = false;
+      saveSettings();
+      applyClipsGhostSettings();
+    },
     setOpacity: (frac) => { clipsGhostUserOpacity = frac; setClipsGhostOpacity(frac); },
+  },
+  // Loop de áudio — o checkbox espelha `settings.audioLoop.enabled`; o
+  // slider controla o volume máximo das trilhas durante o crossfade.
+  {
+    id: 'audio-loop',
+    label: 'Loop de áudio',
+    defaultVisible: false,
+    defaultPct: 80,
+    show: () => {
+      if (settings.audioLoop) settings.audioLoop.enabled = true;
+      saveSettings();
+      applyAudioLoopSettings();
+    },
+    hide: () => {
+      if (settings.audioLoop) settings.audioLoop.enabled = false;
+      saveSettings();
+      applyAudioLoopSettings();
+    },
+    setOpacity: (frac) => setAudioLoopUserVolume(frac),
   },
   // User-defined tile sources. The URL is prompted on demand and persisted
   // in localStorage so the layer is restored on reload.
@@ -906,14 +961,20 @@ const CLIPS_JSON_URL = './clips/clips.json';
 const CLIPS_DIR      = './clips/';
 // Duração do segmento e do fade são lidos do `settings.clipsGhost` em tempo
 // real — assim mudanças nos sliders de Ajustes pegam efeito no próximo clipe.
-function clipSegmentS() { return Math.max(2, settings.clipsGhost?.segmentSec ?? 10); }
-function clipFadeS()    { return Math.max(0.1, Math.min(settings.clipsGhost?.fadeSec ?? 2, clipSegmentS() / 2)); }
+function clipSegmentS()   { return Math.max(2, settings.clipsGhost?.segmentSec ?? 10); }
+function clipFadeS()      { return Math.max(0.1, Math.min(settings.clipsGhost?.fadeSec ?? 2, clipSegmentS() / 2)); }
+function clipAudioFadeS() {
+  // Áudio pode ser MAIOR que vídeo (até metade do segmento), mas nunca
+  // menor — pra dar a impressão de fade sonoro mais suave que o visual.
+  const desired = settings.clipsGhost?.audioFadeSec ?? 4;
+  return Math.max(clipFadeS(), Math.min(desired, clipSegmentS() / 2));
+}
 let clipsCatalog = null;          // [{file, lat, lng, duration, ...}]
 let clipsMarkers = [];            // [{clip, marker}]
 let clipsAdvanceTimer = null;
 let clipsCurrentIndex = -1;
 let clipsGhostVideo  = null;      // <video> element, criado preguiçosamente
-let clipsGhostUserOpacity = 0.4;  // controlada pelo slider do painel Camadas
+let clipsGhostUserOpacity = 0.7;  // controlada pelo slider do painel Camadas
 
 function setClipsGhostOpacity(frac) {
   if (clipsGhostVideo) clipsGhostVideo.style.opacity = String(frac);
@@ -926,6 +987,7 @@ function ensureClipsGhostVideo() {
   v.className = 'clips-ghost-video';
   v.playsInline = true;
   v.preload = 'auto';
+  v.loop = false;   // o avanço é controlado por advanceClip(), não loop nativo
   v.hidden = true;
   v.style.opacity = '0';
   v.volume = 0;
@@ -936,6 +998,15 @@ function ensureClipsGhostVideo() {
   // aceito: vídeo fica por cima de tudo, mas os marcadores (anel branco
   // grosso pulsando até 20×) atravessam visualmente o vídeo translúcido.
   map.getContainer().appendChild(v);
+  // Salva-vidas pro loop infinito: se o clipe terminar antes do timer
+  // (mais curto que o segmento), avança na hora. Se der erro de mídia,
+  // também avança em vez de parar.
+  // Só avança se Animação E o vídeo fantasma ainda estiverem ligados —
+  // evita que um `ended`/`error` atrasado relance um clipe depois que o
+  // usuário desativou o ghost via Camadas/Ajustes.
+  const wantAdvance = () => settings.spotlight?.enabled && settings.clipsGhost?.enabled !== false;
+  v.addEventListener('ended', () => { if (wantAdvance()) advanceClip(); });
+  v.addEventListener('error', () => { if (wantAdvance()) advanceClip(); });
   clipsGhostVideo = v;
   return v;
 }
@@ -992,7 +1063,8 @@ function startClipsIntensityLoop() {
     }
     const rms = Math.sqrt(sum / clipsAudioBuf.length);
     // Voz típica fica ~0.1-0.3 RMS; multiplica pra esticar a faixa visual.
-    const level = Math.min(1, rms * 4);
+    const gain = settings.clipMarker?.intensityGain ?? 4;
+    const level = Math.min(1, rms * gain);
     setActiveMarkerIntensity(level);
     clipsAudioRaf = requestAnimationFrame(tick);
   };
@@ -1005,26 +1077,34 @@ function stopClipsIntensityLoop() {
   setActiveMarkerIntensity(0);
 }
 
-// Rampa linear de opacidade + volume em paralelo. Usa rAF pra um fade
-// suave. Retorna uma promise que resolve no fim da animação (ou se for
-// cancelada por outra chamada).
-let clipsFadeRaf = null;
-function fadeClip(v, targetOpacity, targetVolume, durationMs) {
-  if (clipsFadeRaf) cancelAnimationFrame(clipsFadeRaf);
+// Rampas independentes pra opacidade do vídeo e pro volume do áudio.
+// Separar permite que o fade sonoro seja mais longo que o visual (a
+// transição auditiva fica perceptualmente mais suave). Cada uma cancela
+// a anterior do mesmo tipo se chamada de novo.
+let clipsOpacityRaf = null;
+let clipsVolumeRaf  = null;
+function fadeProp(v, prop, target, durationMs, rafSlot) {
+  if (rafSlot.id) cancelAnimationFrame(rafSlot.id);
   return new Promise((resolve) => {
-    const startOpacity = parseFloat(v.style.opacity) || 0;
-    const startVolume = v.volume;
-    const start = performance.now();
+    const startVal = prop === 'opacity'
+      ? (parseFloat(v.style.opacity) || 0)
+      : v.volume;
+    const t0 = performance.now();
     const step = (now) => {
-      const t = Math.min(1, (now - start) / durationMs);
-      v.style.opacity = String(startOpacity + (targetOpacity - startOpacity) * t);
-      v.volume = Math.max(0, Math.min(1, startVolume + (targetVolume - startVolume) * t));
-      if (t < 1) clipsFadeRaf = requestAnimationFrame(step);
-      else { clipsFadeRaf = null; resolve(); }
+      const t = Math.min(1, (now - t0) / durationMs);
+      const val = startVal + (target - startVal) * t;
+      if (prop === 'opacity') v.style.opacity = String(val);
+      else v.volume = Math.max(0, Math.min(1, val));
+      if (t < 1) rafSlot.id = requestAnimationFrame(step);
+      else { rafSlot.id = null; resolve(); }
     };
-    clipsFadeRaf = requestAnimationFrame(step);
+    rafSlot.id = requestAnimationFrame(step);
   });
 }
+const _opacitySlot = { id: null };
+const _volumeSlot  = { id: null };
+function fadeClipOpacity(v, target, durationMs) { return fadeProp(v, 'opacity', target, durationMs, _opacitySlot); }
+function fadeClipVolume(v, target, durationMs)  { return fadeProp(v, 'volume',  target, durationMs, _volumeSlot); }
 
 async function loadClipsCatalog() {
   if (clipsCatalog) return clipsCatalog;
@@ -1078,16 +1158,72 @@ function pickNextClipIndex() {
   return next;
 }
 
+// Timers dos estados do marker. A cada `playClipAt` limpamos tudo e
+// reagendamos: o marker novo entra em intro (verde, 1s), depois branco; o
+// marker antigo fica branco por 1s de overlap, vira outro (laranja) por
+// mais 1s, e some. Resultado visual:
+//   [t=0]    new=intro(verde) + old=white     (2 visíveis, 1 branco)
+//   [t=1s]   new=white         + old=outro(laranja) (2 visíveis, 1 branco)
+//   [t=2s]   new=white                                 (1 branco)
+let clipsIntroTimer = null;
+let clipsOldOutroTimer = null;
+let clipsOldRemoveTimer = null;
+const CLIP_INTRO_OUTRO_MS = 1000;
+function clearMarkerStateTimers() {
+  if (clipsIntroTimer)     { clearTimeout(clipsIntroTimer);     clipsIntroTimer = null; }
+  if (clipsOldOutroTimer)  { clearTimeout(clipsOldOutroTimer);  clipsOldOutroTimer = null; }
+  if (clipsOldRemoveTimer) { clearTimeout(clipsOldRemoveTimer); clipsOldRemoveTimer = null; }
+}
+function getMarkerEl(index) {
+  const m = clipsMarkers[index];
+  return m ? m.marker.getElement()?.querySelector('.clip-marker') : null;
+}
+
 function playClipAt(index) {
   if (!clipsCatalog || index < 0 || index >= clipsCatalog.length) return;
   const v = ensureClipsGhostVideo();
   const c = clipsCatalog[index];
+  const prevIndex = clipsCurrentIndex;
   clipsCurrentIndex = index;
-  highlightClipMarker(index);
+
+  // Handoff dos marcadores: NÃO removemos `.active` do anterior na hora —
+  // ele continua branco por mais 1s (sobreposição com o intro do novo),
+  // depois vira laranja (outro) por mais 1s, e só então some.
+  clearMarkerStateTimers();
+  const newDot = getMarkerEl(index);
+  if (newDot) {
+    newDot.classList.remove('outro');
+    newDot.classList.add('active');
+    newDot.classList.add('intro');
+    clipsIntroTimer = setTimeout(() => {
+      const el = getMarkerEl(clipsCurrentIndex);
+      if (el) el.classList.remove('intro');
+      clipsIntroTimer = null;
+    }, CLIP_INTRO_OUTRO_MS);
+  }
+  if (prevIndex >= 0 && prevIndex !== index) {
+    const prevDot = getMarkerEl(prevIndex);
+    if (prevDot) {
+      // 1s de overlap como branco — depois bolinha laranja por mais 1s.
+      clipsOldOutroTimer = setTimeout(() => {
+        prevDot.classList.remove('intro');
+        prevDot.classList.add('outro');
+        clipsOldOutroTimer = null;
+      }, CLIP_INTRO_OUTRO_MS);
+      clipsOldRemoveTimer = setTimeout(() => {
+        prevDot.classList.remove('outro');
+        prevDot.classList.remove('active');
+        clipsOldRemoveTimer = null;
+      }, CLIP_INTRO_OUTRO_MS * 2);
+    }
+  }
 
   if (clipsAdvanceTimer) { clearTimeout(clipsAdvanceTimer); clipsAdvanceTimer = null; }
 
-  const src = CLIPS_DIR + encodeURIComponent(c.file);
+  // Escolhe variante 720p se o usuário pediu E o catálogo tem essa versão.
+  const wantHd = settings.clipsGhost?.useHd === true;
+  const fileName = wantHd && c.file720 ? c.file720 : c.file;
+  const src = CLIPS_DIR + encodeURIComponent(fileName);
   if (v.src !== new URL(src, location.href).href) {
     v.src = src;
   }
@@ -1101,26 +1237,28 @@ function playClipAt(index) {
   const startAt = () => {
     const segS = clipSegmentS();
     const fadeS = clipFadeS();
+    const audioFadeS = clipAudioFadeS();
     const dur = v.duration;
     const maxStart = Math.max(0, (Number.isFinite(dur) ? dur : c.duration || 0) - segS);
     const start = maxStart > 0 ? Math.random() * maxStart : 0;
     try { v.currentTime = start; } catch {}
     v.play().catch(() => {});
-    // Liga o grafo de áudio + loop de intensidade no primeiro play (precisa
-    // de gesto do usuário — Animação click já satisfaz isso). Resume se
-    // o context entrou em suspended por inatividade.
     ensureClipsAudioGraph(v);
     if (clipsAudioCtx && clipsAudioCtx.state === 'suspended') {
       clipsAudioCtx.resume().catch(() => {});
     }
     startClipsIntensityLoop();
-    // Fade-in (imagem + áudio) durante os primeiros `fadeS` segundos.
-    fadeClip(v, clipsGhostUserOpacity, 1, fadeS * 1000);
-    // `fadeS` antes do fim do segmento, inicia o fade-out e logo em
-    // seguida pula pro próximo clipe.
+    // Fade-in: opacidade no `fadeS`; áudio no `audioFadeS` (mais longo).
+    fadeClipOpacity(v, clipsGhostUserOpacity, fadeS * 1000);
+    fadeClipVolume(v, 1, audioFadeS * 1000);
+    // Fade-out de áudio começa MAIS CEDO que o vídeo (porque é mais longo),
+    // mas ambos chegam a zero ~ao mesmo tempo (advance).
+    setTimeout(() => fadeClipVolume(v, 0, audioFadeS * 1000), (segS - audioFadeS) * 1000);
     clipsAdvanceTimer = setTimeout(() => {
-      fadeClip(v, 0, 0, fadeS * 1000).then(() => advanceClip());
+      fadeClipOpacity(v, 0, fadeS * 1000).then(() => advanceClip());
     }, (segS - fadeS) * 1000);
+    // O "outro" do marker é agora agendado pelo PRÓXIMO playClipAt
+    // (overlap entre marker antigo e novo), não pelo próprio clipe.
   };
   if (v.readyState >= 1) startAt();
   else v.addEventListener('loadedmetadata', startAt, { once: true });
@@ -1143,19 +1281,25 @@ async function startClipsGhost() {
 
 function stopClipsGhost() {
   if (clipsAdvanceTimer) { clearTimeout(clipsAdvanceTimer); clipsAdvanceTimer = null; }
+  clearMarkerStateTimers();
   if (clipsGhostVideo) {
     try { clipsGhostVideo.pause(); } catch {}
     clipsGhostVideo.hidden = true;
   }
   stopClipsIntensityLoop();
+  // Limpa as classes residuais antes de soltar o `.active`.
+  for (const { marker } of clipsMarkers) {
+    const dot = marker.getElement()?.querySelector('.clip-marker');
+    if (dot) { dot.classList.remove('intro'); dot.classList.remove('outro'); }
+  }
   highlightClipMarker(-1);
 }
 
 // Carrega marcadores na boot pra mostrar onde existem clipes mesmo com
-// Animação desligada.
+// Animação desligada. (`spotlight.enabled` é forçado pra false no boot,
+// então não tentamos auto-iniciar o ghost aqui — fica só na ação do usuário.)
 loadClipsCatalog().then((clips) => {
   if (clips && clips.length) makeClipMarkers(clips);
-  if (settings.spotlight.enabled) startClipsGhost();
 });
 
 // ── Detecção automática do pedal de uma foto ─────────────────────────────
@@ -1576,7 +1720,19 @@ function buildPhotoMarkers(photos) {
   photoMarkers = [];
   for (const ph of photos) {
     if (!Number.isFinite(ph.lat) || !Number.isFinite(ph.lng)) continue;
-    const icon = photoDivIcon(ph.thumb || ph.file, ph.bearing, ph.fov, '', ph.file);
+    // O `largeUrl` é usado como variante 2x no `image-set` do marker —
+    // em telas HiDPI (todos os celulares), o browser baixa essa versão
+    // grande SÓ pra renderizar o dot mais nítido. Com dezenas de markers,
+    // isso estoura memória em mobile. Quando o toggle de Ajustes está
+    // desligado (padrão), passamos `null` e o image-set fica em thumb 1x.
+    const useLargeFor2x = settings.images?.useLarge === true;
+    const icon = photoDivIcon(
+      ph.thumb || ph.file,
+      ph.bearing,
+      ph.fov,
+      '',
+      useLargeFor2x ? ph.file : null,
+    );
     const m = L.marker([ph.lat, ph.lng], { icon, opacity: photosOpacity });
     m._photo = ph;
     const rows = _photoDetailRows(ph)
@@ -2183,7 +2339,21 @@ function applyAllSettings() {
   relaxPhotoMarkers();   // novos floor/ceil/boost pegam efeito agora
   applyPhotoHoverScale();
   applyClipsGhostSettings();
+  applyClipMarkerSettings();
+  applyAudioLoopSettings();
 }
+// Empurra os params do marker de clipe como custom properties no <html>;
+// o CSS lê `--clip-marker-size`, `--clip-marker-border`, `--clip-min-scale`,
+// `--clip-max-scale` em vez de valores hardcoded.
+function applyClipMarkerSettings() {
+  const m = settings.clipMarker || {};
+  const root = document.documentElement.style;
+  if (Number.isFinite(m.baseSizePx)) root.setProperty('--clip-marker-size', `${m.baseSizePx}px`);
+  if (Number.isFinite(m.borderPx))   root.setProperty('--clip-marker-border', `${m.borderPx}px`);
+  if (Number.isFinite(m.minScale))   root.setProperty('--clip-min-scale', String(m.minScale));
+  if (Number.isFinite(m.maxScale))   root.setProperty('--clip-max-scale', String(m.maxScale));
+}
+applyClipMarkerSettings();
 // Reage a mudanças no `settings.clipsGhost.enabled` quando o slider de
 // Ajustes muda em tempo real. Se Animação está ligada e o vídeo foi
 // desabilitado, para a reprodução; se foi habilitado e Animação está ligada,
@@ -2199,6 +2369,164 @@ function applyClipsGhostSettings() {
   } else if (isPlaying && (!animOn || !wantClips)) {
     stopClipsGhost();
   }
+  syncLayerCheckbox('clips-ghost', wantClips);
+}
+// Mantém o checkbox de Camadas em sincronia com o setting (quando o usuário
+// muda em Ajustes, o painel reflete; e vice-versa). Não dispara `change`
+// pra evitar laço recursivo.
+function syncLayerCheckbox(layerId, checked) {
+  const row = document.querySelector(`.layer-panel .layer-row[data-id="${CSS.escape(layerId)}"]`);
+  const cb = row?.querySelector('input[type="checkbox"]');
+  if (cb && cb.checked !== !!checked) cb.checked = !!checked;
+}
+
+// ── Audio loop ────────────────────────────────────────────────────────────
+// Loop ambiente independente do vídeo: pega o `audio` de cada clipe e toca
+// em sequência aleatória com crossfade. Dois `<audio>` elements são tocados
+// em paralelo durante o crossfade — A esmaece, B aparece, e na próxima vez
+// trocam de papel.
+const audioLoopA = new Audio();
+const audioLoopB = new Audio();
+audioLoopA.preload = 'auto';
+audioLoopB.preload = 'auto';
+audioLoopA.volume = 0;
+audioLoopB.volume = 0;
+let audioLoopCurrent = audioLoopA;
+let audioLoopNext    = audioLoopB;
+let audioLoopActive  = false;
+let audioLoopUserVolume = 0.8;        // controlado pelo slider em Camadas
+function setAudioLoopUserVolume(frac) {
+  audioLoopUserVolume = Math.max(0, Math.min(1, frac));
+  // Clampa o volume das trilhas em curso pra não estourar o novo teto.
+  for (const el of [audioLoopA, audioLoopB]) {
+    if (el && !el.paused) el.volume = Math.min(el.volume, audioLoopUserVolume);
+  }
+}
+let audioLoopTimer   = null;
+let audioLoopIndex   = -1;
+let audioLoopFadeRafs = new WeakMap();   // raf id por elemento
+
+function fadeAudioElement(el, targetVol, durationMs) {
+  const prev = audioLoopFadeRafs.get(el);
+  if (prev) cancelAnimationFrame(prev);
+  const startVol = el.volume;
+  const t0 = performance.now();
+  const step = (now) => {
+    const t = Math.min(1, (now - t0) / durationMs);
+    el.volume = Math.max(0, Math.min(1, startVol + (targetVol - startVol) * t));
+    if (t < 1) audioLoopFadeRafs.set(el, requestAnimationFrame(step));
+    else audioLoopFadeRafs.delete(el);
+  };
+  audioLoopFadeRafs.set(el, requestAnimationFrame(step));
+}
+
+function pickNextAudioClipIndex() {
+  if (!clipsCatalog || clipsCatalog.length === 0) return -1;
+  const candidates = [];
+  for (let i = 0; i < clipsCatalog.length; i++) {
+    if (clipsCatalog[i].audio && i !== audioLoopIndex) candidates.push(i);
+  }
+  if (candidates.length === 0) {
+    // Só sobrou o atual (ou nenhum) — repete mesmo.
+    for (let i = 0; i < clipsCatalog.length; i++) if (clipsCatalog[i].audio) return i;
+    return -1;
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)];
+}
+
+async function startAudioLoop() {
+  if (audioLoopActive) return;
+  if (!settings.audioLoop?.enabled) return;
+  await loadClipsCatalog();
+  if (!clipsCatalog || clipsCatalog.length === 0) return;
+  audioLoopActive = true;
+  audioLoopAdvance();
+}
+
+function stopAudioLoop() {
+  audioLoopActive = false;
+  if (audioLoopTimer) { clearTimeout(audioLoopTimer); audioLoopTimer = null; }
+  for (const el of [audioLoopA, audioLoopB]) {
+    const r = audioLoopFadeRafs.get(el);
+    if (r) cancelAnimationFrame(r);
+    audioLoopFadeRafs.delete(el);
+    try { el.pause(); } catch {}
+    el.volume = 0;
+  }
+}
+
+function audioLoopAdvance() {
+  if (!audioLoopActive) return;
+  const next = pickNextAudioClipIndex();
+  if (next < 0) return;
+  audioLoopIndex = next;
+  const c = clipsCatalog[next];
+  const segS  = Math.max(2, settings.audioLoop?.segmentSec ?? 12);
+  const xfS   = Math.max(0.5, Math.min(settings.audioLoop?.crossfadeSec ?? 3, segS / 2));
+
+  // Próxima trilha carrega no elemento "next" e sobe de 0 até 1; current
+  // desce simultaneamente. Depois trocamos papel.
+  audioLoopNext.src = CLIPS_DIR + c.audio;
+  audioLoopNext.currentTime = 0;
+  audioLoopNext.volume = 0;
+  audioLoopNext.play().catch(() => {});
+  fadeAudioElement(audioLoopNext, audioLoopUserVolume, xfS * 1000);
+  fadeAudioElement(audioLoopCurrent, 0, xfS * 1000);
+
+  // Swap roles pro próximo ciclo.
+  const justStarted = audioLoopNext;
+  audioLoopNext = audioLoopCurrent;
+  audioLoopCurrent = justStarted;
+
+  // Agenda próxima troca pra `segS - xfS` (assim o crossfade encavala bonito
+  // no fim do segmento, não depois).
+  audioLoopTimer = setTimeout(audioLoopAdvance, Math.max(1, (segS - xfS)) * 1000);
+}
+
+function applyAudioLoopSettings() {
+  if (typeof settings === 'undefined') return;
+  const want = settings.audioLoop?.enabled === true;
+  if (want && !audioLoopActive) {
+    // Browsers bloqueiam play() de áudio sem gesto do usuário. No boot
+    // (sem cliques ainda) o `audio.play()` rejeita silencioso. Em vez de
+    // tentar e falhar, esperamos o primeiro gesto na página e só então
+    // iniciamos. Se o usuário trocou o setting via Ajustes (que JÁ é um
+    // gesto), o `audioGestureUnlocked` flag pula a espera.
+    if (audioGestureUnlocked) startAudioLoop();
+    else armAudioLoopGestureUnlock();
+  } else if (!want && audioLoopActive) {
+    stopAudioLoop();
+    disarmAudioLoopGestureUnlock();
+  }
+  syncLayerCheckbox('audio-loop', want);
+}
+
+// Marca uma vez que o usuário interagiu — qualquer pointerdown/keydown
+// libera autoplay pelo resto da sessão.
+let audioGestureUnlocked = false;
+document.addEventListener('pointerdown', () => { audioGestureUnlocked = true; },
+  { capture: true, once: true });
+document.addEventListener('keydown', () => { audioGestureUnlocked = true; },
+  { capture: true, once: true });
+
+let audioLoopGestureHandler = null;
+function armAudioLoopGestureUnlock() {
+  if (audioLoopGestureHandler) return;
+  audioLoopGestureHandler = () => {
+    disarmAudioLoopGestureUnlock();
+    audioGestureUnlocked = true;
+    if (settings.audioLoop?.enabled && !audioLoopActive) startAudioLoop();
+  };
+  document.addEventListener('pointerdown', audioLoopGestureHandler, { capture: true, once: true });
+  document.addEventListener('keydown', audioLoopGestureHandler, { capture: true, once: true });
+  document.addEventListener('touchstart', audioLoopGestureHandler, { capture: true, once: true });
+}
+function disarmAudioLoopGestureUnlock() {
+  if (!audioLoopGestureHandler) return;
+  document.removeEventListener('pointerdown', audioLoopGestureHandler, true);
+  document.removeEventListener('keydown', audioLoopGestureHandler, true);
+  document.removeEventListener('touchstart', audioLoopGestureHandler, true);
+  audioLoopGestureHandler = null;
 }
 applyPhotoHoverScale();
 
@@ -2297,12 +2625,84 @@ const SETTINGS_JSONLD_CONTEXT = {
   '@vocab': 'https://pedalhidrografi.co/terms/settings#',
   ph:        'https://pedalhidrografi.co/terms#',
 };
+// Snapshot do estado atual dos controles do painel Camadas (checkbox de
+// visibilidade + slider de opacidade) por ID de layer. Fica fora de
+// `settings` porque a fonte de verdade é o DOM da Leaflet, não o objeto JS.
+function collectLayerStates() {
+  const panel = document.querySelector('.layer-panel');
+  if (!panel) return null;
+  const out = {};
+  panel.querySelectorAll('.layer-row').forEach((row) => {
+    const id = row.dataset.id;
+    if (!id) return;
+    const cb = row.querySelector('input[type="checkbox"]');
+    const rb = row.querySelector('input[type="radio"]');
+    const slider = row.querySelector('input.opacity-slider');
+    out[id] = {
+      visible: cb ? cb.checked : (rb ? rb.checked : null),
+      pct: slider ? Number(slider.value) : null,
+    };
+  });
+  return out;
+}
+function applyLayerStates(states) {
+  if (!states || typeof states !== 'object') return;
+  const panel = document.querySelector('.layer-panel');
+  if (!panel) return;
+  for (const [id, state] of Object.entries(states)) {
+    const row = panel.querySelector(`.layer-row[data-id="${CSS.escape(id)}"]`);
+    if (!row) continue;
+    if (state.visible !== null && state.visible !== undefined) {
+      const cb = row.querySelector('input[type="checkbox"]');
+      const rb = row.querySelector('input[type="radio"]');
+      if (cb) {
+        cb.checked = !!state.visible;
+        cb.dispatchEvent(new Event('change', { bubbles: true }));
+      } else if (rb && state.visible) {
+        rb.checked = true;
+        rb.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    }
+    if (Number.isFinite(state.pct)) {
+      const slider = row.querySelector('input.opacity-slider');
+      if (slider) {
+        slider.value = String(state.pct);
+        slider.dispatchEvent(new Event('input', { bubbles: true }));
+      }
+    }
+  }
+}
+// URL dos layers customizáveis (XYZ + WMS) vive em localStorage —
+// preservamos como parte do export pra trazer junto.
+function collectCustomLayers() {
+  let wms = null;
+  try { wms = JSON.parse(localStorage.getItem('phidro:customWms') || 'null'); }
+  catch { wms = null; }
+  return {
+    xyz: localStorage.getItem('phidro:customXyz') || null,
+    wms,
+  };
+}
+function applyCustomLayers(cfg) {
+  if (!cfg) return;
+  if (cfg.xyz) {
+    localStorage.setItem('phidro:customXyz', cfg.xyz);
+    if (typeof ensureCustomXyz === 'function') ensureCustomXyz(cfg.xyz);
+  }
+  if (cfg.wms) {
+    localStorage.setItem('phidro:customWms', JSON.stringify(cfg.wms));
+    if (typeof ensureCustomWms === 'function') ensureCustomWms(cfg.wms);
+  }
+}
+
 function downloadSettingsJsonLd() {
   const doc = {
     '@context': SETTINGS_JSONLD_CONTEXT,
     '@type': 'AppSettings',
     generatedAt: new Date().toISOString(),
     ...JSON.parse(JSON.stringify(settings)),
+    layers: collectLayerStates(),
+    customLayers: collectCustomLayers(),
   };
   const blob = new Blob([JSON.stringify(doc, null, 2)],
     { type: 'application/ld+json' });
@@ -2319,7 +2719,10 @@ async function importSettingsJsonLd(file) {
   let doc;
   try { doc = JSON.parse(text); }
   catch { throw new Error('JSON inválido'); }
-  const { '@context': _c, '@type': _t, generatedAt: _g, ...rest } = doc;
+  // Separa as duas chaves "fora-do-settings" (camadas e custom layers) do
+  // resto antes do deep-merge — elas têm fluxos de aplicação próprios.
+  const { '@context': _c, '@type': _t, generatedAt: _g,
+          layers: layersState, customLayers, ...rest } = doc;
   const merged = _deepMerge(SETTINGS_DEFAULTS, _deepMerge(settings, rest));
   // Cuidado: a fonte de imagens muda via setPhotoSource pra disparar reload.
   const newPhotoSource = merged.photoSource;
@@ -2332,6 +2735,10 @@ async function importSettingsJsonLd(file) {
     syncSettingsControl(el);
   }
   applyAllSettings();
+  applyCustomLayers(customLayers);
+  // Aplica estados das camadas DEPOIS — os controles podem ter sido
+  // recriados pela inicialização de camadas customizáveis acima.
+  applyLayerStates(layersState);
   showToast('Configurações importadas.');
 }
 document.getElementById('settings-export-btn')?.addEventListener(
@@ -2886,7 +3293,13 @@ function defaultDesktopSidebarHidden() {
 if (!isMobileViewport()) {
   const persisted = localStorage.getItem(SIDEBAR_HIDDEN_KEY);
   const shouldHide = persisted !== null ? persisted === '1' : defaultDesktopSidebarHidden();
-  if (shouldHide) document.body.classList.add('sidebar-hidden');
+  if (shouldHide) {
+    document.body.classList.add('sidebar-hidden');
+    // O grid muda pra coluna única — o container do mapa cresce. Leaflet
+    // cacheia o tamanho na hora de inicializar, então sem `invalidateSize()`
+    // a área onde a sidebar ficaria não pede tiles até o usuário panejar.
+    setTimeout(() => map.invalidateSize(), 0);
+  }
 }
 updateMenuBtnPressed();
 

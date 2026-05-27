@@ -413,6 +413,67 @@
             </label>
           </section>
 
+          <!-- Imagens — controla qualidade dos marcadores -->
+          <section class="settings-section" data-section="images">
+            <h3>Imagens</h3>
+            <p class="muted">Marcadores de foto usam variante 2× (grande) pra ficarem nítidos em telas HiDPI. Em celulares com pouca memória isso pode travar — manter desligado segura tudo no thumb (256 px). Não afeta o preview que abre ao clicar.</p>
+            <label class="settings-row">
+              <span>Usar 2× em marcadores (retina)</span>
+              <input type="checkbox" data-setting="images.useLarge">
+            </label>
+          </section>
+
+          <!-- Marker do clipe (anel branco que pulsa com a intensidade do áudio) -->
+          <section class="settings-section" data-section="clipMarker">
+            <h3>Marcador do clipe</h3>
+            <p class="muted">Anel branco que pulsa com o áudio do clipe que está tocando.</p>
+            <label class="settings-row">
+              <span>Tamanho base (px)</span>
+              <input type="range" data-setting="clipMarker.baseSizePx" min="8" max="48" step="1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Espessura da borda (px)</span>
+              <input type="range" data-setting="clipMarker.borderPx" min="1" max="8" step="1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Escala no silêncio (×)</span>
+              <input type="range" data-setting="clipMarker.minScale" min="0.05" max="1" step="0.05">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Escala no pico (×)</span>
+              <input type="range" data-setting="clipMarker.maxScale" min="2" max="40" step="1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Ganho de intensidade</span>
+              <input type="range" data-setting="clipMarker.intensityGain" min="1" max="10" step="0.5">
+              <output></output>
+            </label>
+          </section>
+
+          <!-- Áudio em laço — toca só a trilha dos clipes em crossfade -->
+          <section class="settings-section" data-section="audioLoop">
+            <h3>Áudio em laço</h3>
+            <p class="muted">Loop ambiente só com áudio dos clipes (independente do vídeo de Animação).</p>
+            <label class="settings-row">
+              <span>Ligar loop</span>
+              <input type="checkbox" data-setting="audioLoop.enabled">
+            </label>
+            <label class="settings-row">
+              <span>Duração por trilha (s)</span>
+              <input type="range" data-setting="audioLoop.segmentSec" min="5" max="60" step="1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Crossfade (s)</span>
+              <input type="range" data-setting="audioLoop.crossfadeSec" min="0.5" max="10" step="0.5">
+              <output></output>
+            </label>
+          </section>
+
           <!-- Vídeo fantasma — clipes em laço quando Animação está ligada -->
           <section class="settings-section" data-section="clipsGhost">
             <h3>Vídeo fantasma</h3>
@@ -427,9 +488,18 @@
               <output></output>
             </label>
             <label class="settings-row">
-              <span>Fade in/out (s)</span>
+              <span>Fade in/out do vídeo (s)</span>
               <input type="range" data-setting="clipsGhost.fadeSec" min="0" max="5" step="0.1">
               <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Fade in/out do áudio (s)</span>
+              <input type="range" data-setting="clipsGhost.audioFadeSec" min="0" max="10" step="0.1">
+              <output></output>
+            </label>
+            <label class="settings-row">
+              <span>Usar 720p (mais pesado)</span>
+              <input type="checkbox" data-setting="clipsGhost.useHd">
             </label>
           </section>
 

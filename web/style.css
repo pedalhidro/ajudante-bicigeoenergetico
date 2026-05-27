@@ -780,11 +780,13 @@ body.header-hidden .topbar { display: none; }
    No estado ativo, escala de ~0.1× (silêncio) até ~3× (pico) acompanhando
    a intensidade RMS do áudio, exposta em `--clip-intensity` por JS. */
 .clip-marker {
-  width: 18px;
-  height: 18px;
+  /* Dimensões e borda são parametrizadas via Ajustes → `settings.clipMarker`,
+     injetadas como custom properties no <html> por `applyClipMarkerSettings`. */
+  width: var(--clip-marker-size, 18px);
+  height: var(--clip-marker-size, 18px);
   border-radius: 50%;
   background: transparent;
-  border: 3px solid #fff;
+  border: var(--clip-marker-border, 3px) solid #fff;
   box-shadow: 0 0 6px rgba(0, 0, 0, 0.55);
   cursor: pointer;
   pointer-events: auto;
@@ -792,9 +794,30 @@ body.header-hidden .topbar { display: none; }
 }
 .clip-marker.active {
   display: block;
-  /* 0.1 + 19.9 × intensidade → 0.1× (silêncio) a 20× (pico de RMS). */
-  transform: scale(calc(0.1 + 19.9 * var(--clip-intensity, 0)));
+  /* min + (max-min) × intensidade → escala variável conforme Ajustes. */
+  transform: scale(calc(
+    var(--clip-min-scale, 0.1)
+    + (var(--clip-max-scale, 20) - var(--clip-min-scale, 0.1))
+    * var(--clip-intensity, 0)
+  ));
   transition: transform 0.06s linear;
+}
+/* Estados de início (1s antes do clipe começar a pulsar) e fim (1s antes
+   de ceder pro próximo): bolinhas sólidas, não pulsam. Verde no intro,
+   laranja no outro. */
+.clip-marker.active.intro,
+.clip-marker.active.outro {
+  display: block;
+  transform: scale(1);
+  transition: transform 0.15s ease;
+}
+.clip-marker.active.intro {
+  background: #4caf50;
+  border-color: #4caf50;
+}
+.clip-marker.active.outro {
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
 /* iOS PWA standalone: respect the home indicator / notch. */
