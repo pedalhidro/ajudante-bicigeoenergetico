@@ -34,15 +34,25 @@ serve tudo direto como estáticos — mesma origem, sem CORS.
 web/
 ├─ index.html, app.js, style.css, sw.js, manifest.json, icons…
 ├─ upload_images.html          formulário de envio (POSTa em /upload-image)
-├─ lib/                        utils.js + n3.min.js (parser Turtle vendored)
+├─ lib/                        utils.js + n3.min.js + energy-worker.js +
+│                              tom-select.* (parsers/widgets vendored)
 ├─ data/
 │   ├─ data_graphs.ttl         manifesto void: aponta pros dumps abaixo
 │   ├─ uploads.ttl             triples de cada imagem + activity de upload
 │   ├─ tours.ttl               catálogo de passeios (build-tours.py)
 │   ├─ shapes.ttl              SHACL — validação do /upload-image
 │   └─ ontology.ttl            vocabulário ph:
-└─ photos/<phash>/             { original.jpg | large.jpg | thumb.jpg }
+├─ photos/<phash>/             { original.jpg | large.jpg | thumb.jpg }
+└─ clips/                      clipes de vídeo curtos (Animação)
+    ├─ clips.json              índice (gerado por scripts/build-clips.py)
+    ├─ <stem>.360p.mp4         vídeo otimizado pra preview
+    ├─ <stem>.720p.mp4         vídeo opt-in via `clipsGhost.useHd`
+    └─ audio/<stem>.m4a        trilha de áudio extraída (loop ambiente)
 ```
+
+> O Pi só serve `web/clips/` como estático — o `build-clips.py` roda
+> localmente (precisa de `ffmpeg` + `exiftool`). O diretório de fonte
+> `web/clips/raw/` não precisa estar no Pi.
 
 A validação SHACL acontece contra `web/data/shapes.ttl` mesclado com
 `web/data/ontology.ttl`. O Pi lê esses arquivos do próprio diretório `web/`

@@ -214,6 +214,14 @@ map.on('popupopen', (e) => {
   const popup = e.popup;
   const el = popup.getElement?.();
   if (!el || !el.classList.contains('photo-popup-wrap')) return;
+  // Se o modal de fallback já estiver aberto (de uma marker anterior),
+  // fecha antes — evita ter dois previews visíveis e o map-view snap-back
+  // ficar apontando pra view de antes-do-modal anterior.
+  const existingModal = document.getElementById('photo-fallback-modal');
+  if (existingModal && !existingModal.hidden) {
+    existingModal.hidden = true;
+    restoreMapViewAfterPhoto();
+  }
   // Checa se cabe na viewport; se não, promove pro modal. A medição roda
   // uma vez após o layout assentar (rAF) e, se houver `<img loading=lazy>`
   // sem dimensões ainda, re-checa quando a imagem terminar de carregar.
@@ -333,11 +341,9 @@ const OVERLAY_LAYERS = [
     hide: () => hidePhotos(),
     setOpacity: (frac) => setPhotosOpacity(frac),
   },
-  // Vídeo fantasma: opacidade do <video> que toca os clipes sobre o mapa
-  // quando Animação está ligada. O checkbox não esconde a feature
-  // (Animação faz isso); só zera a opacidade.
   // Vídeo fantasma — o checkbox espelha `settings.clipsGhost.enabled`
-  // (start/stop da reprodução); o slider controla a opacidade visual.
+  // (start/stop da reprodução); o slider controla a opacidade visual do
+  // <video> sobreposto. Animação (botão da topbar) é o switch global.
   {
     id: 'clips-ghost',
     label: 'Vídeo fantasma',
@@ -972,9 +978,15 @@ function clipAudioFadeS() {
 let clipsCatalog = null;          // [{file, lat, lng, duration, ...}]
 let clipsMarkers = [];            // [{clip, marker}]
 let clipsAdvanceTimer = null;
+let clipsAudioOutTimer = null;
 let clipsCurrentIndex = -1;
 let clipsGhostVideo  = null;      // <video> element, criado preguiçosamente
-let clipsGhostUserOpacity = 0.7;  // controlada pelo slider do painel Camadas
+// Valor inicial vem do `defaultPct` da entrada `clips-ghost` no OVERLAY_LAYERS
+// — uma única fonte de verdade pro fade-in do primeiro clipe e pra posição
+// inicial do slider do painel Camadas.
+let clipsGhostUserOpacity = (
+  (OVERLAY_LAYERS.find((l) => l.id === 'clips-ghost')?.defaultPct ?? 70) / 100
+);
 
 function setClipsGhostOpacity(frac) {
   if (clipsGhostVideo) clipsGhostVideo.style.opacity = String(frac);
@@ -1218,7 +1230,8 @@ function playClipAt(index) {
     }
   }
 
-  if (clipsAdvanceTimer) { clearTimeout(clipsAdvanceTimer); clipsAdvanceTimer = null; }
+  if (clipsAdvanceTimer)  { clearTimeout(clipsAdvanceTimer);  clipsAdvanceTimer = null; }
+  if (clipsAudioOutTimer) { clearTimeout(clipsAudioOutTimer); clipsAudioOutTimer = null; }
 
   // Escolhe variante 720p se o usuário pediu E o catálogo tem essa versão.
   const wantHd = settings.clipsGhost?.useHd === true;
@@ -1252,8 +1265,15 @@ function playClipAt(index) {
     fadeClipOpacity(v, clipsGhostUserOpacity, fadeS * 1000);
     fadeClipVolume(v, 1, audioFadeS * 1000);
     // Fade-out de áudio começa MAIS CEDO que o vídeo (porque é mais longo),
-    // mas ambos chegam a zero ~ao mesmo tempo (advance).
-    setTimeout(() => fadeClipVolume(v, 0, audioFadeS * 1000), (segS - audioFadeS) * 1000);
+    // mas ambos chegam a zero ~ao mesmo tempo (advance). Rastreamos o timer
+    // pra cancelar quando o usuário pula pro próximo clipe — senão ele
+    // dispara em cima do `fadeClipVolume(v, 1, ...)` do próximo e mata o
+    // fade-in.
+    const audioOutDelay = Math.max(0, (segS - audioFadeS) * 1000);
+    clipsAudioOutTimer = setTimeout(
+      () => fadeClipVolume(v, 0, audioFadeS * 1000),
+      audioOutDelay,
+    );
     clipsAdvanceTimer = setTimeout(() => {
       fadeClipOpacity(v, 0, fadeS * 1000).then(() => advanceClip());
     }, (segS - fadeS) * 1000);
@@ -1280,7 +1300,8 @@ async function startClipsGhost() {
 }
 
 function stopClipsGhost() {
-  if (clipsAdvanceTimer) { clearTimeout(clipsAdvanceTimer); clipsAdvanceTimer = null; }
+  if (clipsAdvanceTimer)  { clearTimeout(clipsAdvanceTimer);  clipsAdvanceTimer = null; }
+  if (clipsAudioOutTimer) { clearTimeout(clipsAudioOutTimer); clipsAudioOutTimer = null; }
   clearMarkerStateTimers();
   if (clipsGhostVideo) {
     try { clipsGhostVideo.pause(); } catch {}
@@ -2341,6 +2362,19 @@ function applyAllSettings() {
   applyClipsGhostSettings();
   applyClipMarkerSettings();
   applyAudioLoopSettings();
+  applyImagesSettings();
+}
+// `images.useLarge` é lido em tempo de criação dos markers — pra refletir
+// uma mudança no toggle, precisamos reconstruir. `reloadPhotos` faz isso.
+// Só dispara um reload se o valor REALMENTE mudou desde a última aplicação.
+let _lastUseLarge = null;
+function applyImagesSettings() {
+  const v = settings.images?.useLarge === true;
+  if (_lastUseLarge === v) return;
+  _lastUseLarge = v;
+  if (typeof reloadPhotos === 'function' && typeof photoMarkers !== 'undefined' && photoMarkers.length) {
+    reloadPhotos();
+  }
 }
 // Empurra os params do marker de clipe como custom properties no <html>;
 // o CSS lê `--clip-marker-size`, `--clip-marker-border`, `--clip-min-scale`,
@@ -2394,7 +2428,11 @@ audioLoopB.volume = 0;
 let audioLoopCurrent = audioLoopA;
 let audioLoopNext    = audioLoopB;
 let audioLoopActive  = false;
-let audioLoopUserVolume = 0.8;        // controlado pelo slider em Camadas
+// Mesma ideia do clipsGhostUserOpacity: o teto inicial sai do `defaultPct`
+// do `audio-loop` em OVERLAY_LAYERS.
+let audioLoopUserVolume = (
+  (OVERLAY_LAYERS.find((l) => l.id === 'audio-loop')?.defaultPct ?? 80) / 100
+);
 function setAudioLoopUserVolume(frac) {
   audioLoopUserVolume = Math.max(0, Math.min(1, frac));
   // Clampa o volume das trilhas em curso pra não estourar o novo teto.
@@ -2529,6 +2567,12 @@ function disarmAudioLoopGestureUnlock() {
   audioLoopGestureHandler = null;
 }
 applyPhotoHoverScale();
+// Aplica as configs persistidas no boot — sem isso, sliders/checkboxes do
+// painel Camadas ficam dessincronizados do estado real do app, e o loop de
+// áudio salvo como `enabled: true` só pegaria efeito após a primeira
+// interação manual.
+applyClipsGhostSettings();
+applyAudioLoopSettings();
 
 // Lê/escreve em settings por caminho "a.b.c".
 function getSettingPath(path) {

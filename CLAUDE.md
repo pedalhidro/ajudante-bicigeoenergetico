@@ -9,9 +9,11 @@ local-first.
 
 - `web/` — the app. A static PWA: `index.html`, one big `app.js` (single
   file, no build step), `style.css`, `sw.js` (service worker),
-  `manifest.json`, icons, `lib/{utils.js,n3.min.js,…}` (vendored deps).
-  Leaflet-based map. Also hosts `upload_images.html` (per-photo upload form)
-  and the `data/` + `photos/` directories the app reads from.
+  `manifest.json`, icons, `lib/` (vendored deps: `utils.js`, `n3.min.js`,
+  `energy-worker.js`, `tom-select.complete.min.js`, `tom-select.min.css`).
+  Leaflet-based map. Also hosts `upload_images.html` (per-photo upload
+  form) and the `data/`, `photos/`, and `clips/` directories the app
+  reads from at runtime.
 - `backend/pi/` — the self-hosted backend. One Flask service (`main.py`)
   that serves `web/` as static files **and** validates+stores incoming
   photos. No SQLite; state lives in `web/data/uploads.ttl` (per-image
@@ -30,9 +32,14 @@ local-first.
   JSON-LD context. Superseded by `web/data/ontology.ttl`; kept for
   reference.
 - `scripts/` — `build-routes.py` (bakes `routes.json` from
-  `web/data/tours.ttl` + RideWithGPS), `deploy.sh` (legacy GCS static
-  mirror), `coletor_*.py` / `build-photos.py` / `build-routes.mjs` (legacy
-  artefacts pending removal — see "Open loose ends").
+  `web/data/tours.ttl` + RideWithGPS), `build-clips.py` (re-encodes the
+  raw videos in `web/clips/raw/` to 360p/720p mp4 + `.m4a` audio and
+  writes `web/clips/clips.json`), `deploy.sh` (legacy GCS static mirror),
+  `deploy-amora.sh` / `pull-amora.sh` / `pi-deploy.sh` /
+  `gcloud-ssh-rsync.sh` (Pi deploy helpers), `gen-synthetic-rdf.py`,
+  `exiftool_ph.config`. `coletor_*.py` / `build-photos.py` /
+  `build-routes.mjs` are legacy artefacts pending removal — see
+  "Open loose ends".
 
 ## Architecture
 
@@ -76,6 +83,36 @@ Key flows:
   `ph:rwgps a schema:Organization`) to `sh:class` checks, so manual
   merging is mandatory. See `research/photos-rdf/DESIGN.md` §2 for the
   full gotcha.
+- **Clips / Animação.** The "Animação" topbar button toggles both the
+  photo-marker spotlight pulse AND a ghost-video overlay (`web/clips/`
+  → translucent `<video>` over the map). The app fetches
+  `./clips/clips.json`, places a marker per clip at its EXIF GPS, and
+  plays through clips in random order with a 5-state marker handoff
+  (green intro → pulsing white → orange outro). An independent "Loop de
+  áudio" plays the same clips' audio-only tracks with a longer crossfade
+  for ambient use. Both have controls in Ajustes and the layer panel.
+
+## Clips workflow
+
+Source videos in `web/clips/raw/` (`.MOV`/`.mp4`/`.m4v`). Run:
+
+```sh
+python scripts/build-clips.py
+```
+
+Requires `ffmpeg` and `exiftool` in `$PATH` (Homebrew on macOS, `apt` on
+Pi). For each source the script:
+
+- Reads GPS + duration + dimensions via `exiftool` (clips with no GPS are
+  skipped).
+- Transcodes a `<stem>.360p.mp4` (always) and `<stem>.720p.mp4`
+  (best-effort, opt-in via `clipsGhost.useHd`) into `web/clips/`.
+- Extracts the audio track to `web/clips/audio/<stem>.m4a` (AAC 96k).
+- Writes the index `web/clips/clips.json` with `{file, file720, audio,
+  lat, lng, duration, ...}` per clip.
+
+The mtime check makes re-runs cheap. Adding a new clip = drop into
+`raw/` and re-run.
 
 ## Conventions — please follow
 
@@ -114,6 +151,9 @@ Key flows:
 - `python research/photos-rdf/build-tours.py` — regenerate
   `web/data/tours.ttl` from `research/photos-rdf/data/tours.csv`. Run this
   whenever the spreadsheet changes; `build-routes.py` consumes its output.
+- `python scripts/build-clips.py` — re-encode anything in `web/clips/raw/`
+  to 360p/720p mp4 + `.m4a` audio and rewrite `web/clips/clips.json`. See
+  "Clips workflow" above. Requires `ffmpeg` + `exiftool`.
 - `bash scripts/deploy.sh` (or `bash scripts/deploy.sh --dry-run`) — sync
   `web/` to the GCS static mirror (read-only; needs `gcloud` auth).
 - Pi: `pip install -r backend/pi/requirements.txt && python backend/pi/main.py`
@@ -132,6 +172,10 @@ Key flows:
 - **`web/data/uploads.ttl` and `web/photos/<phash>/`** are runtime artifacts
   of the Pi — gitignore or commit per your deploy strategy. The CDN mirror
   shows no photos until those files exist at the destination.
+- **`web/clips/raw/`** holds source videos (large). Probably want
+  gitignored. The build artifacts (`*.360p.mp4`, `*.720p.mp4`, `audio/*.m4a`,
+  `clips.json`) are smaller and can be committed if you want the static
+  mirror to ship clips, or generated in CI.
 
 ## Notes
 
