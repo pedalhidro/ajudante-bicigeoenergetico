@@ -124,9 +124,17 @@ ph:mediaCount a owl:DatatypeProperty ;
 ph:countNewcomer a owl:DatatypeProperty ;
     rdfs:label "iniciantes"@pt ;
     rdfs:comment
-        "Subconjunto de ph:countAttendee: pessoas no primeiro pedal com o coletivo."@pt ;
+        "Subconjunto de ph:countAttendee: pessoas no primeiro pedal com o coletivo. Independente de ph:hasNewcomer (que lista nominalmente as pessoas) — ambos podem coexistir, mas só `countNewcomer` é obrigatório."@pt ;
     rdfs:domain ph:Tour ;
     rdfs:range xsd:nonNegativeInteger .
+
+ph:hasNewcomer a owl:ObjectProperty ;
+    rdfs:label "iniciante"@pt ;
+    rdfs:comment
+        "Pessoa que está participando pela primeira vez de um passeio de uma dada série de eventos (SHACL impõe unicidade por série). Subpropriedade de schema:attendee, então um newcomer também é attendee. Aparece nominalmente — diferente de ph:countNewcomer, que é só o número agregado."@pt ;
+    rdfs:domain ph:Tour ;
+    rdfs:range schema:Person ;
+    rdfs:subPropertyOf schema:attendee .
 
 ph:energyEstimate a owl:ObjectProperty ;
     rdfs:label "estimativa de energia"@pt ;

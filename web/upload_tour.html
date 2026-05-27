@@ -140,6 +140,20 @@
 
     <label for="t-providers" class="required">Quem subiu (pav:providedBy)</label>
     <select multiple id="t-providers" placeholder="busca ou digita…"></select>
+
+    <!-- Listagem nominal de participantes e iniciantes — só visível
+         quando o toggle `attendees.list` está ON nas Ajustes do app
+         principal. Mantém os triples no TTL independente do toggle (a
+         renderização é controlada lá; os dados ficam aqui). -->
+    <div id="attendee-fields" hidden>
+      <label for="t-attendees-list">Participantes (lista nominal — opcional)</label>
+      <select multiple id="t-attendees-list" placeholder="busca ou digita…"></select>
+      <small>Vira <code>schema:attendee</code>. Independente do contador <em>Participantes</em> abaixo.</small>
+
+      <label for="t-newcomers-list">Iniciantes (lista nominal — opcional)</label>
+      <select multiple id="t-newcomers-list" placeholder="busca ou digita…"></select>
+      <small>Vira <code>ph:hasNewcomer</code>. SHACL impede uma pessoa de ser iniciante mais de uma vez na mesma série.</small>
+    </div>
   </fieldset>
 
   <fieldset>
@@ -419,8 +433,26 @@ const authorTs    = moveCreateToBottom(new TomSelect($('#t-authors'),   tsConfig
 const providerTs2 = moveCreateToBottom(new TomSelect($('#t-providers'), tsConfig(personOptions, mintPerson, true)));
 const orgTs       = moveCreateToBottom(new TomSelect($('#t-organizer'), tsConfig(orgOptions,    mintOrg,    true)));
 const providerTs  = moveCreateToBottom(new TomSelect($('#t-route-provider'), tsConfig(providerOptions, mintProvider, false)));
+const attendeesTs = moveCreateToBottom(new TomSelect($('#t-attendees-list'), tsConfig(personOptions, mintPerson, true)));
+const newcomersTs = moveCreateToBottom(new TomSelect($('#t-newcomers-list'), tsConfig(personOptions, mintPerson, true)));
 
-const personPickers = [authorTs, providerTs2];
+const personPickers = [authorTs, providerTs2, attendeesTs, newcomersTs];
+
+// Toggle de visibilidade dos campos de lista nominal — lê o setting do
+// localStorage (mesma chave usada pelo app principal: `phidro:settings`).
+function attendeeListEnabled() {
+  try {
+    const raw = localStorage.getItem('phidro:settings');
+    if (!raw) return false;
+    const s = JSON.parse(raw);
+    return s?.attendees?.list === true;
+  } catch (_) { return false; }
+}
+function applyAttendeeFieldsVisibility() {
+  const wrap = document.getElementById('attendee-fields');
+  if (wrap) wrap.hidden = !attendeeListEnabled();
+}
+applyAttendeeFieldsVisibility();
 function broadcastNewPerson(opt) {
   for (const ts of personPickers) ts.addOption(opt);
 }
@@ -497,6 +529,12 @@ function buildTtl() {
     .map(l => l.trim()).filter(Boolean);
   const authors   = authorTs.getValue();
   const providers = providerTs2.getValue();
+  // Listas nominais (schema:attendee + ph:hasNewcomer). Coletadas mesmo
+  // se o toggle estiver OFF — não deletamos triples existentes só porque
+  // o usuário escondeu os campos. Em prefill os valores já estão nos
+  // pickers; novos passeios sem o toggle ficam com pickers vazios.
+  const attendeesList = attendeesTs.getValue();
+  const newcomersList = newcomersTs.getValue();
 
   if (!id) throw new Error('id ausente');
   if (!title) throw new Error('título ausente');
@@ -577,6 +615,8 @@ function buildTtl() {
   }
   for (const p of authors)   props.push(`prov:wasAttributedTo ${p}`);
   for (const p of providers) props.push(`pav:providedBy ${p}`);
+  for (const p of attendeesList) props.push(`schema:attendee ${p}`);
+  for (const p of newcomersList) props.push(`ph:hasNewcomer ${p}`);
 
   // Declarações auxiliares (associações, séries novas, pessoas novas, orgs novas).
   let auxDecls = '\n# Associações à série(s)\n';
@@ -742,6 +782,8 @@ async function prefillFromId(tourId) {
   const organizers = [];
   const authors = [];
   const providers = [];
+  const attendeesList = [];
+  const newcomersList = [];
   const incidents = [];
   let title = '', date = '', narrative = '', instagram = '';
   let attendees = '', newcomers = '', energyKj = '';
@@ -778,6 +820,12 @@ async function prefillFromId(tourId) {
     }
     else if (p === 'http://purl.org/pav/providedBy') {
       const iri = objIri(q); if (iri) providers.push(shortIRI(iri));
+    }
+    else if (p === SCHEMA + 'attendee') {
+      const iri = objIri(q); if (iri) attendeesList.push(shortIRI(iri));
+    }
+    else if (p === PH_NS + 'hasNewcomer') {
+      const iri = objIri(q); if (iri) newcomersList.push(shortIRI(iri));
     }
     else if (p === PH_NS + 'inSeriesEdition') {
       // Resolve a associação → {code, edition} via subjBy.
@@ -848,6 +896,14 @@ async function prefillFromId(tourId) {
   for (const v of authors)    if (authorTs.options[v])    authorTs.addItem(v, true);
   for (const v of providers)  if (providerTs2.options[v]) providerTs2.addItem(v, true);
   for (const v of organizers) if (orgTs.options[v])       orgTs.addItem(v, true);
+  for (const v of attendeesList) if (attendeesTs.options[v]) attendeesTs.addItem(v, true);
+  for (const v of newcomersList) if (newcomersTs.options[v]) newcomersTs.addItem(v, true);
+  // Auto-revela os campos quando o passeio carregado JÁ tem listas — pra
+  // que o usuário consiga editar mesmo se o toggle estiver OFF no app.
+  if (attendeesList.length || newcomersList.length) {
+    const wrap = document.getElementById('attendee-fields');
+    if (wrap) wrap.hidden = false;
+  }
 
   // Séries: limpa as linhas e cria uma por par encontrado.
   for (const e of [...seriesTsList]) {

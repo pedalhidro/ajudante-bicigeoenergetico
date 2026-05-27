@@ -1,2517 +1,2236 @@
 @prefix dcterms: <http://purl.org/dc/terms/> .
-@prefix pav:     <http://purl.org/pav/> .
-@prefix ph:      <https://pedalhidrografi.co/terms#> .
-@prefix phd:     <https://pedalhidrografi.co/data/> .
-@prefix prov:    <http://www.w3.org/ns/prov#> .
-@prefix qudt:    <http://qudt.org/schema/qudt/> .
-@prefix schema:  <https://schema.org/> .
-@prefix unit:    <http://qudt.org/vocab/unit/> .
-@prefix xsd:     <http://www.w3.org/2001/XMLSchema#> .
+@prefix pav: <http://purl.org/pav/> .
+@prefix ph: <https://pedalhidrografi.co/terms#> .
+@prefix phd: <https://pedalhidrografi.co/data/> .
+@prefix prov: <http://www.w3.org/ns/prov#> .
+@prefix qudt: <http://qudt.org/schema/qudt/> .
+@prefix schema: <https://schema.org/> .
+@prefix unit: <http://qudt.org/vocab/unit/> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
 
-# Séries
-phd:PH a schema:EventSeries ; dcterms:title "Pedais Hidrográficos Regulares" .
-phd:BP a schema:EventSeries ; dcterms:title "Bicipassarinhadas" .
-phd:S  a schema:EventSeries ; dcterms:title "Pedais Hidrográficos Suados" .
-phd:BT a schema:EventSeries ; dcterms:title "Bondes / Trips" .
+phd:tour_1 a ph:Tour ;
+    dcterms:date "2024-09-09T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Água Preta e Tiburtino" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 2 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 142.0 ;
+            ph:intensityClassification "De boa" ] ;
+    ph:inSeriesEdition phd:assoc_PH_1 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49272936> ] ;
+    ph:mediaCount 2 .
 
-# Pessoas
-phd:pessoaAlef a schema:Person ; schema:alternateName "alef" .
-phd:pessoaAlex a schema:Person ; schema:alternateName "alex" .
-phd:pessoaAmarmo a schema:Person ; schema:alternateName "amarmo" .
-phd:pessoaAnaju a schema:Person ; schema:alternateName "anaju" .
-phd:pessoaAndrio a schema:Person ; schema:alternateName "andrio" .
-phd:pessoaBrunabom a schema:Person ; schema:alternateName "brunabom" .
-phd:pessoaBrunoperandin a schema:Person ; schema:alternateName "brunoperandin" .
-phd:pessoaBrunotitton a schema:Person ; schema:alternateName "brunotitton" .
-phd:pessoaDandan a schema:Person ; schema:alternateName "dandan" .
-phd:pessoaDelaram a schema:Person ; schema:alternateName "delaram" .
-phd:pessoaEricalatina a schema:Person ; schema:alternateName "ericalatina" .
-phd:pessoaFetiche a schema:Person ; schema:alternateName "fetiche" .
-phd:pessoaGa a schema:Person ; schema:alternateName "ga" .
-phd:pessoaGabrieltunes a schema:Person ; schema:alternateName "gabrieltunes" .
-phd:pessoaGiovanna a schema:Person ; schema:alternateName "giovanna" .
-phd:pessoaGiucuci a schema:Person ; schema:alternateName "giucuci" .
-phd:pessoaGmard a schema:Person ; schema:alternateName "gmard" .
-phd:pessoaLume a schema:Person ; schema:alternateName "lume" .
-phd:pessoaMicaelrodrigues a schema:Person ; schema:alternateName "micaelrodrigues" .
-phd:pessoaPedpaula a schema:Person ; schema:alternateName "pedpaula" .
-phd:pessoaThiagoneves a schema:Person ; schema:alternateName "thiagoneves" .
-phd:pessoaTomb a schema:Person ; schema:alternateName "tomb" .
-phd:pessoaTrilheiro a schema:Person ; schema:alternateName "trilheiro" .
-phd:pessoaYas a schema:Person ; schema:alternateName "yas" .
-phd:pessoaZito a schema:Person ; schema:alternateName "zito" .
+phd:tour_10 a ph:Tour ;
+    dcterms:date "2024-11-02T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "ABC" ;
+    prov:wasAttributedTo phd:pessoaBrunoperandin ;
+    ph:countAttendee 8 ;
+    ph:countNewcomer 5 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 850.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_BT_1,
+        phd:assoc_PH_10 ;
+    ph:linkInstagram "https://www.instagram.com/p/DBweYi-vMXc/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49195458> ] ;
+    ph:mediaCount 467 .
 
-# Associações (filiação a série)
+phd:tour_100 a ph:Tour ;
+    dcterms:date "2026-05-09T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "era infinitamente maio no alto rio bravo" ;
+    prov:wasAttributedTo phd:pessoaAnaju,
+        phd:pessoaDandan,
+        phd:pessoaGiovanna,
+        phd:pessoaGmard ;
+    ph:countAttendee 13 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 293.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_91 ;
+    ph:linkInstagram "https://www.instagram.com/p/DYFi8wRDjFL/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/55017982> ] .
+
+phd:tour_101 a ph:Tour ;
+    dcterms:date "2026-05-13T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Crista do Lauzane, subir Água Fria e duas vilas escondidas" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaGabrieltunes ;
+    ph:countAttendee 7 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 313.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_92 ;
+    ph:linkInstagram "https://www.instagram.com/p/DYQyPoYDlVe/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/55083392> ] .
+
+phd:tour_102 a ph:Tour ;
+    dcterms:date "2026-05-20T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Ziguezaguear a Crista do Morumbi" ;
+    prov:wasAttributedTo phd:pessoaGabrieltunes ;
+    ph:countAttendee 0 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 396.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_93 ;
+    ph:linkInstagram "https://www.instagram.com/p/DYfyG_IDhaM/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/55184087> ] .
+
+phd:tour_11 a ph:Tour ;
+    dcterms:date "2024-11-05T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Contornar Pacaembu e Sumaré" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 9 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 370.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_11 ;
+    ph:linkInstagram "https://www.instagram.com/p/DB-P8zUOg67/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/48970565> ] ;
+    ph:mediaCount 50 .
+
+phd:tour_12 a ph:Tour ;
+    dcterms:date "2024-11-09T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Mirantes do Tietê com Pico do Urubu" ;
+    prov:wasAttributedTo phd:pessoaBrunoperandin ;
+    ph:countAttendee 4 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 1700.0 ;
+            ph:intensityClassification "Insano" ] ;
+    ph:inSeriesEdition phd:assoc_PH_12 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49005652> ] ;
+    ph:mediaCount 222 .
+
+phd:tour_13 a ph:Tour ;
+    dcterms:date "2024-11-12T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Margens Ocidentais do Baixo Ipiranga" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 4 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 260.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_13 ;
+    ph:linkInstagram "https://www.instagram.com/p/DCQKAoVuD7f/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49029471> ] ;
+    ph:mediaCount 79 .
+
+phd:tour_14 a ph:Tour ;
+    dcterms:date "2024-11-19T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Margens Destras do Baixo Jaguaré" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 1 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 523.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_PH_14 ;
+    ph:linkInstagram "https://www.instagram.com/p/DChWox3ObhU/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49272870> ] ;
+    ph:mediaCount 42 .
+
+phd:tour_15 a ph:Tour ;
+    dcterms:date "2024-11-20T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Represa do Guarapiranga" ;
+    prov:wasAttributedTo phd:pessoaAnaju ;
+    ph:countAttendee 4 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 520.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_BP_1 ;
+    ph:mediaCount 2 .
+
+phd:tour_16 a ph:Tour ;
+    dcterms:date "2024-11-22T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Crista de Osasco" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 3 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 750.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_S_1 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49272881> ] ;
+    ph:mediaCount 16 .
+
+phd:tour_17 a ph:Tour ;
+    dcterms:date "2024-11-23T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Parelheiros" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 8 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 789.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_PH_15 ;
+    ph:linkInstagram "https://www.instagram.com/p/DCpl4FQOqFc/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49106874> ] ;
+    ph:mediaCount 227 .
+
+phd:tour_18 a ph:Tour ;
+    dcterms:date "2024-11-26T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Água Preta e Tiburtino" ;
+    prov:wasAttributedTo phd:pessoaThiagoneves ;
+    ph:countAttendee 8 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 260.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_16 ;
+    ph:linkInstagram "https://www.instagram.com/p/DC1bTVfuL0A/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/51086192> ] ;
+    ph:mediaCount 66 .
+
+phd:tour_19 a ph:Tour ;
+    dcterms:date "2024-11-30T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Paranapiacaba com Cachoeira" ;
+    prov:wasAttributedTo phd:pessoaTrilheiro ;
+    ph:countAttendee 6 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 850.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_BP_2,
+        phd:assoc_PH_17 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49272926> ] ;
+    ph:mediaCount 103 .
+
+phd:tour_2 a ph:Tour ;
+    dcterms:date "2024-09-16T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Coruja e Verde" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 3 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 184.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_2 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49272970> ] ;
+    ph:mediaCount 6 .
+
+phd:tour_20 a ph:Tour ;
+    dcterms:date "2024-12-03T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Contornar Iquirim e um pouco do Pirajuçara" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 9 ;
+    ph:countNewcomer 4 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 400.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_18 ;
+    ph:linkInstagram "https://www.instagram.com/p/DDF8IjTuMaK/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49182910> ] ;
+    ph:mediaCount 62 .
+
+phd:tour_21 a ph:Tour ;
+    dcterms:date "2024-12-06T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Morumbi e Antonico" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 4 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 614.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_S_2 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49272994> ] ;
+    ph:mediaCount 11 .
+
+phd:tour_22 a ph:Tour ;
+    dcterms:date "2024-12-10T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Nascentes da Brasilândia" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 3 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 330.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_19 ;
+    ph:linkInstagram "https://www.instagram.com/p/DDXvWs7ByTI/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49225969> ] ;
+    ph:mediaCount 58 .
+
+phd:tour_23 a ph:Tour ;
+    dcterms:date "2024-12-13T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Jaraguá Hidrográfico" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 5 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 650.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_S_3 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49195254> ] ;
+    ph:mediaCount 70 .
+
+phd:tour_24 a ph:Tour ;
+    dcterms:date "2024-12-17T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Águas de Pinheiros" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 13 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 436.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_20 ;
+    ph:linkInstagram "https://www.instagram.com/p/DDrYzskuaZy/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49267352> ] ;
+    ph:mediaCount 114 .
+
+phd:tour_25 a ph:Tour ;
+    dcterms:date "2025-01-07T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Verde, Anhanguera e Sapateiro" ;
+    prov:wasAttributedTo phd:pessoaAnaju ;
+    ph:countAttendee 12 ;
+    ph:countNewcomer 8 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 271.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_21 ;
+    ph:linkInstagram "https://www.instagram.com/p/DEgLpSQOj37/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49195396> ] ;
+    ph:mediaCount 28 .
+
+phd:tour_26 a ph:Tour ;
+    dcterms:date "2025-01-14T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Contornar Pacaembu e Sumaré" ;
+    prov:wasAttributedTo phd:pessoaAnaju ;
+    ph:countAttendee 22 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 370.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_22 ;
+    ph:linkInstagram "https://www.instagram.com/p/DEz0L0vud94/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/48970565> ] ;
+    ph:mediaCount 41 .
+
+phd:tour_27 a ph:Tour ;
+    dcterms:date "2025-01-19T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Foz do Tamanduateí até sua Nascente" ;
+    prov:wasAttributedTo phd:pessoaBrunoperandin ;
+    ph:countAttendee 11 ;
+    ph:countNewcomer 4 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 600.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_BT_2 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/48691963> ] ;
+    ph:mediaCount 56 .
+
+phd:tour_28 a ph:Tour ;
+    dcterms:date "2025-01-21T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Crista de Sapopema" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 12 ;
+    ph:countNewcomer 7 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 441.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_23 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49510455> ] ;
+    ph:mediaCount 48 .
+
+phd:tour_29 a ph:Tour ;
+    dcterms:date "2025-01-28T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Contornar Anhangabaú" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 5 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 340.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_24 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49567136> ] ;
+    ph:mediaCount 7 .
+
+phd:tour_3 a ph:Tour ;
+    dcterms:date "2024-09-23T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Altos do Sumaré e Verde I+II" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 2 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 179.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_3 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49272915> ] ;
+    ph:mediaCount 7 .
+
+phd:tour_30 a ph:Tour ;
+    dcterms:date "2025-02-04T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Pirajuçara, Água Podre e Crista de Osasco" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 15 ;
+    ph:countNewcomer 5 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 292.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_25 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49567174> ] ;
+    ph:mediaCount 132 .
+
+phd:tour_31 a ph:Tour ;
+    dcterms:date "2025-02-11T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Cabeceiras do Ipiranga" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 26 ;
+    ph:countNewcomer 17 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 291.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_26 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49671673> ] ;
+    ph:mediaCount 45 .
+
+phd:tour_32 a ph:Tour ;
+    dcterms:date "2025-02-25T19:30:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Sertões do Mandaqui" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 12 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 307.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_27 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49741245> ] ;
+    ph:mediaCount 87 .
+
+phd:tour_33 a ph:Tour ;
+    dcterms:date "2025-03-11T19:30:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Águas do Lavapés e Aclimação" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 4 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 206.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_28 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49924264> ] ;
+    ph:mediaCount 83 .
+
+phd:tour_34 a ph:Tour ;
+    dcterms:date "2025-03-26T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Águas Meridionais de Osasco" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 8 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 363.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_29 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49999355> ] ;
+    ph:mediaCount 75 .
+
+phd:tour_35 a ph:Tour ;
+    dcterms:date "2025-04-01T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Subir Pirituba, Surfar Alpes do Jaraguá e Descer Perus" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 8 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 323.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_30 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/50150417> ] ;
+    ph:mediaCount 99 .
+
+phd:tour_36 a ph:Tour ;
+    dcterms:date "2025-04-08T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Tiquatira da Foz à Nascente" ;
+    prov:wasAttributedTo phd:pessoaDandan,
+        phd:pessoaThiagoneves ;
+    ph:countAttendee 12 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 294.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_31 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/50149484> ] ;
+    ph:mediaCount 67 .
+
+phd:tour_37 a ph:Tour ;
+    dcterms:date "2025-04-13T08:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Rios Indígenas de Santo André" ;
+    prov:wasAttributedTo phd:pessoaBrunoperandin,
+        phd:pessoaDandan ;
+    ph:countAttendee 28 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 750.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_BT_3,
+        phd:assoc_PH_32 ;
+    ph:linkInstagram "https://www.instagram.com/p/DIHLiuKO-vH/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49100612> ] ;
+    ph:mediaCount 172 .
+
+phd:tour_38 a ph:Tour ;
+    dcterms:date "2025-04-15T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Moinho Velho A Outra Margem do Ipiranga" ;
+    prov:wasAttributedTo phd:pessoaDandan,
+        phd:pessoaPedpaula ;
+    ph:countAttendee 10 ;
+    ph:countNewcomer 4 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 314.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_33 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/50331319> ] ;
+    ph:mediaCount 70 .
+
+phd:tour_39 a ph:Tour ;
+    dcterms:date "2025-04-22T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Crista do Campo Limpo via Corveta-Camacuã" ;
+    prov:wasAttributedTo phd:pessoaAmarmo,
+        phd:pessoaDandan ;
+    ph:countAttendee 14 ;
+    ph:countNewcomer 4 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 351.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_34 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/50411729> ] ;
+    ph:mediaCount 52 .
+
+phd:tour_4 a ph:Tour ;
+    dcterms:date "2024-10-01T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Coruja, Bellini e Parque Lapa" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 2 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 417.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_4 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49195385> ] ;
+    ph:mediaCount 43 .
+
+phd:tour_40 a ph:Tour ;
+    dcterms:date "2025-05-06T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Os Vales Secos do Tietê dos Remédios à Osasco" ;
+    prov:wasAttributedTo phd:pessoaDandan,
+        phd:pessoaPedpaula ;
+    ph:countAttendee 12 ;
+    ph:countNewcomer 4 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 316.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_35 ;
+    ph:linkInstagram "https://www.instagram.com/p/DJSCz_SOyyS/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/50480798> ] ;
+    ph:mediaCount 112 .
+
+phd:tour_41 a ph:Tour ;
+    dcterms:date "2025-05-14T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Sopés da Cantareira: Alto Piqueri e Tremembé" ;
+    prov:wasAttributedTo phd:pessoaThiagoneves ;
+    ph:inSeriesEdition phd:assoc_PH_36 ;
+    ph:linkInstagram "https://www.instagram.com/p/DJmCzVGuRwK/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:strava ;
+            schema:url <https://www.strava.com/routes/3350848210103869176> ] .
+
+phd:tour_42 a ph:Tour ;
+    dcterms:date "2025-05-20T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Sertões de Pirituba 2 Margem Esquerda do Verde e Alto do Morro Grande" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 9 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 424.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_37 ;
+    ph:linkInstagram "https://www.instagram.com/p/DJ4WBFBODqO/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/50844953> ] ;
+    ph:mediaCount 123 .
+
+phd:tour_43 a ph:Tour ;
+    dcterms:date "2025-05-27T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Pontos de Sela do Centro-Norte" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 13 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 317.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_38 ;
+    ph:linkInstagram "https://www.instagram.com/p/DKKpRsjOxkw/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/50957749> ] ;
+    ph:mediaCount 91 .
+
+phd:tour_44 a ph:Tour ;
+    dcterms:date "2025-06-01T07:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Cânions da Brasilandia" ;
+    prov:wasAttributedTo phd:pessoaThiagoneves ;
+    ph:countAttendee 4 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 650.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_S_4 ;
+    ph:mediaCount 185 .
+
+phd:tour_45 a ph:Tour ;
+    dcterms:date "2025-06-03T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Água Espraiada da Foz à Nascente" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaDandan ;
+    ph:countAttendee 9 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 280.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_39 ;
+    ph:linkInstagram "https://www.instagram.com/p/DKag2XjuRJd/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/50943723> ] ;
+    ph:mediaCount 125 .
+
+phd:tour_46 a ph:Tour ;
+    dcterms:date "2025-06-10T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Crista da Mooca e Médio-Alto Oratório" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 13 ;
+    ph:countNewcomer 5 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 399.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_40 ;
+    ph:linkInstagram "https://www.instagram.com/p/DKuhIZVONOA/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/51051113> ] ;
+    ph:mediaCount 110 .
+
+phd:tour_47 a ph:Tour ;
+    dcterms:date "2025-06-17T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Águas Meridionais da Colina Histórica" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaDandan,
+        phd:pessoaGmard ;
+    ph:countAttendee 16 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 340.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_41 ;
+    ph:linkInstagram "https://www.instagram.com/p/DLALcgZOaN7/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/51282559> ] ;
+    ph:mediaCount 77 .
+
+phd:tour_48 a ph:Tour ;
+    dcterms:date "2025-06-24T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Carapicuíba duma nascente à foz, vindo do espigão da usp e alto jaguaré" ;
+    prov:wasAttributedTo phd:pessoaDandan,
+        phd:pessoaMicaelrodrigues ;
+    ph:countAttendee 12 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 349.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_42 ;
+    ph:linkInstagram "https://www.instagram.com/p/DLSGeNfuQk6/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/51391185> ] ;
+    ph:mediaCount 81 .
+
+phd:tour_49 a ph:Tour ;
+    dcterms:date "2025-07-01T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Riacho do Divisor ao Baquivu-guaçu pelos sopés da Serra do Bananal" ;
+    prov:wasAttributedTo phd:pessoaBrunabom,
+        phd:pessoaDandan ;
+    ph:countAttendee 10 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 385.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_43 ;
+    ph:linkInstagram "https://www.instagram.com/pedalhidrografico/p/DLipKMHuCLY/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/51486572> ] ;
+    ph:mediaCount 115 .
+
+phd:tour_5 a ph:Tour ;
+    dcterms:date "2024-10-08T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Santa Cecília e Saracura" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 5 ;
+    ph:countNewcomer 4 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 245.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_5 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49195389> ] ;
+    ph:mediaCount 63 .
+
+phd:tour_50 a ph:Tour ;
+    dcterms:date "2025-07-08T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Foz dos Meninos à Foz do Zavuvus pelo Riacho do Taboão e o desmorrodouro do Caaguaçu" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaDandan ;
+    ph:countAttendee 9 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 393.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_44 ;
+    ph:linkInstagram "https://www.instagram.com/pedalhidrografico/p/DL0tL4Yu7I7/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/51588263> ] ;
+    ph:mediaCount 77 .
+
+phd:tour_51 a ph:Tour ;
+    dcterms:date "2025-07-15T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Pirajuçara da Foz à Nascente e Cabeçeiras do rio do Morro do S" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaDandan,
+        phd:pessoaGmard ;
+    ph:countAttendee 11 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 380.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_45 ;
+    ph:linkInstagram "https://www.instagram.com/pedalhidrografico/p/DMGodnSO1Qc/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/51701965> ] ;
+    ph:mediaCount 64 .
+
+phd:tour_52 a ph:Tour ;
+    dcterms:date "2025-07-22T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Contorno Central da Enchente de 1929 e pizza no brás" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaDandan,
+        phd:pessoaPedpaula ;
+    ph:countAttendee 32 ;
+    ph:countNewcomer 17 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 280.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_46 ;
+    ph:linkInstagram "https://www.instagram.com/p/DMY_UtgOaoz/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/51812173> ] ;
+    ph:mediaCount 108 .
+
+phd:tour_53 a ph:Tour ;
+    dcterms:date "2025-07-29T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Margens destras do Jaguaré, mirante da década de 40 e pastel de Oz" ;
+    prov:wasAttributedTo phd:pessoaGiucuci,
+        phd:pessoaThiagoneves ;
+    ph:countAttendee 26 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 337.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_47 ;
+    ph:linkInstagram "https://www.instagram.com/p/DMqJrLbu66G/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/51937044> ] ;
+    ph:mediaCount 123 .
+
+phd:tour_54 a ph:Tour ;
+    dcterms:date "2025-08-03T08:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Sopés da Cantareira: Tremembé, Linha Verde e Piqueri" ;
+    prov:wasAttributedTo phd:pessoaThiagoneves ;
+    ph:countAttendee 16 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 392.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_48 ;
+    ph:linkInstagram "https://www.instagram.com/p/DM2jxeIOHJ6/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/50737426> ] ;
+    ph:mediaCount 70 .
+
+phd:tour_55 a ph:Tour ;
+    dcterms:date "2025-08-05T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Pontos de Sela da Média Leste" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 11 ;
+    ph:countNewcomer 4 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 381.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_49 ;
+    ph:linkInstagram "https://www.instagram.com/p/DM9AQl_uj-j/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52046213> ] ;
+    ph:mediaCount 109 .
+
+phd:tour_56 a ph:Tour ;
+    dcterms:date "2025-08-12T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Subir Rio Uberaba, descer rio Cupucê" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 7 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 360.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_50 ;
+    ph:linkInstagram "https://www.instagram.com/p/DNPJZ3JOtPZ/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52162083> ] ;
+    ph:mediaCount 65 .
+
+phd:tour_57 a ph:Tour ;
+    dcterms:date "2025-08-19T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "O Itaquera" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 3 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 373.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_51 ;
+    ph:linkInstagram "https://www.instagram.com/p/DNgw3pBBoaV/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52269074> ] ;
+    ph:mediaCount 76 .
+
+phd:tour_58 a ph:Tour ;
+    dcterms:date "2025-08-26T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Rampa do Sapateiro, Uberaba e Traição" ;
+    prov:wasAttributedTo phd:pessoaDandan,
+        phd:pessoaGiucuci ;
+    ph:countAttendee 5 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 358.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_52 ;
+    ph:linkInstagram "https://www.instagram.com/p/DNzHbJjWDhL/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52165449> ] ;
+    ph:mediaCount 64 .
+
+phd:tour_59 a ph:Tour ;
+    dcterms:date "2025-08-30T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Parque do Juqueri e DIB" ;
+    prov:wasAttributedTo phd:pessoaThiagoneves ;
+    ph:countAttendee 8 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 1200.0 ;
+            ph:intensityClassification "Insano" ] ;
+    ph:inSeriesEdition phd:assoc_S_5 ;
+    ph:mediaCount 321 .
+
+phd:tour_6 a ph:Tour ;
+    dcterms:date "2024-10-15T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Crista de Perdizes, Altos do Água Preta, Tiburtino e Mercedes" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 1 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 150.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_6 ;
+    ph:mediaCount 11 .
+
+phd:tour_60 a ph:Tour ;
+    dcterms:date "2025-09-02T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Contornar Paraisópolis" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaDandan ;
+    ph:countAttendee 9 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 276.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_53 ;
+    ph:linkInstagram "https://www.instagram.com/p/DOGOOV5joSC/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52165232> ] ;
+    ph:mediaCount 15 .
+
+phd:tour_61 a ph:Tour ;
+    dcterms:date "2025-09-09T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "1 ano" ;
+    prov:wasAttributedTo phd:pessoaAnaju,
+        phd:pessoaDandan,
+        phd:pessoaLume ;
+    ph:countAttendee 57 ;
+    ph:countNewcomer 20 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 183.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_54 ;
+    ph:linkInstagram "https://www.instagram.com/p/DOTyz43DjpV/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49272936> ] ;
+    ph:mediaCount 213 .
+
+phd:tour_62 a ph:Tour ;
+    dcterms:date "2025-09-16T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Ilhota da Guapira e Alto da Cangaíba" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 9 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 400.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_55 ;
+    ph:linkInstagram "https://www.instagram.com/p/DOoaZqEjqKg/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52653389> ] ;
+    ph:mediaCount 201 .
+
+phd:tour_63 a ph:Tour ;
+    dcterms:date "2025-09-21T08:30:00-03:00"^^xsd:dateTime ;
+    dcterms:title "O Trem e o Meteoro" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 16 ;
+    ph:countNewcomer 4 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 801.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_PH_56,
+        phd:assoc_S_6 ;
+    ph:linkInstagram "https://www.instagram.com/p/DOzM8syATYo/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52515917> ] ;
+    ph:mediaCount 466 .
+
+phd:tour_64 a ph:Tour ;
+    dcterms:date "2025-09-24T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Os Três Sopés e a Ilhota de São João" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 8 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 343.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_57 ;
+    ph:linkInstagram "https://www.instagram.com/p/DO88VWtDtJj/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52776083> ] ;
+    ph:mediaCount 179 .
+
+phd:tour_65 a ph:Tour ;
+    dcterms:date "2025-09-30T20:30:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Rampa do Sapateiro, Uberaba e Traição" ;
+    ph:countAttendee 7 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 358.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_58 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52165449> ] ;
+    ph:mediaCount 31 .
+
+phd:tour_66 a ph:Tour ;
+    dcterms:date "2025-10-07T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Bico do Caaguaçu" ;
+    prov:wasAttributedTo phd:pessoaGmard ;
+    ph:countAttendee 6 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 387.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_59 ;
+    ph:linkInstagram "https://www.instagram.com/p/DPhFHJSDthY/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52939892> ] ;
+    ph:mediaCount 12 .
+
+phd:tour_67 a ph:Tour ;
+    dcterms:date "2025-10-17T17:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Oakland: Lake Merritt Up and down stream with a diversion by the Sausal Canyon" ;
+    prov:wasAttributedTo phd:pessoaDandan,
+        phd:pessoaDelaram ;
+    ph:countAttendee 36 ;
+    ph:countNewcomer 33 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 416.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_61 ;
+    ph:linkInstagram "https://www.instagram.com/p/DPzHuRhAVjW/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/52981759> ] ;
+    ph:mediaCount 165 .
+
+phd:tour_68 a ph:Tour ;
+    dcterms:date "2025-10-21T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Águas Meridionais da Colina Histórica" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaGmard,
+        phd:pessoaZito ;
+    ph:countAttendee 10 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 340.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_60 ;
+    ph:linkInstagram "https://www.instagram.com/p/DQFZDYmAaCC/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/51282559> ] ;
+    ph:mediaCount 55 .
+
+phd:tour_69 a ph:Tour ;
+    dcterms:date "2025-10-26T07:30:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Cubatão e a Foz dos Pilões" ;
+    prov:wasAttributedTo phd:pessoaDandan,
+        phd:pessoaEricalatina ;
+    ph:countAttendee 40 ;
+    ph:countNewcomer 25 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 694.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_PH_62 ;
+    ph:linkInstagram "https://www.instagram.com/p/DQPNof-DnxY/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53123125> ] ;
+    ph:mediaCount 110 .
+
+phd:tour_7 a ph:Tour ;
+    dcterms:date "2024-10-22T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Verde, Anhanguera e Sapateiro" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 12 ;
+    ph:countNewcomer 8 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 271.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_7 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49195396> ] ;
+    ph:mediaCount 56 .
+
+phd:tour_70 a ph:Tour ;
+    dcterms:date "2025-10-28T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "O arco das cumeeiras do Caaguaçu" ;
+    prov:wasAttributedTo phd:pessoaFetiche,
+        phd:pessoaGmard ;
+    ph:countAttendee 5 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 392.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_63 ;
+    ph:linkInstagram "https://www.instagram.com/p/DQW54WjjobD/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53113256> ] ;
+    ph:mediaCount 36 .
+
+phd:tour_71 a ph:Tour ;
+    dcterms:date "2025-11-04T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Pontes da Ponte Rasa via Várzea do Carandiru e Baixo Cangaíba" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 5 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 390.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_64 ;
+    ph:linkInstagram "https://www.instagram.com/p/DQndVvpji_q/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53205838> ] ;
+    ph:mediaCount 159 .
+
+phd:tour_72 a ph:Tour ;
+    dcterms:date "2025-11-11T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Pelos Alpes do Jaraguá ao Subir Rio Pirituba e descer Rio Perus" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 9 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 306.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_65 ;
+    ph:linkInstagram "https://www.instagram.com/p/DQ5DpR3DkW4/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/50150417> ] ;
+    ph:mediaCount 135 .
+
+phd:tour_73 a ph:Tour ;
+    dcterms:date "2025-11-25T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Marcos das antigas rotas de SP (seus relevos e relevâncias)" ;
+    prov:wasAttributedTo phd:pessoaGmard ;
+    ph:countAttendee 12 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 267.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_66 ;
+    ph:linkInstagram "https://www.instagram.com/p/DRfuROkgcc5/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53386705> ] ;
+    ph:mediaCount 37 .
+
+phd:tour_74 a ph:Tour ;
+    dcterms:date "2025-11-30T08:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Recosturando Tietê e Paraíba do Sul" ;
+    prov:wasAttributedTo phd:pessoaAndrio,
+        phd:pessoaGmard ;
+    ph:countAttendee 11 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 918.0 ;
+            ph:intensityClassification "Frito" ] ;
+    ph:inSeriesEdition phd:assoc_PH_67 ;
+    ph:linkInstagram "https://www.instagram.com/p/DRnmMqYgSxz/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53380438> ] ;
+    ph:mediaCount 100 .
+
+phd:tour_75 a ph:Tour ;
+    dcterms:date "2025-12-03T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Contornando Capão do Embira e Tatuapé pela Crista de Sapopemba e Vila Formosa" ;
+    prov:wasAttributedTo phd:pessoaFetiche,
+        phd:pessoaGiucuci ;
+    ph:countAttendee 8 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 297.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_68 ;
+    ph:linkInstagram "https://www.instagram.com/p/DRzyPXPDuLA/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53428447> ] ;
+    ph:mediaCount 23 .
+
+phd:tour_76 a ph:Tour ;
+    dcterms:date "2025-12-10T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Tiburtino e córrego das corujas" ;
+    prov:wasAttributedTo phd:pessoaLume ;
+    ph:countAttendee 7 ;
+    ph:countNewcomer 3 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 287.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_69 ;
+    ph:linkInstagram "https://www.instagram.com/p/DSGJhd9geOh/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54149967> ] ;
+    ph:mediaCount 12 .
+
+phd:tour_77 a ph:Tour ;
+    dcterms:date "2025-12-17T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Cabeçeiras do Ipiranga ou Desmorrodouro do Caaguaçu" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaDandan ;
+    ph:countAttendee 6 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 275.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_70 ;
+    ph:linkInstagram "https://www.instagram.com/p/DSVgvNRAQu9/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53524909> ] ;
+    ph:mediaCount 64 .
+
+phd:tour_78 a ph:Tour ;
+    dcterms:date "2025-12-23T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Bonde, Pedra e Cachoeira" ;
+    prov:wasAttributedTo phd:pessoaBrunotitton,
+        phd:pessoaFetiche ;
+    ph:countAttendee 19 ;
+    ph:countNewcomer 4 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 378.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_71 ;
+    ph:linkInstagram "https://www.instagram.com/p/DSk7MGcgTAP/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53564416> ] ;
+    ph:mediaCount 184 .
+
+phd:tour_79 a ph:Tour ;
+    dcterms:date "2026-01-07T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Selas, Divisas e Divisores" ;
+    prov:wasAttributedTo phd:pessoaFetiche ;
+    ph:countAttendee 7 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 301.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_72 ;
+    ph:linkInstagram "https://www.instagram.com/p/DTMEVNdDmcu/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53660982> ] ;
+    ph:mediaCount 9 .
+
+phd:tour_8 a ph:Tour ;
+    dcterms:date "2024-10-24T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Itororó, Lavapés/Glicério e Aclimação/Cambuci" ;
+    prov:wasAttributedTo phd:pessoaDandan ;
+    ph:countAttendee 4 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 300.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_8 ;
+    ph:linkInstagram "https://www.instagram.com/p/DBhH6IpPZO3/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49195439> ] ;
+    ph:mediaCount 45 .
+
+phd:tour_80 a ph:Tour ;
+    dcterms:date "2026-01-14T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Contornando Carandiru e Paciência" ;
+    prov:wasAttributedTo phd:pessoaFetiche ;
+    ph:countAttendee 13 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 359.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_73 ;
+    ph:linkInstagram "https://www.instagram.com/p/DTd-l-TgQyf/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53715166> ] ;
+    ph:mediaCount 80 .
+
+phd:tour_81 a ph:Tour ;
+    dcterms:date "2026-01-21T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Pontes do Itororó" ;
+    ph:countAttendee 10 ;
+    ph:countNewcomer 0 ;
+    ph:inSeriesEdition phd:assoc_PH_74 ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54149999> ] ;
+    ph:mediaCount 13 .
+
+phd:tour_82 a ph:Tour ;
+    dcterms:date "2026-01-28T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Circundar Canindé pelas Águas do Moinho e Biquinha" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaDandan,
+        phd:pessoaGiucuci ;
+    ph:countAttendee 18 ;
+    ph:countNewcomer 6 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 330.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_75 ;
+    ph:linkInstagram "https://www.instagram.com/p/DUDeC9sjogH/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53832056> ] ;
+    ph:mediaCount 100 .
+
+phd:tour_83 a ph:Tour ;
+    dcterms:date "2026-01-31T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Caaguaçu Emboaçu e Riacho do Ipiranga" ;
+    prov:wasAttributedTo phd:pessoaAnaju ;
+    ph:countAttendee 12 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 149.0 ;
+            ph:intensityClassification "De boa" ] ;
+    ph:inSeriesEdition phd:assoc_BP_3,
+        phd:assoc_PH_76 ;
+    ph:linkInstagram "https://www.instagram.com/p/DUJI_AnjrgP/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53853791> ] ;
+    ph:mediaCount 53 .
+
+phd:tour_84 a ph:Tour ;
+    dcterms:date "2026-02-01T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "SESC Consolação" ;
+    ph:countAttendee 55 ;
+    ph:countNewcomer 45 ;
+    ph:linkInstagram "https://www.instagram.com/p/DUBptxLEW6g/?img_index=1"^^xsd:anyURI ;
+    ph:mediaCount 65 .
+
+phd:tour_85 a ph:Tour ;
+    dcterms:date "2026-02-04T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Entre-bacias do Jaguaré e Pirajussara pelo ponto de sela do Sopé" ;
+    prov:wasAttributedTo phd:pessoaAnaju,
+        phd:pessoaFetiche ;
+    ph:countAttendee 7 ;
+    ph:inSeriesEdition phd:assoc_PH_77 ;
+    ph:linkInstagram "https://www.instagram.com/p/DUTydjOgXYq/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53879757> ] ;
+    ph:mediaCount 29 .
+
+phd:tour_86 a ph:Tour ;
+    dcterms:date "2026-02-11T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Lavapés, Saracura e Banana: Três Constelações da origem do Carnaval Paulista" ;
+    prov:wasAttributedTo phd:pessoaAlef ;
+    ph:countAttendee 14 ;
+    ph:countNewcomer 3 ;
+    ph:inSeriesEdition phd:assoc_PH_78 ;
+    ph:linkInstagram "https://www.instagram.com/p/DUoNFoEgdlN/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54150035> ] ;
+    ph:mediaCount 81 .
+
+phd:tour_87 a ph:Tour ;
+    dcterms:date "2026-02-12T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "As águas da desilusão e Urutau Modernista" ;
+    prov:wasAttributedTo phd:pessoaAnaju,
+        phd:pessoaTomb ;
+    ph:countAttendee 10 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 204.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_BP_4,
+        phd:assoc_PH_79 ;
+    ph:linkInstagram "https://www.instagram.com/p/DUogixyDldM/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53954783> ] ;
+    ph:mediaCount 55 .
+
+phd:tour_88 a ph:Tour ;
+    dcterms:date "2026-02-18T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Fluindo à Deriva" ;
+    prov:wasAttributedTo phd:pessoaZito ;
+    ph:countAttendee 3 ;
+    ph:countNewcomer 0 ;
+    ph:inSeriesEdition phd:assoc_PH_80 ;
+    ph:linkInstagram "https://www.instagram.com/p/DU6gCmNARaV/"^^xsd:anyURI ;
+    ph:mediaCount 7 .
+
+phd:tour_89 a ph:Tour ;
+    dcterms:date "2026-02-24T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Planalto de Taipas e os Cânions da Brasilândia" ;
+    prov:wasAttributedTo phd:pessoaDandan,
+        phd:pessoaGiucuci ;
+    ph:countAttendee 18 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 280.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_81 ;
+    ph:linkInstagram "https://www.instagram.com/p/DVIEJtmjmCK/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53947457> ] ;
+    ph:mediaCount 104 .
+
+phd:tour_9 a ph:Tour ;
+    dcterms:date "2024-10-29T20:15:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Sertões de Pirituba" ;
+    prov:wasAttributedTo phd:pessoaThiagoneves ;
+    ph:countAttendee 8 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 290.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_9 ;
+    ph:linkInstagram "https://www.instagram.com/p/DBrLDD9u7ZE/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/49195401> ] ;
+    ph:mediaCount 94 .
+
+phd:tour_90 a ph:Tour ;
+    dcterms:date "2026-03-04T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:description """Para deleite dos amantes de subidas, temos mais uma rota que percorre os divisores de águas, as fronteiras entre bacias hidrográficas, as cristas e cumeeiras que limitam dois córregos: Aricanduva e Gamelinho... Mas vamos até onde os morros vão se juntando, antes mesmo de chegar ao cume chamado O Itaquera.\r
+\r
+Após descer a crista, sempre pelos pontos mais altos e divisores de afluentes, cruzamos o Córrego Aricanduva e acessamos a foz do Riacho dos Machados. Subiremos todo o curso desta água, que em sua maior parte é aberta e visível aos olhos mais atentos. Chegar à sua nascente será chegar à Crista de Sapopemba, que também delimita a Bacia do Córrego do Aricanduva."""@pt ;
+    dcterms:title "Colina da Matilde e Riacho dos Machados" ;
+    pav:providedBy phd:pessoaDandan ;
+    prov:wasAttributedTo phd:pessoaFetiche ;
+    ph:countAttendee 7 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 352.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:hadBonde true ;
+    ph:hasNewcomer phd:pessoaAnabe ;
+    ph:inSeriesEdition phd:assoc_PH_82 ;
+    ph:linkInstagram "https://www.instagram.com/p/DVbP7QsDiYA/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/53755124> ] ;
+    schema:attendee phd:pessoaAnabe,
+        phd:pessoaDandan,
+        phd:pessoaFetiche,
+        phd:pessoaGabrielfixarolo,
+        phd:pessoaHenriquejaportuga,
+        phd:pessoaJosepelegrini,
+        phd:pessoaTiagoruf ;
+    schema:image <file:///app/tour_assets/90/announcement.jpg> ;
+    schema:organizer phd:pessoaFetiche .
+
+phd:tour_91 a ph:Tour ;
+    dcterms:date "2026-03-18T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:description """Um passeio por prédios históricos, alguns em ruínas, pela região do córrego Cassandoca, passando pelos bairros do Brás, Mooca, Belém e Pari.\r
+\r
+A rota tem 20 km com apenas 112 m de subida bem distribuídos, o que a torna uma rota bem suave, passando pelos seguintes pontos de interesse:\r
+Edifício "Caveirão"\r
+Trilhos do bonde na Rua General Carneiro\r
+Parque Dom Pedro\r
+Palácio das Indústrias (passa ao lado)\r
+Casa das Retortas Gasómetro\r
+Museu da Imigração (passa ao lado)\r
+Fábrica da Antártica\r
+Estádio Conde Rodolfo Crespi\r
+Cotonifício Rodolfo Crespi\r
+Vila Maria Zélia\r
+Portal do Presídio Tiradentes\r
+\r
+Material Complementar: https://drive.google.com/file/d/1l_9_BI7GijPmMcdtt2IE8rbg9B0awI3j/view?usp=sharing"""@pt ;
+    dcterms:title "Histórico pelo entorno do Cassandoca" ;
+    prov:wasAttributedTo phd:pessoaAlex ;
+    ph:countAttendee 15 ;
+    ph:countNewcomer 5 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 298.0 ;
+            ph:intensityClassification "Ok" ] ;
+    ph:inSeriesEdition phd:assoc_PH_83 ;
+    ph:linkInstagram "https://www.instagram.com/p/DWB1tpeDqJO/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54024668> ] ;
+    schema:attendee phd:pessoaAlex,
+        phd:pessoaFetiche .
+
+phd:tour_92 a ph:Tour ;
+    dcterms:date "2026-03-22T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Horta do Parque do Rio Bixiga" ;
+    prov:wasAttributedTo phd:pessoaYas ;
+    ph:countAttendee 0 ;
+    ph:countNewcomer 0 ;
+    ph:inSeriesEdition phd:assoc_PH_84 ;
+    ph:linkInstagram "https://www.instagram.com/p/DWIIvKyDq1i/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54320499> ] .
+
+phd:tour_93 a ph:Tour ;
+    dcterms:date "2025-03-25T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "A Voçoroca e o Pântano" ;
+    ph:countAttendee 1 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 372.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_85 ;
+    ph:linkInstagram "https://www.instagram.com/p/DWSt3WbDg-X/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54356024> ] .
+
+phd:tour_94 a ph:Tour ;
+    dcterms:date "2026-03-31T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Águas de Março: povo, éguas, lágrimas, alagados" ;
+    prov:wasAttributedTo phd:pessoaDandan,
+        phd:pessoaGmard ;
+    ph:countAttendee 9 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 371.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_86 ;
+    ph:linkInstagram "https://www.instagram.com/p/DWj9C_-Dxdq/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54435190> ] .
+
+phd:tour_95 a ph:Tour ;
+    dcterms:date "2026-04-11T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Dar tchau pra quem migra" ;
+    prov:wasAttributedTo phd:pessoaAnaju ;
+    ph:countAttendee 0 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 104.0 ;
+            ph:intensityClassification "De boa" ] ;
+    ph:inSeriesEdition phd:assoc_BP_4 ;
+    ph:linkInstagram "https://www.instagram.com/p/DW9UkzAEQs85hloy_Q4a05uhVxS8efAVUUOr4c0/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54435190> ] .
+
+phd:tour_96 a ph:Tour ;
+    dcterms:date "2026-04-14T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Várzea do Tietê e as origens do Futebol" ;
+    prov:wasAttributedTo phd:pessoaAlef ;
+    ph:countAttendee 0 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 336.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_87 ;
+    ph:linkInstagram "https://www.instagram.com/p/DXDkpWnDmEO/?img_index=1"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54581247> ] .
+
+phd:tour_97 a ph:Tour ;
+    dcterms:date "2026-04-21T00:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Da Cantareira ao Tremembé" ;
+    prov:wasAttributedTo phd:pessoaDandan,
+        phd:pessoaGa ;
+    ph:countAttendee 0 ;
+    ph:countNewcomer 0 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 385.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_88 ;
+    ph:linkInstagram "https://www.instagram.com/p/DXYDQDKjjhH/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54745946> ] .
+
+phd:tour_98 a ph:Tour ;
+    dcterms:date "2026-04-28T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Pontos de Sela dos afluentes de Tamanduateí" ;
+    prov:wasAttributedTo phd:pessoaGabrieltunes ;
+    ph:countAttendee 6 ;
+    ph:countNewcomer 2 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 356.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_89 ;
+    ph:linkInstagram "https://www.instagram.com/p/DXrwudMjrZL/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54852830> ] .
+
+phd:tour_99 a ph:Tour ;
+    dcterms:date "2026-05-06T20:00:00-03:00"^^xsd:dateTime ;
+    dcterms:title "Subir Gamelinha e Contornar Rincão pela Crista da Penha" ;
+    prov:wasAttributedTo phd:pessoaAlef,
+        phd:pessoaDandan,
+        phd:pessoaGabrieltunes ;
+    ph:countAttendee 6 ;
+    ph:countNewcomer 1 ;
+    ph:energyEstimate [ a qudt:QuantityValue ;
+            qudt:hasUnit unit:KiloJ ;
+            qudt:numericValue 388.0 ;
+            ph:intensityClassification "Endorfinado" ] ;
+    ph:inSeriesEdition phd:assoc_PH_90 ;
+    ph:linkInstagram "https://www.instagram.com/p/DX-3psUjtYV/"^^xsd:anyURI ;
+    ph:linkRoute [ a ph:RouteReference ;
+            schema:provider ph:rwgps ;
+            schema:url <https://ridewithgps.com/routes/54984116> ] .
+
 phd:assoc_BP_1 a ph:Association ;
     ph:inEventSeries phd:BP ;
     ph:sequenceInSeries 1 .
+
 phd:assoc_BP_2 a ph:Association ;
     ph:inEventSeries phd:BP ;
     ph:sequenceInSeries 2 .
+
 phd:assoc_BP_3 a ph:Association ;
     ph:inEventSeries phd:BP ;
     ph:sequenceInSeries 3 .
-phd:assoc_BP_4 a ph:Association ;
-    ph:inEventSeries phd:BP ;
-    ph:sequenceInSeries 4 .
+
 phd:assoc_BT_1 a ph:Association ;
     ph:inEventSeries phd:BT ;
     ph:sequenceInSeries 1 .
+
 phd:assoc_BT_2 a ph:Association ;
     ph:inEventSeries phd:BT ;
     ph:sequenceInSeries 2 .
+
 phd:assoc_BT_3 a ph:Association ;
     ph:inEventSeries phd:BT ;
     ph:sequenceInSeries 3 .
+
 phd:assoc_PH_1 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 1 .
-phd:assoc_PH_2 a ph:Association ;
-    ph:inEventSeries phd:PH ;
-    ph:sequenceInSeries 2 .
-phd:assoc_PH_3 a ph:Association ;
-    ph:inEventSeries phd:PH ;
-    ph:sequenceInSeries 3 .
-phd:assoc_PH_4 a ph:Association ;
-    ph:inEventSeries phd:PH ;
-    ph:sequenceInSeries 4 .
-phd:assoc_PH_5 a ph:Association ;
-    ph:inEventSeries phd:PH ;
-    ph:sequenceInSeries 5 .
-phd:assoc_PH_6 a ph:Association ;
-    ph:inEventSeries phd:PH ;
-    ph:sequenceInSeries 6 .
-phd:assoc_PH_7 a ph:Association ;
-    ph:inEventSeries phd:PH ;
-    ph:sequenceInSeries 7 .
-phd:assoc_PH_8 a ph:Association ;
-    ph:inEventSeries phd:PH ;
-    ph:sequenceInSeries 8 .
-phd:assoc_PH_9 a ph:Association ;
-    ph:inEventSeries phd:PH ;
-    ph:sequenceInSeries 9 .
+
 phd:assoc_PH_10 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 10 .
+
 phd:assoc_PH_11 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 11 .
+
 phd:assoc_PH_12 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 12 .
+
 phd:assoc_PH_13 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 13 .
+
 phd:assoc_PH_14 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 14 .
+
 phd:assoc_PH_15 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 15 .
+
 phd:assoc_PH_16 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 16 .
+
 phd:assoc_PH_17 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 17 .
+
 phd:assoc_PH_18 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 18 .
+
 phd:assoc_PH_19 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 19 .
+
+phd:assoc_PH_2 a ph:Association ;
+    ph:inEventSeries phd:PH ;
+    ph:sequenceInSeries 2 .
+
 phd:assoc_PH_20 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 20 .
+
 phd:assoc_PH_21 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 21 .
+
 phd:assoc_PH_22 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 22 .
+
 phd:assoc_PH_23 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 23 .
+
 phd:assoc_PH_24 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 24 .
+
 phd:assoc_PH_25 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 25 .
+
 phd:assoc_PH_26 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 26 .
+
 phd:assoc_PH_27 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 27 .
+
 phd:assoc_PH_28 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 28 .
+
 phd:assoc_PH_29 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 29 .
+
+phd:assoc_PH_3 a ph:Association ;
+    ph:inEventSeries phd:PH ;
+    ph:sequenceInSeries 3 .
+
 phd:assoc_PH_30 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 30 .
+
 phd:assoc_PH_31 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 31 .
+
 phd:assoc_PH_32 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 32 .
+
 phd:assoc_PH_33 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 33 .
+
 phd:assoc_PH_34 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 34 .
+
 phd:assoc_PH_35 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 35 .
+
 phd:assoc_PH_36 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 36 .
+
 phd:assoc_PH_37 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 37 .
+
 phd:assoc_PH_38 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 38 .
+
 phd:assoc_PH_39 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 39 .
+
+phd:assoc_PH_4 a ph:Association ;
+    ph:inEventSeries phd:PH ;
+    ph:sequenceInSeries 4 .
+
 phd:assoc_PH_40 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 40 .
+
 phd:assoc_PH_41 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 41 .
+
 phd:assoc_PH_42 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 42 .
+
 phd:assoc_PH_43 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 43 .
+
 phd:assoc_PH_44 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 44 .
+
 phd:assoc_PH_45 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 45 .
+
 phd:assoc_PH_46 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 46 .
+
 phd:assoc_PH_47 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 47 .
+
 phd:assoc_PH_48 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 48 .
+
 phd:assoc_PH_49 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 49 .
+
+phd:assoc_PH_5 a ph:Association ;
+    ph:inEventSeries phd:PH ;
+    ph:sequenceInSeries 5 .
+
 phd:assoc_PH_50 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 50 .
+
 phd:assoc_PH_51 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 51 .
+
 phd:assoc_PH_52 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 52 .
+
 phd:assoc_PH_53 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 53 .
+
 phd:assoc_PH_54 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 54 .
+
 phd:assoc_PH_55 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 55 .
+
 phd:assoc_PH_56 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 56 .
+
 phd:assoc_PH_57 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 57 .
+
 phd:assoc_PH_58 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 58 .
+
 phd:assoc_PH_59 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 59 .
+
+phd:assoc_PH_6 a ph:Association ;
+    ph:inEventSeries phd:PH ;
+    ph:sequenceInSeries 6 .
+
 phd:assoc_PH_60 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 60 .
+
 phd:assoc_PH_61 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 61 .
+
 phd:assoc_PH_62 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 62 .
+
 phd:assoc_PH_63 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 63 .
+
 phd:assoc_PH_64 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 64 .
+
 phd:assoc_PH_65 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 65 .
+
 phd:assoc_PH_66 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 66 .
+
 phd:assoc_PH_67 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 67 .
+
 phd:assoc_PH_68 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 68 .
+
 phd:assoc_PH_69 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 69 .
+
+phd:assoc_PH_7 a ph:Association ;
+    ph:inEventSeries phd:PH ;
+    ph:sequenceInSeries 7 .
+
 phd:assoc_PH_70 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 70 .
+
 phd:assoc_PH_71 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 71 .
+
 phd:assoc_PH_72 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 72 .
+
 phd:assoc_PH_73 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 73 .
+
 phd:assoc_PH_74 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 74 .
+
 phd:assoc_PH_75 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 75 .
+
 phd:assoc_PH_76 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 76 .
+
 phd:assoc_PH_77 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 77 .
+
 phd:assoc_PH_78 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 78 .
+
 phd:assoc_PH_79 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 79 .
+
+phd:assoc_PH_8 a ph:Association ;
+    ph:inEventSeries phd:PH ;
+    ph:sequenceInSeries 8 .
+
 phd:assoc_PH_80 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 80 .
+
 phd:assoc_PH_81 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 81 .
+
 phd:assoc_PH_82 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 82 .
+
 phd:assoc_PH_83 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 83 .
+
 phd:assoc_PH_84 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 84 .
+
 phd:assoc_PH_85 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 85 .
+
 phd:assoc_PH_86 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 86 .
+
 phd:assoc_PH_87 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 87 .
+
 phd:assoc_PH_88 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 88 .
+
 phd:assoc_PH_89 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 89 .
+
+phd:assoc_PH_9 a ph:Association ;
+    ph:inEventSeries phd:PH ;
+    ph:sequenceInSeries 9 .
+
 phd:assoc_PH_90 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 90 .
+
 phd:assoc_PH_91 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 91 .
+
 phd:assoc_PH_92 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 92 .
+
 phd:assoc_PH_93 a ph:Association ;
     ph:inEventSeries phd:PH ;
     ph:sequenceInSeries 93 .
+
 phd:assoc_S_1 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 1 .
+
 phd:assoc_S_2 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 2 .
+
 phd:assoc_S_3 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 3 .
+
 phd:assoc_S_4 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 4 .
+
 phd:assoc_S_5 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 5 .
+
 phd:assoc_S_6 a ph:Association ;
     ph:inEventSeries phd:S ;
     ph:sequenceInSeries 6 .
 
-# Passeios
-phd:tour_1
-    a ph:Tour ;
-    dcterms:title "Água Preta e Tiburtino" ;
-    dcterms:date "2024-09-09T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_1 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49272936> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 2 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "142"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "De boa"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 2 .
+phd:pessoaAmarmo a schema:Person ;
+    schema:alternateName "amarmo" .
 
-phd:tour_2
-    a ph:Tour ;
-    dcterms:title "Coruja e Verde" ;
-    dcterms:date "2024-09-16T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_2 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49272970> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 3 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "184"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 6 .
+phd:pessoaAndrio a schema:Person ;
+    schema:alternateName "andrio" .
 
-phd:tour_3
-    a ph:Tour ;
-    dcterms:title "Altos do Sumaré e Verde I+II" ;
-    dcterms:date "2024-09-23T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_3 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49272915> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 2 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "179"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 7 .
+phd:pessoaBrunabom a schema:Person ;
+    schema:alternateName "brunabom" .
 
-phd:tour_4
-    a ph:Tour ;
-    dcterms:title "Coruja, Bellini e Parque Lapa" ;
-    dcterms:date "2024-10-01T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_4 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49195385> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 2 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "417"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 43 .
+phd:pessoaBrunotitton a schema:Person ;
+    schema:alternateName "brunotitton" .
 
-phd:tour_5
-    a ph:Tour ;
-    dcterms:title "Santa Cecília e Saracura" ;
-    dcterms:date "2024-10-08T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_5 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49195389> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 5 ;
-    ph:countNewcomer 4 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "245"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 63 .
+phd:pessoaDelaram a schema:Person ;
+    schema:alternateName "delaram" .
 
-phd:tour_6
-    a ph:Tour ;
-    dcterms:title "Crista de Perdizes, Altos do Água Preta, Tiburtino e Mercedes" ;
-    dcterms:date "2024-10-15T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_6 ;
-    ph:countAttendee 1 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "150"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 11 .
+phd:pessoaEricalatina a schema:Person ;
+    schema:alternateName "ericalatina" .
 
-phd:tour_7
-    a ph:Tour ;
-    dcterms:title "Verde, Anhanguera e Sapateiro" ;
-    dcterms:date "2024-10-22T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_7 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49195396> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 12 ;
-    ph:countNewcomer 8 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "271"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 56 .
+phd:pessoaGa a schema:Person ;
+    schema:alternateName "ga" .
 
-phd:tour_8
-    a ph:Tour ;
-    dcterms:title "Itororó, Lavapés/Glicério e Aclimação/Cambuci" ;
-    dcterms:date "2024-10-24T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_8 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49195439> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DBhH6IpPZO3/"^^xsd:anyURI ;
-    ph:countAttendee 4 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "300"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 45 .
+phd:pessoaGiovanna a schema:Person ;
+    schema:alternateName "giovanna" .
 
-phd:tour_9
-    a ph:Tour ;
-    dcterms:title "Sertões de Pirituba" ;
-    dcterms:date "2024-10-29T20:15:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_9 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49195401> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DBrLDD9u7ZE/"^^xsd:anyURI ;
-    ph:countAttendee 8 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "290"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaThiagoneves ;
-    ph:mediaCount 94 .
+phd:pessoaMicaelrodrigues a schema:Person ;
+    schema:alternateName "micaelrodrigues" .
 
-phd:tour_10
-    a ph:Tour ;
-    dcterms:title "ABC" ;
-    dcterms:date "2024-11-02T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_10 ;
-    ph:inSeriesEdition phd:assoc_BT_1 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49195458> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DBweYi-vMXc/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 8 ;
-    ph:countNewcomer 5 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "850"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaBrunoperandin ;
-    ph:mediaCount 467 .
+phd:pessoaTomb a schema:Person ;
+    schema:alternateName "tomb" .
 
-phd:tour_11
-    a ph:Tour ;
-    dcterms:title "Contornar Pacaembu e Sumaré" ;
-    dcterms:date "2024-11-05T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_11 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/48970565> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DB-P8zUOg67/"^^xsd:anyURI ;
-    ph:countAttendee 9 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "370"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 50 .
+phd:pessoaTrilheiro a schema:Person ;
+    schema:alternateName "trilheiro" .
 
-phd:tour_12
-    a ph:Tour ;
-    dcterms:title "Mirantes do Tietê com Pico do Urubu" ;
-    dcterms:date "2024-11-09T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_12 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49005652> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 4 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "1700"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Insano"
-    ] ;
-    prov:wasAttributedTo phd:pessoaBrunoperandin ;
-    ph:mediaCount 222 .
+phd:pessoaYas a schema:Person ;
+    schema:alternateName "yas" .
 
-phd:tour_13
-    a ph:Tour ;
-    dcterms:title "Margens Ocidentais do Baixo Ipiranga" ;
-    dcterms:date "2024-11-12T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_13 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49029471> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DCQKAoVuD7f/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 4 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "260"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 79 .
+phd:assoc_BP_4 a ph:Association ;
+    ph:inEventSeries phd:BP ;
+    ph:sequenceInSeries 4 .
 
-phd:tour_14
-    a ph:Tour ;
-    dcterms:title "Margens Destras do Baixo Jaguaré" ;
-    dcterms:date "2024-11-19T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_14 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49272870> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DChWox3ObhU/"^^xsd:anyURI ;
-    ph:countAttendee 1 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "523"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 42 .
+phd:pessoaAlex a schema:Person ;
+    schema:alternateName "alex" .
 
-phd:tour_15
-    a ph:Tour ;
-    dcterms:title "Represa do Guarapiranga" ;
-    dcterms:date "2024-11-20T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_BP_1 ;
-    ph:countAttendee 4 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "520"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAnaju ;
-    ph:mediaCount 2 .
+phd:pessoaLume a schema:Person ;
+    schema:alternateName "lume" .
 
-phd:tour_16
-    a ph:Tour ;
-    dcterms:title "Crista de Osasco" ;
-    dcterms:date "2024-11-22T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_S_1 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49272881> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 3 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "750"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 16 .
+phd:pessoaZito a schema:Person ;
+    schema:alternateName "zito" .
 
-phd:tour_17
-    a ph:Tour ;
-    dcterms:title "Parelheiros" ;
-    dcterms:date "2024-11-23T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_15 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49106874> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DCpl4FQOqFc/"^^xsd:anyURI ;
-    ph:countAttendee 8 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "789"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 227 .
+phd:BT a schema:EventSeries ;
+    dcterms:title "Bondes / Trips" .
 
-phd:tour_18
-    a ph:Tour ;
-    dcterms:title "Água Preta e Tiburtino" ;
-    dcterms:date "2024-11-26T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_16 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/51086192> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DC1bTVfuL0A/"^^xsd:anyURI ;
-    ph:countAttendee 8 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "260"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaThiagoneves ;
-    ph:mediaCount 66 .
+phd:pessoaPedpaula a schema:Person ;
+    schema:alternateName "pedpaula" .
 
-phd:tour_19
-    a ph:Tour ;
-    dcterms:title "Paranapiacaba com Cachoeira" ;
-    dcterms:date "2024-11-30T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_17 ;
-    ph:inSeriesEdition phd:assoc_BP_2 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49272926> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 6 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "850"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaTrilheiro ;
-    ph:mediaCount 103 .
+phd:BP a schema:EventSeries ;
+    dcterms:title "Bicipassarinhadas" .
 
-phd:tour_20
-    a ph:Tour ;
-    dcterms:title "Contornar Iquirim e um pouco do Pirajuçara" ;
-    dcterms:date "2024-12-03T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_18 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49182910> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DDF8IjTuMaK/"^^xsd:anyURI ;
-    ph:countAttendee 9 ;
-    ph:countNewcomer 4 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "400"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 62 .
+phd:pessoaBrunoperandin a schema:Person ;
+    schema:alternateName "brunoperandin" .
 
-phd:tour_21
-    a ph:Tour ;
-    dcterms:title "Morumbi e Antonico" ;
-    dcterms:date "2024-12-06T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_S_2 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49272994> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 4 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "614"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 11 .
+phd:pessoaGabrieltunes a schema:Person ;
+    schema:alternateName "gabrieltunes" .
 
-phd:tour_22
-    a ph:Tour ;
-    dcterms:title "Nascentes da Brasilândia" ;
-    dcterms:date "2024-12-10T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_19 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49225969> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DDXvWs7ByTI/"^^xsd:anyURI ;
-    ph:countAttendee 3 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "330"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 58 .
+phd:pessoaGiucuci a schema:Person ;
+    schema:alternateName "giucuci" .
 
-phd:tour_23
-    a ph:Tour ;
-    dcterms:title "Jaraguá Hidrográfico" ;
-    dcterms:date "2024-12-13T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_S_3 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49195254> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 5 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "650"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 70 .
+phd:S a schema:EventSeries ;
+    dcterms:title "Pedais Hidrográficos Suados" .
 
-phd:tour_24
-    a ph:Tour ;
-    dcterms:title "Águas de Pinheiros" ;
-    dcterms:date "2024-12-17T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_20 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49267352> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DDrYzskuaZy/"^^xsd:anyURI ;
-    ph:countAttendee 13 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "436"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 114 .
+phd:pessoaThiagoneves a schema:Person ;
+    schema:alternateName "thiagoneves" .
 
-phd:tour_25
-    a ph:Tour ;
-    dcterms:title "Verde, Anhanguera e Sapateiro" ;
-    dcterms:date "2025-01-07T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_21 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49195396> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DEgLpSQOj37/"^^xsd:anyURI ;
-    ph:countAttendee 12 ;
-    ph:countNewcomer 8 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "271"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAnaju ;
-    ph:mediaCount 28 .
+phd:pessoaAnaju a schema:Person ;
+    schema:alternateName "anaju" .
 
-phd:tour_26
-    a ph:Tour ;
-    dcterms:title "Contornar Pacaembu e Sumaré" ;
-    dcterms:date "2025-01-14T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_22 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/48970565> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DEz0L0vud94/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 22 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "370"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAnaju ;
-    ph:mediaCount 41 .
+phd:pessoaGmard a schema:Person ;
+    schema:alternateName "gmard" .
 
-phd:tour_27
-    a ph:Tour ;
-    dcterms:title "Foz do Tamanduateí até sua Nascente" ;
-    dcterms:date "2025-01-19T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_BT_2 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/48691963> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 11 ;
-    ph:countNewcomer 4 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "600"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaBrunoperandin ;
-    ph:mediaCount 56 .
+phd:pessoaFetiche a schema:Person ;
+    schema:alternateName "fetiche" .
 
-phd:tour_28
-    a ph:Tour ;
-    dcterms:title "Crista de Sapopema" ;
-    dcterms:date "2025-01-21T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_23 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49510455> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 12 ;
-    ph:countNewcomer 7 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "441"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 48 .
+phd:pessoaAlef a schema:Person ;
+    schema:alternateName "alef" .
 
-phd:tour_29
-    a ph:Tour ;
-    dcterms:title "Contornar Anhangabaú" ;
-    dcterms:date "2025-01-28T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_24 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49567136> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 5 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "340"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 7 .
+phd:pessoaDandan a schema:Person ;
+    schema:alternateName "dandan" .
 
-phd:tour_30
-    a ph:Tour ;
-    dcterms:title "Pirajuçara, Água Podre e Crista de Osasco" ;
-    dcterms:date "2025-02-04T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_25 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49567174> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 15 ;
-    ph:countNewcomer 5 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "292"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 132 .
+phd:PH a schema:EventSeries ;
+    dcterms:title "Pedais Hidrográficos Regulares" .
 
-phd:tour_31
-    a ph:Tour ;
-    dcterms:title "Cabeceiras do Ipiranga" ;
-    dcterms:date "2025-02-11T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_26 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49671673> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 26 ;
-    ph:countNewcomer 17 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "291"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 45 .
-
-phd:tour_32
-    a ph:Tour ;
-    dcterms:title "Sertões do Mandaqui" ;
-    dcterms:date "2025-02-25T19:30:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_27 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49741245> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 12 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "307"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 87 .
-
-phd:tour_33
-    a ph:Tour ;
-    dcterms:title "Águas do Lavapés e Aclimação" ;
-    dcterms:date "2025-03-11T19:30:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_28 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49924264> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 4 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "206"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 83 .
-
-phd:tour_34
-    a ph:Tour ;
-    dcterms:title "Águas Meridionais de Osasco" ;
-    dcterms:date "2025-03-26T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_29 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49999355> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 8 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "363"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 75 .
-
-phd:tour_35
-    a ph:Tour ;
-    dcterms:title "Subir Pirituba, Surfar Alpes do Jaraguá e Descer Perus" ;
-    dcterms:date "2025-04-01T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_30 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/50150417> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 8 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "323"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 99 .
-
-phd:tour_36
-    a ph:Tour ;
-    dcterms:title "Tiquatira da Foz à Nascente" ;
-    dcterms:date "2025-04-08T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_31 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/50149484> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 12 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "294"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaThiagoneves ;
-    ph:mediaCount 67 .
-
-phd:tour_37
-    a ph:Tour ;
-    dcterms:title "Rios Indígenas de Santo André" ;
-    dcterms:date "2025-04-13T08:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_32 ;
-    ph:inSeriesEdition phd:assoc_BT_3 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49100612> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DIHLiuKO-vH/"^^xsd:anyURI ;
-    ph:countAttendee 28 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "750"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaBrunoperandin ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 172 .
-
-phd:tour_38
-    a ph:Tour ;
-    dcterms:title "Moinho Velho A Outra Margem do Ipiranga" ;
-    dcterms:date "2025-04-15T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_33 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/50331319> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 10 ;
-    ph:countNewcomer 4 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "314"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaPedpaula ;
-    ph:mediaCount 70 .
-
-phd:tour_39
-    a ph:Tour ;
-    dcterms:title "Crista do Campo Limpo via Corveta-Camacuã" ;
-    dcterms:date "2025-04-22T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_34 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/50411729> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 14 ;
-    ph:countNewcomer 4 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "351"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAmarmo ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 52 .
-
-phd:tour_40
-    a ph:Tour ;
-    dcterms:title "Os Vales Secos do Tietê dos Remédios à Osasco" ;
-    dcterms:date "2025-05-06T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_35 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/50480798> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DJSCz_SOyyS/"^^xsd:anyURI ;
-    ph:countAttendee 12 ;
-    ph:countNewcomer 4 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "316"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaPedpaula ;
-    ph:mediaCount 112 .
-
-phd:tour_41
-    a ph:Tour ;
-    dcterms:title "Sopés da Cantareira: Alto Piqueri e Tremembé" ;
-    dcterms:date "2025-05-14T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_36 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://www.strava.com/routes/3350848210103869176> ;
-        schema:provider ph:strava
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DJmCzVGuRwK/"^^xsd:anyURI ;
-    prov:wasAttributedTo phd:pessoaThiagoneves .
-
-phd:tour_42
-    a ph:Tour ;
-    dcterms:title "Sertões de Pirituba 2 Margem Esquerda do Verde e Alto do Morro Grande" ;
-    dcterms:date "2025-05-20T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_37 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/50844953> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DJ4WBFBODqO/"^^xsd:anyURI ;
-    ph:countAttendee 9 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "424"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 123 .
-
-phd:tour_43
-    a ph:Tour ;
-    dcterms:title "Pontos de Sela do Centro-Norte" ;
-    dcterms:date "2025-05-27T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_38 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/50957749> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DKKpRsjOxkw/"^^xsd:anyURI ;
-    ph:countAttendee 13 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "317"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 91 .
-
-phd:tour_44
-    a ph:Tour ;
-    dcterms:title "Cânions da Brasilandia" ;
-    dcterms:date "2025-06-01T07:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_S_4 ;
-    ph:countAttendee 4 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "650"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaThiagoneves ;
-    ph:mediaCount 185 .
-
-phd:tour_45
-    a ph:Tour ;
-    dcterms:title "Água Espraiada da Foz à Nascente" ;
-    dcterms:date "2025-06-03T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_39 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/50943723> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DKag2XjuRJd/"^^xsd:anyURI ;
-    ph:countAttendee 9 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "280"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 125 .
-
-phd:tour_46
-    a ph:Tour ;
-    dcterms:title "Crista da Mooca e Médio-Alto Oratório" ;
-    dcterms:date "2025-06-10T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_40 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/51051113> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DKuhIZVONOA/"^^xsd:anyURI ;
-    ph:countAttendee 13 ;
-    ph:countNewcomer 5 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "399"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 110 .
-
-phd:tour_47
-    a ph:Tour ;
-    dcterms:title "Águas Meridionais da Colina Histórica" ;
-    dcterms:date "2025-06-17T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_41 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/51282559> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DLALcgZOaN7/"^^xsd:anyURI ;
-    ph:countAttendee 16 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "340"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaGmard ;
-    ph:mediaCount 77 .
-
-phd:tour_48
-    a ph:Tour ;
-    dcterms:title "Carapicuíba duma nascente à foz, vindo do espigão da usp e alto jaguaré" ;
-    dcterms:date "2025-06-24T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_42 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/51391185> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DLSGeNfuQk6/"^^xsd:anyURI ;
-    ph:countAttendee 12 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "349"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaMicaelrodrigues ;
-    ph:mediaCount 81 .
-
-phd:tour_49
-    a ph:Tour ;
-    dcterms:title "Riacho do Divisor ao Baquivu-guaçu pelos sopés da Serra do Bananal" ;
-    dcterms:date "2025-07-01T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_43 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/51486572> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/pedalhidrografico/p/DLipKMHuCLY/"^^xsd:anyURI ;
-    ph:countAttendee 10 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "385"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaBrunabom ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 115 .
-
-phd:tour_50
-    a ph:Tour ;
-    dcterms:title "Foz dos Meninos à Foz do Zavuvus pelo Riacho do Taboão e o desmorrodouro do Caaguaçu" ;
-    dcterms:date "2025-07-08T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_44 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/51588263> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/pedalhidrografico/p/DL0tL4Yu7I7/"^^xsd:anyURI ;
-    ph:countAttendee 9 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "393"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 77 .
-
-phd:tour_51
-    a ph:Tour ;
-    dcterms:title "Pirajuçara da Foz à Nascente e Cabeçeiras do rio do Morro do S" ;
-    dcterms:date "2025-07-15T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_45 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/51701965> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/pedalhidrografico/p/DMGodnSO1Qc/"^^xsd:anyURI ;
-    ph:countAttendee 11 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "380"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaGmard ;
-    ph:mediaCount 64 .
-
-phd:tour_52
-    a ph:Tour ;
-    dcterms:title "Contorno Central da Enchente de 1929 e pizza no brás" ;
-    dcterms:date "2025-07-22T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_46 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/51812173> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DMY_UtgOaoz/"^^xsd:anyURI ;
-    ph:countAttendee 32 ;
-    ph:countNewcomer 17 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "280"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaPedpaula ;
-    ph:mediaCount 108 .
-
-phd:tour_53
-    a ph:Tour ;
-    dcterms:title "Margens destras do Jaguaré, mirante da década de 40 e pastel de Oz" ;
-    dcterms:date "2025-07-29T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_47 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/51937044> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DMqJrLbu66G/"^^xsd:anyURI ;
-    ph:countAttendee 26 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "337"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaGiucuci ;
-    prov:wasAttributedTo phd:pessoaThiagoneves ;
-    ph:mediaCount 123 .
-
-phd:tour_54
-    a ph:Tour ;
-    dcterms:title "Sopés da Cantareira: Tremembé, Linha Verde e Piqueri" ;
-    dcterms:date "2025-08-03T08:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_48 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/50737426> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DM2jxeIOHJ6/"^^xsd:anyURI ;
-    ph:countAttendee 16 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "392"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaThiagoneves ;
-    ph:mediaCount 70 .
-
-phd:tour_55
-    a ph:Tour ;
-    dcterms:title "Pontos de Sela da Média Leste" ;
-    dcterms:date "2025-08-05T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_49 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52046213> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DM9AQl_uj-j/"^^xsd:anyURI ;
-    ph:countAttendee 11 ;
-    ph:countNewcomer 4 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "381"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 109 .
-
-phd:tour_56
-    a ph:Tour ;
-    dcterms:title "Subir Rio Uberaba, descer rio Cupucê" ;
-    dcterms:date "2025-08-12T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_50 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52162083> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DNPJZ3JOtPZ/"^^xsd:anyURI ;
-    ph:countAttendee 7 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "360"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 65 .
-
-phd:tour_57
-    a ph:Tour ;
-    dcterms:title "O Itaquera" ;
-    dcterms:date "2025-08-19T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_51 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52269074> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DNgw3pBBoaV/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 3 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "373"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 76 .
-
-phd:tour_58
-    a ph:Tour ;
-    dcterms:title "Rampa do Sapateiro, Uberaba e Traição" ;
-    dcterms:date "2025-08-26T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_52 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52165449> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DNzHbJjWDhL/"^^xsd:anyURI ;
-    ph:countAttendee 5 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "358"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaGiucuci ;
-    ph:mediaCount 64 .
-
-phd:tour_59
-    a ph:Tour ;
-    dcterms:title "Parque do Juqueri e DIB" ;
-    dcterms:date "2025-08-30T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_S_5 ;
-    ph:countAttendee 8 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "1200"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Insano"
-    ] ;
-    prov:wasAttributedTo phd:pessoaThiagoneves ;
-    ph:mediaCount 321 .
-
-phd:tour_60
-    a ph:Tour ;
-    dcterms:title "Contornar Paraisópolis" ;
-    dcterms:date "2025-09-02T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_53 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52165232> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DOGOOV5joSC/"^^xsd:anyURI ;
-    ph:countAttendee 9 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "276"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 15 .
-
-phd:tour_61
-    a ph:Tour ;
-    dcterms:title "1 ano" ;
-    dcterms:date "2025-09-09T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_54 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/49272936> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DOTyz43DjpV/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 57 ;
-    ph:countNewcomer 20 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "183"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAnaju ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaLume ;
-    ph:mediaCount 213 .
-
-phd:tour_62
-    a ph:Tour ;
-    dcterms:title "Ilhota da Guapira e Alto da Cangaíba" ;
-    dcterms:date "2025-09-16T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_55 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52653389> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DOoaZqEjqKg/"^^xsd:anyURI ;
-    ph:countAttendee 9 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "400"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 201 .
-
-phd:tour_63
-    a ph:Tour ;
-    dcterms:title "O Trem e o Meteoro" ;
-    dcterms:date "2025-09-21T08:30:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_56 ;
-    ph:inSeriesEdition phd:assoc_S_6 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52515917> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DOzM8syATYo/"^^xsd:anyURI ;
-    ph:countAttendee 16 ;
-    ph:countNewcomer 4 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "801"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 466 .
-
-phd:tour_64
-    a ph:Tour ;
-    dcterms:title "Os Três Sopés e a Ilhota de São João" ;
-    dcterms:date "2025-09-24T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_57 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52776083> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DO88VWtDtJj/"^^xsd:anyURI ;
-    ph:countAttendee 8 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "343"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 179 .
-
-phd:tour_65
-    a ph:Tour ;
-    dcterms:title "Rampa do Sapateiro, Uberaba e Traição" ;
-    dcterms:date "2025-09-30T20:30:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_58 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52165449> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 7 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "358"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    ph:mediaCount 31 .
-
-phd:tour_66
-    a ph:Tour ;
-    dcterms:title "Bico do Caaguaçu" ;
-    dcterms:date "2025-10-07T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_59 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52939892> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DPhFHJSDthY/"^^xsd:anyURI ;
-    ph:countAttendee 6 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "387"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaGmard ;
-    ph:mediaCount 12 .
-
-phd:tour_67
-    a ph:Tour ;
-    dcterms:title "Oakland: Lake Merritt Up and down stream with a diversion by the Sausal Canyon" ;
-    dcterms:date "2025-10-17T17:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_61 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/52981759> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DPzHuRhAVjW/"^^xsd:anyURI ;
-    ph:countAttendee 36 ;
-    ph:countNewcomer 33 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "416"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaDelaram ;
-    ph:mediaCount 165 .
-
-phd:tour_68
-    a ph:Tour ;
-    dcterms:title "Águas Meridionais da Colina Histórica" ;
-    dcterms:date "2025-10-21T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_60 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/51282559> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DQFZDYmAaCC/"^^xsd:anyURI ;
-    ph:countAttendee 10 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "340"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaGmard ;
-    prov:wasAttributedTo phd:pessoaZito ;
-    ph:mediaCount 55 .
-
-phd:tour_69
-    a ph:Tour ;
-    dcterms:title "Cubatão e a Foz dos Pilões" ;
-    dcterms:date "2025-10-26T07:30:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_62 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53123125> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DQPNof-DnxY/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 40 ;
-    ph:countNewcomer 25 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "694"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaEricalatina ;
-    ph:mediaCount 110 .
-
-phd:tour_70
-    a ph:Tour ;
-    dcterms:title "O arco das cumeeiras do Caaguaçu" ;
-    dcterms:date "2025-10-28T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_63 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53113256> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DQW54WjjobD/"^^xsd:anyURI ;
-    ph:countAttendee 5 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "392"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaFetiche ;
-    prov:wasAttributedTo phd:pessoaGmard ;
-    ph:mediaCount 36 .
-
-phd:tour_71
-    a ph:Tour ;
-    dcterms:title "Pontes da Ponte Rasa via Várzea do Carandiru e Baixo Cangaíba" ;
-    dcterms:date "2025-11-04T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_64 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53205838> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DQndVvpji_q/"^^xsd:anyURI ;
-    ph:countAttendee 5 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "390"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 159 .
-
-phd:tour_72
-    a ph:Tour ;
-    dcterms:title "Pelos Alpes do Jaraguá ao Subir Rio Pirituba e descer Rio Perus" ;
-    dcterms:date "2025-11-11T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_65 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/50150417> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DQ5DpR3DkW4/"^^xsd:anyURI ;
-    ph:countAttendee 9 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "306"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 135 .
-
-phd:tour_73
-    a ph:Tour ;
-    dcterms:title "Marcos das antigas rotas de SP (seus relevos e relevâncias)" ;
-    dcterms:date "2025-11-25T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_66 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53386705> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DRfuROkgcc5/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 12 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "267"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaGmard ;
-    ph:mediaCount 37 .
-
-phd:tour_74
-    a ph:Tour ;
-    dcterms:title "Recosturando Tietê e Paraíba do Sul" ;
-    dcterms:date "2025-11-30T08:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_67 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53380438> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DRnmMqYgSxz/"^^xsd:anyURI ;
-    ph:countAttendee 11 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "918"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Frito"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAndrio ;
-    prov:wasAttributedTo phd:pessoaGmard ;
-    ph:mediaCount 100 .
-
-phd:tour_75
-    a ph:Tour ;
-    dcterms:title "Contornando Capão do Embira e Tatuapé pela Crista de Sapopemba e Vila Formosa" ;
-    dcterms:date "2025-12-03T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_68 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53428447> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DRzyPXPDuLA/"^^xsd:anyURI ;
-    ph:countAttendee 8 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "297"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaFetiche ;
-    prov:wasAttributedTo phd:pessoaGiucuci ;
-    ph:mediaCount 23 .
-
-phd:tour_76
-    a ph:Tour ;
-    dcterms:title "Tiburtino e córrego das corujas" ;
-    dcterms:date "2025-12-10T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_69 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54149967> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DSGJhd9geOh/"^^xsd:anyURI ;
-    ph:countAttendee 7 ;
-    ph:countNewcomer 3 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "287"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaLume ;
-    ph:mediaCount 12 .
-
-phd:tour_77
-    a ph:Tour ;
-    dcterms:title "Cabeçeiras do Ipiranga ou Desmorrodouro do Caaguaçu" ;
-    dcterms:date "2025-12-17T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_70 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53524909> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DSVgvNRAQu9/"^^xsd:anyURI ;
-    ph:countAttendee 6 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "275"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    ph:mediaCount 64 .
-
-phd:tour_78
-    a ph:Tour ;
-    dcterms:title "Bonde, Pedra e Cachoeira" ;
-    dcterms:date "2025-12-23T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_71 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53564416> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DSk7MGcgTAP/"^^xsd:anyURI ;
-    ph:countAttendee 19 ;
-    ph:countNewcomer 4 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "378"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaBrunotitton ;
-    prov:wasAttributedTo phd:pessoaFetiche ;
-    ph:mediaCount 184 .
-
-phd:tour_79
-    a ph:Tour ;
-    dcterms:title "Selas, Divisas e Divisores" ;
-    dcterms:date "2026-01-07T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_72 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53660982> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DTMEVNdDmcu/"^^xsd:anyURI ;
-    ph:countAttendee 7 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "301"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaFetiche ;
-    ph:mediaCount 9 .
-
-phd:tour_80
-    a ph:Tour ;
-    dcterms:title "Contornando Carandiru e Paciência" ;
-    dcterms:date "2026-01-14T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_73 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53715166> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DTd-l-TgQyf/"^^xsd:anyURI ;
-    ph:countAttendee 13 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "359"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaFetiche ;
-    ph:mediaCount 80 .
-
-phd:tour_81
-    a ph:Tour ;
-    dcterms:title "Pontes do Itororó" ;
-    dcterms:date "2026-01-21T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_74 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54149999> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:countAttendee 10 ;
-    ph:countNewcomer 0 ;
-    ph:mediaCount 13 .
-
-phd:tour_82
-    a ph:Tour ;
-    dcterms:title "Circundar Canindé pelas Águas do Moinho e Biquinha" ;
-    dcterms:date "2026-01-28T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_75 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53832056> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DUDeC9sjogH/"^^xsd:anyURI ;
-    ph:countAttendee 18 ;
-    ph:countNewcomer 6 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "330"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaGiucuci ;
-    ph:mediaCount 100 .
-
-phd:tour_83
-    a ph:Tour ;
-    dcterms:title "Caaguaçu Emboaçu e Riacho do Ipiranga" ;
-    dcterms:date "2026-01-31T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_76 ;
-    ph:inSeriesEdition phd:assoc_BP_3 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53853791> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DUJI_AnjrgP/"^^xsd:anyURI ;
-    ph:countAttendee 12 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "149"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "De boa"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAnaju ;
-    ph:mediaCount 53 .
-
-phd:tour_84
-    a ph:Tour ;
-    dcterms:title "SESC Consolação" ;
-    dcterms:date "2026-02-01T00:00:00-03:00"^^xsd:dateTime ;
-    ph:linkInstagram "https://www.instagram.com/p/DUBptxLEW6g/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 55 ;
-    ph:countNewcomer 45 ;
-    ph:mediaCount 65 .
-
-phd:tour_85
-    a ph:Tour ;
-    dcterms:title "Entre-bacias do Jaguaré e Pirajussara pelo ponto de sela do Sopé" ;
-    dcterms:date "2026-02-04T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_77 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53879757> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DUTydjOgXYq/"^^xsd:anyURI ;
-    ph:countAttendee 7 ;
-    prov:wasAttributedTo phd:pessoaAnaju ;
-    prov:wasAttributedTo phd:pessoaFetiche ;
-    ph:mediaCount 29 .
-
-phd:tour_86
-    a ph:Tour ;
-    dcterms:title "Lavapés, Saracura e Banana: Três Constelações da origem do Carnaval Paulista" ;
-    dcterms:date "2026-02-11T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_78 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54150035> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DUoNFoEgdlN/"^^xsd:anyURI ;
-    ph:countAttendee 14 ;
-    ph:countNewcomer 3 ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    ph:mediaCount 81 .
-
-phd:tour_87
-    a ph:Tour ;
-    dcterms:title "As águas da desilusão e Urutau Modernista" ;
-    dcterms:date "2026-02-12T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_79 ;
-    ph:inSeriesEdition phd:assoc_BP_4 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53954783> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DUogixyDldM/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 10 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "204"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAnaju ;
-    prov:wasAttributedTo phd:pessoaTomb ;
-    ph:mediaCount 55 .
-
-phd:tour_88
-    a ph:Tour ;
-    dcterms:title "Fluindo à Deriva" ;
-    dcterms:date "2026-02-18T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_80 ;
-    ph:linkInstagram "https://www.instagram.com/p/DU6gCmNARaV/"^^xsd:anyURI ;
-    ph:countAttendee 3 ;
-    ph:countNewcomer 0 ;
-    prov:wasAttributedTo phd:pessoaZito ;
-    ph:mediaCount 7 .
-
-phd:tour_89
-    a ph:Tour ;
-    dcterms:title "Planalto de Taipas e os Cânions da Brasilândia" ;
-    dcterms:date "2026-02-24T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_81 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53947457> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DVIEJtmjmCK/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 18 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "280"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaGiucuci ;
-    ph:mediaCount 104 .
-
-phd:tour_90
-    a ph:Tour ;
-    dcterms:title "Colina da Matilde e Riacho dos Machados" ;
-    dcterms:date "2026-03-04T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_82 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/53755124> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DVbP7QsDiYA/"^^xsd:anyURI ;
-    ph:countAttendee 0 ;
-    ph:countNewcomer 0 ;
-    prov:wasAttributedTo phd:pessoaFetiche .
-
-phd:tour_91
-    a ph:Tour ;
-    dcterms:title "Histórico pelo entorno do Cassandoca" ;
-    dcterms:date "2026-03-18T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_83 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54024668> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DWB1tpeDqJO/"^^xsd:anyURI ;
-    ph:countAttendee 0 ;
-    ph:countNewcomer 0 ;
-    prov:wasAttributedTo phd:pessoaAlex .
-
-phd:tour_92
-    a ph:Tour ;
-    dcterms:title "Horta do Parque do Rio Bixiga" ;
-    dcterms:date "2026-03-22T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_84 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54320499> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DWIIvKyDq1i/"^^xsd:anyURI ;
-    ph:countAttendee 0 ;
-    ph:countNewcomer 0 ;
-    prov:wasAttributedTo phd:pessoaYas .
-
-phd:tour_93
-    a ph:Tour ;
-    dcterms:title "A Voçoroca e o Pântano" ;
-    dcterms:date "2025-03-25T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_85 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54356024> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DWSt3WbDg-X/"^^xsd:anyURI ;
-    ph:countAttendee 1 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "372"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] .
-
-phd:tour_94
-    a ph:Tour ;
-    dcterms:title "Águas de Março: povo, éguas, lágrimas, alagados" ;
-    dcterms:date "2026-03-31T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_86 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54435190> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DWj9C_-Dxdq/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 9 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "371"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaGmard .
-
-phd:tour_95
-    a ph:Tour ;
-    dcterms:title "Dar tchau pra quem migra" ;
-    dcterms:date "2026-04-11T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_BP_4 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54435190> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DW9UkzAEQs85hloy_Q4a05uhVxS8efAVUUOr4c0/"^^xsd:anyURI ;
-    ph:countAttendee 0 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "104"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "De boa"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAnaju .
-
-phd:tour_96
-    a ph:Tour ;
-    dcterms:title "Várzea do Tietê e as origens do Futebol" ;
-    dcterms:date "2026-04-14T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_87 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54581247> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DXDkpWnDmEO/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 0 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "336"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef .
-
-phd:tour_97
-    a ph:Tour ;
-    dcterms:title "Da Cantareira ao Tremembé" ;
-    dcterms:date "2026-04-21T00:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_88 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54745946> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DXYDQDKjjhH/"^^xsd:anyURI ;
-    ph:countAttendee 0 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "385"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaGa .
-
-phd:tour_98
-    a ph:Tour ;
-    dcterms:title "Pontos de Sela dos afluentes de Tamanduateí" ;
-    dcterms:date "2026-04-28T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_89 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54852830> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DXrwudMjrZL/"^^xsd:anyURI ;
-    ph:countAttendee 6 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "356"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaGabrieltunes .
-
-phd:tour_99
-    a ph:Tour ;
-    dcterms:title "Subir Gamelinha e Contornar Rincão pela Crista da Penha" ;
-    dcterms:date "2026-05-06T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_90 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/54984116> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DX-3psUjtYV/"^^xsd:anyURI ;
-    ph:countAttendee 6 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "388"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaGabrieltunes .
-
-phd:tour_100
-    a ph:Tour ;
-    dcterms:title "era infinitamente maio no alto rio bravo" ;
-    dcterms:date "2026-05-09T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_91 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/55017982> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DYFi8wRDjFL/?img_index=1"^^xsd:anyURI ;
-    ph:countAttendee 13 ;
-    ph:countNewcomer 2 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "293"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Ok"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAnaju ;
-    prov:wasAttributedTo phd:pessoaDandan ;
-    prov:wasAttributedTo phd:pessoaGiovanna ;
-    prov:wasAttributedTo phd:pessoaGmard .
-
-phd:tour_101
-    a ph:Tour ;
-    dcterms:title "Crista do Lauzane, subir Água Fria e duas vilas escondidas" ;
-    dcterms:date "2026-05-13T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_92 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/55083392> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DYQyPoYDlVe/"^^xsd:anyURI ;
-    ph:countAttendee 7 ;
-    ph:countNewcomer 1 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "313"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaAlef ;
-    prov:wasAttributedTo phd:pessoaGabrieltunes .
-
-phd:tour_102
-    a ph:Tour ;
-    dcterms:title "Ziguezaguear a Crista do Morumbi" ;
-    dcterms:date "2026-05-20T20:00:00-03:00"^^xsd:dateTime ;
-    ph:inSeriesEdition phd:assoc_PH_93 ;
-    ph:linkRoute [
-        a ph:RouteReference ;
-        schema:url <https://ridewithgps.com/routes/55184087> ;
-        schema:provider ph:rwgps
-    ] ;
-    ph:linkInstagram "https://www.instagram.com/p/DYfyG_IDhaM/"^^xsd:anyURI ;
-    ph:countAttendee 0 ;
-    ph:countNewcomer 0 ;
-    ph:energyEstimate [
-        a qudt:QuantityValue ;
-        qudt:numericValue "396"^^xsd:decimal ;
-        qudt:hasUnit unit:KiloJ ;
-        ph:intensityClassification "Endorfinado"
-    ] ;
-    prov:wasAttributedTo phd:pessoaGabrieltunes .

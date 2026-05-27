@@ -83,6 +83,15 @@ const SETTINGS_DEFAULTS = {
     // Não afeta o popup de preview (que sempre usa `large`).
     useLarge: false,
   },
+  attendees: {
+    // Toggle de privacidade pra listagem nominal de participantes /
+    // iniciantes nos passeios. OFF por padrão — quando ON, o modal de
+    // rota mostra "Participantes" e "Iniciantes" como chips, o censo
+    // ganha colunas com a contagem nominal, e o upload_tour expõe os
+    // campos pra edição. Os dados nos triples (schema:attendee,
+    // ph:hasNewcomer) NÃO são afetados pelo toggle — só a renderização.
+    list: false,
+  },
 };
 function _deepMerge(base, over) {
   if (!over || typeof over !== 'object') return base;
@@ -2625,6 +2634,87 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape' && uploadModal && !uploadModal.hidden) closeUploadModal();
 });
 
+// Cadastro/edição de passeio em iframe — o src é remontado a cada abertura
+// porque o ?id pode mudar entre invocações (novo vs editar X vs editar Y).
+const tourModal      = document.getElementById('tour-modal');
+const tourModalClose = document.getElementById('tour-modal-close');
+const tourModalTitle = document.getElementById('tour-modal-title');
+const tourIframe     = document.getElementById('tour-iframe');
+function openTourModal(tourId) {
+  if (!tourModal) return;
+  closeOtherMobileDialogs('tour');
+  if (closeRouteModal && !routeModal?.hidden) closeRouteModal();
+  if (tourModalTitle) {
+    tourModalTitle.textContent = tourId ? 'Editar passeio' : 'Cadastrar passeio';
+  }
+  const src = tourId
+    ? `./upload_tour.html?id=${encodeURIComponent(tourId)}`
+    : './upload_tour.html';
+  // Forçar reload mesmo quando o ?id é o mesmo: substitui o src.
+  tourIframe.src = src;
+  tourModal.hidden = false;
+}
+function closeTourModal() {
+  if (tourModal) tourModal.hidden = true;
+  // Libera o iframe (e seu state) — próxima abertura monta limpo.
+  if (tourIframe) tourIframe.src = '';
+  // Tour pode ter sido criado/editado/deletado → recarrega catálogos.
+  // O resumo no route-modal re-fetch'a tours.ttl com no-cache na próxima
+  // abertura, então mudanças aparecem sem refresh.
+  reloadPhotos();
+}
+tourModalClose?.addEventListener('click', closeTourModal);
+tourModal?.addEventListener('click', (e) => {
+  if (e.target === tourModal) closeTourModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && tourModal && !tourModal.hidden) closeTourModal();
+});
+
+// Censo em iframe — re-aponta pra censo.html toda vez que abre. Sem isto,
+// se o usuário navega de dentro do iframe (ex.: clicando "+ Cadastrar
+// passeio", que vai pra upload_tour.html), reabrir o modal mostraria a
+// página interna em vez do censo. Re-set explícito é cheap e idempotente.
+const censoModal      = document.getElementById('censo-modal');
+const censoModalClose = document.getElementById('censo-modal-close');
+const censoIframe     = document.getElementById('censo-iframe');
+const censoLink       = document.getElementById('censo-link');
+const CENSO_URL = './censo.html';
+function openCensoModal() {
+  if (!censoModal) return;
+  closeOtherMobileDialogs('censo');
+  // Compara contra o iframe.contentWindow.location.pathname pra detectar
+  // navegação interna; senão, mantém pra preservar scroll/sort do censo
+  // entre aberturas. Fallback: comparar com getAttribute('src').
+  let needsReset = true;
+  try {
+    const path = censoIframe.contentWindow?.location?.pathname || '';
+    needsReset = !path.endsWith('/censo.html');
+  } catch (_) {
+    // Cross-origin protection — não devia rolar em same-origin, mas seguro.
+    needsReset = !censoIframe.getAttribute('src');
+  }
+  if (needsReset) censoIframe.src = CENSO_URL;
+  censoModal.hidden = false;
+}
+function closeCensoModal() {
+  if (censoModal) censoModal.hidden = true;
+}
+censoLink?.addEventListener('click', (e) => {
+  // Modifier keys / middle click → deixa o link funcionar normalmente
+  // (abrir em nova aba, etc.).
+  if (e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button === 1) return;
+  e.preventDefault();
+  openCensoModal();
+});
+censoModalClose?.addEventListener('click', closeCensoModal);
+censoModal?.addEventListener('click', (e) => {
+  if (e.target === censoModal) closeCensoModal();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && censoModal && !censoModal.hidden) closeCensoModal();
+});
+
 // ─── Modal de Configurações ───────────────────────────────────────────────
 const settingsBtn        = document.getElementById('settings-btn');
 const settingsModal      = document.getElementById('settings-modal');
@@ -3624,6 +3714,13 @@ function closeOtherMobileDialogs(except) {
     uploadModal.hidden = true;
     uploadBtn?.setAttribute('aria-pressed', 'false');
   }
+  if (except !== 'tour' && tourModal && !tourModal.hidden) {
+    tourModal.hidden = true;
+    if (tourIframe) tourIframe.src = '';
+  }
+  if (except !== 'censo' && censoModal && !censoModal.hidden) {
+    censoModal.hidden = true;
+  }
 }
 
 // Boot defaults para a sidebar no desktop:
@@ -4286,10 +4383,16 @@ async function _renderTourSummary(tourId) {
   const energyEst  = readQuantity(PH + 'energyEstimate');
   const energyMeas = readQuantity(PH + 'measuredEnergy');
 
-  // Pessoas (autoras + provedores).
+  // Pessoas (autoras + provedores + participantes + iniciantes).
+  // Os dois últimos são listados nominalmente APENAS quando o toggle de
+  // privacidade `attendees.list` está ligado em Ajustes. Os triples vivem
+  // no TTL independentemente — só a renderização é controlada.
   const authors   = get(PROV + 'wasAttributedTo', 'iri').map(nameOf);
   const providers = get(PAV  + 'providedBy',      'iri').map(nameOf);
   const organizers= get(SCHEMA + 'organizer',     'iri').map(nameOf);
+  const showAttendeeList = settings.attendees?.list === true;
+  const attendeeList = showAttendeeList ? get(SCHEMA + 'attendee', 'iri').map(nameOf) : [];
+  const newcomerList = showAttendeeList ? get(PH + 'hasNewcomer', 'iri').map(nameOf) : [];
 
   // Helpers de formatação.
   function fmtDate(s) {
@@ -4341,13 +4444,15 @@ async function _renderTourSummary(tourId) {
   }
   if (authors.length)   rows.push(row('Autoras',  authors.map(escapeHtml).join(', ')));
   if (providers.length) rows.push(row('Quem subiu', providers.map(escapeHtml).join(', ')));
+  if (attendeeList.length) rows.push(row('Participantes', attendeeList.map(escapeHtml).join(', ')));
+  if (newcomerList.length) rows.push(row('Iniciantes',    newcomerList.map(escapeHtml).join(', ')));
 
   // Métricas — só mostra se tiver pelo menos um valor.
   const metricsParts = [];
   if (attendees)  metricsParts.push(`${escapeHtml(attendees)} participantes`);
   if (newcomers)  metricsParts.push(`${escapeHtml(newcomers)} iniciantes`);
   if (energyEst)  metricsParts.push(`~${escapeHtml(energyEst.value)} kJ${energyEst.class ? ` <span class="muted">(${escapeHtml(energyEst.class)})</span>` : ''}`);
-  if (metricsParts.length) rows.push(row('Métricas estimadas', metricsParts.join(' · ')));
+  if (metricsParts.length) rows.push(row('Métricas', metricsParts.join(' · ')));
 
   const realParts = [];
   if (departed) realParts.push(`Partiu ${escapeHtml(fmtDate(departed))}`);
@@ -4393,13 +4498,16 @@ function openRouteModal(id) {
   }
   if (tourId) {
     metaParts.push(
-      `<a class="linkbtn" href="./upload_tour.html?id=${encodeURIComponent(tourId)}" target="_blank">Editar passeio ✎</a>`,
+      `<button type="button" class="linkbtn edit-tour-btn">Editar passeio ✎</button>`,
     );
   }
   routeModalMeta.innerHTML = metaParts.join(' · ');
   routeModalMeta.querySelector('.edit-route-btn')?.addEventListener('click', () => {
     closeRouteModal();
     editEntryInDrawingTool(entry);
+  });
+  routeModalMeta.querySelector('.edit-tour-btn')?.addEventListener('click', () => {
+    openTourModal(tourId);
   });
 
   // Resumo do passeio: view legível a partir de tours.ttl. Sem tour vinculado,

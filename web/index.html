@@ -90,7 +90,7 @@
     <aside id="sidebar" class="sidebar">
       <div class="sidebar-head">
         <h2>Routes</h2>
-        <a class="sidebar-link" href="./censo.html" title="Métricas e tabela do censo hidrográfico">Censo →</a>
+        <a class="sidebar-link" href="./censo.html" id="censo-link" title="Métricas e tabela do censo hidrográfico">Censo →</a>
       </div>
       <div id="routes-status" class="status">Loading…</div>
 
@@ -426,6 +426,16 @@
             </label>
           </section>
 
+          <!-- Participantes / iniciantes — listagem nominal por passeio -->
+          <section class="settings-section" data-section="attendees">
+            <h3>Participantes</h3>
+            <p class="muted">Quando ligado, o modal de rota e o censo listam quem participou de cada passeio (schema:attendee) e quem foi iniciante (ph:hasNewcomer). O upload_tour passa a expor os campos pra edição. Os triples no TTL permanecem independente do toggle — isto só controla a renderização.</p>
+            <label class="settings-row">
+              <span>Listar participantes / iniciantes</span>
+              <input type="checkbox" data-setting="attendees.list">
+            </label>
+          </section>
+
           <!-- Cone de visada (FOV) — leque translúcido apontando pra onde a foto foi feita -->
           <section class="settings-section" data-section="fovCone">
             <h3>Cone de visada</h3>
@@ -549,6 +559,28 @@
           <button class="close" id="upload-modal-close" type="button" aria-label="Fechar">&times;</button>
         </header>
         <iframe id="upload-iframe" src="" title="Upload de imagens"></iframe>
+      </div>
+    </div>
+
+    <!-- Cadastro / edição de passeio — iframe para upload_tour.html. -->
+    <div id="tour-modal" class="modal" hidden>
+      <div class="modal-content upload-modal-content">
+        <header>
+          <h2 id="tour-modal-title">Cadastrar passeio</h2>
+          <button class="close" id="tour-modal-close" type="button" aria-label="Fechar">&times;</button>
+        </header>
+        <iframe id="tour-iframe" src="" title="Cadastro de passeio"></iframe>
+      </div>
+    </div>
+
+    <!-- Censo hidrográfico — iframe para censo.html. -->
+    <div id="censo-modal" class="modal" hidden>
+      <div class="modal-content upload-modal-content">
+        <header>
+          <h2>Censo hidrográfico</h2>
+          <button class="close" id="censo-modal-close" type="button" aria-label="Fechar">&times;</button>
+        </header>
+        <iframe id="censo-iframe" src="" title="Censo hidrográfico"></iframe>
       </div>
     </div>
 

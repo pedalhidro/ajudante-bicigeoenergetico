@@ -8,12 +8,16 @@
 # Este arquivo lista APENAS o que de fato não deve ir pro container; o
 # estado mutável (web/photos/, uploads.ttl, data_graphs.ttl) vive no GCS.
 
-# Estado mutável — vive no STORE (GCS), nunca no container
+# Estado mutável — vive no STORE (GCS), nunca no container.
+# Container fica magrinho: /photos/<phash>/* e /clips/<*> são redirecionados
+# pra gs://phidro-state/{photos,clips}/* pelos handlers em main.py. Pra
+# povoar o bucket com os transcodes locais de build-clips.py + as fotos
+# já uploadadas pelo Pi, rode `scripts/deploy-cloudrun.sh --state`.
 web/photos/
 web/data/uploads.ttl
 web/data/data_graphs.ttl
 web/data/photos.ttl
-web/clips/raw/
+web/clips/
 backend/pi/data/
 
 # Git / tooling

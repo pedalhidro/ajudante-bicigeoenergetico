@@ -95,6 +95,45 @@
     background: var(--accent);
     color: #fff;
   }
+  /* Listas nominais (toggle ON): tighter que .wrap pra não jogar a coluna
+     "Editar" pra fora da viewport. Truncamento horizontal com ellipsis;
+     hover (title) mostra a lista inteira. */
+  tbody td.col-attendee-list, tbody td.col-newcomer-list {
+    max-width: 180px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Coluna "Editar" fica grudada na direita pra continuar visível mesmo
+     quando a tabela rola horizontalmente. */
+  #tours-table th:last-child,
+  #tours-table td:last-child {
+    position: sticky;
+    right: 0;
+    background: var(--panel);
+    box-shadow: -4px 0 6px -4px rgba(0, 0, 0, 0.5);
+  }
+  #tours-table thead th:last-child { background: var(--surface); }
+
+  /* Barra de ação acima da tabela — botão "novo passeio" alinhado à
+     direita, em destaque (preenchido, não outline). */
+  .table-toolbar {
+    display: flex;
+    justify-content: flex-end;
+    margin: 0 0 10px;
+  }
+  .btn-primary {
+    display: inline-block;
+    padding: 7px 14px;
+    border-radius: 6px;
+    background: var(--accent);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--accent);
+  }
+  .btn-primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
   .intensity { display: inline-block; padding: 1px 7px; border-radius: 10px;
     font-size: 10px; font-weight: 600; }
   .intensity[data-c="De boa"]      { background: #2c6e4a; color: #e7f7ee; }
@@ -122,6 +161,11 @@
 
 <div id="metrics" class="metrics" hidden></div>
 
+<div class="table-toolbar" hidden>
+  <a class="btn-primary" href="./upload_tour.html"
+     title="Cadastrar um novo passeio em tours.ttl">＋ Cadastrar passeio</a>
+</div>
+
 <div class="table-wrap" hidden>
   <table id="tours-table">
     <thead>
@@ -134,6 +178,8 @@
         <th data-key="energy"  data-num="true">kJ&nbsp;est.</th>
         <th data-key="totalKj" data-num="true">kJ&nbsp;coletivo</th>
         <th data-key="intensity" data-num="false">Intensidade</th>
+        <th class="col-attendee-list" hidden data-key="attendeeNamesJoined" data-num="false">Participantes</th>
+        <th class="col-newcomer-list" hidden data-key="newcomerNamesJoined" data-num="false">Iniciantes</th>
         <th>Editar</th>
       </tr>
     </thead>
@@ -164,9 +210,20 @@ async function loadN3() {
 
 const PH     = 'https://pedalhidrografi.co/terms#';
 const PHD    = 'https://pedalhidrografi.co/data/';
+const SCHEMA = 'https://schema.org/';
 const DCT    = 'http://purl.org/dc/terms/';
 const QUDT   = 'http://qudt.org/schema/qudt/';
 const RDFT   = 'http://www.w3.org/1999/02/22-rdf-syntax-ns#type';
+
+// Lê o toggle de privacidade do localStorage (compartilhado com o app).
+// OFF por padrão — quando ON, censo ganha colunas Participantes/Iniciantes.
+function attendeeListEnabled() {
+  try {
+    const raw = localStorage.getItem('phidro:settings');
+    if (!raw) return false;
+    return JSON.parse(raw)?.attendees?.list === true;
+  } catch (_) { return false; }
+}
 
 const SERIES_LABEL_OVERRIDE = { S: 'PH-S' };
 const seriesLabel = (iri) => {
@@ -182,15 +239,20 @@ async function loadTours() {
   const parser = new N3.Parser({ format: 'text/turtle' });
   return new Promise((resolve, reject) => {
     // Acumula por subject, depois cruza com bnodes (energyEstimate, assoc).
-    const types  = new Map();
-    const props  = new Map();   // subj → { title, date, attendee, newcomer, energyBn, assocs:Set }
-    const energy = new Map();   // bn   → { kj, intensity }
-    const assocs = new Map();   // bn   → { series, seq }
+    const types   = new Map();
+    const props   = new Map();   // subj → { title, date, attendee, newcomer, energyBn, assocs:Set, attendees:Set, newcomers:Set }
+    const energy  = new Map();   // bn   → { kj, intensity }
+    const assocs  = new Map();   // bn   → { series, seq }
+    const labels  = new Map();   // person/series IRI → schema:alternateName / schema:name / dcterms:title
     function s(subj) {
       let p = props.get(subj);
-      if (!p) { p = { assocs: new Set() }; props.set(subj, p); }
+      if (!p) {
+        p = { assocs: new Set(), attendees: new Set(), newcomers: new Set() };
+        props.set(subj, p);
+      }
       return p;
     }
+    const nameOf = (iri) => labels.get(iri) || (iri || '').replace(/^.*[#/]/, '');
     parser.parse(text, (err, quad, done) => {
       if (err) { reject(err); return; }
       if (done) {
@@ -215,6 +277,9 @@ async function loadTours() {
             energy:    kj,
             intensity: e?.intensity || '',
             totalKj,
+            // Listas nominais — só usadas se o toggle estiver ON.
+            attendeeNames: [...p.attendees].map(nameOf),
+            newcomerNames: [...p.newcomers].map(nameOf),
           });
         }
         tours.sort((a, b) => b.date.localeCompare(a.date));
@@ -243,6 +308,13 @@ async function loadTours() {
       else if (pred === PH + 'sequenceInSeries') {
         const a = assocs.get(sub) || {}; a.seq = parseInt(obj, 10); assocs.set(sub, a);
       }
+      else if (pred === SCHEMA + 'attendee') s(sub).attendees.add(obj);
+      else if (pred === PH + 'hasNewcomer')  s(sub).newcomers.add(obj);
+      // Labels pra resolver IRIs de pessoas/séries quando renderizar.
+      else if (pred === SCHEMA + 'alternateName' || pred === SCHEMA + 'name') {
+        if (!labels.has(sub)) labels.set(sub, obj);
+      }
+      else if (pred === DCT + 'title' && !labels.has(sub)) labels.set(sub, obj);
     });
   });
 }
@@ -299,9 +371,17 @@ function renderMetrics(tours) {
 
 function renderTable(tours) {
   const tbody = $('#tours-table tbody');
-  // Link pro modal de rota no app principal — `?route=<tourIri>` é
-  // capturado pelo index.html (se o app foi alterado pra isso). Por ora
-  // só linkamos pro mapa direto.
+  const showLists = attendeeListEnabled();
+  // Mostra/esconde os <th> de listagem nominal. As <td> equivalentes
+  // ficam sempre no DOM pra sort coerente — escondidas via CSS abaixo.
+  for (const th of document.querySelectorAll('.col-attendee-list, .col-newcomer-list')) {
+    th.hidden = !showLists;
+  }
+  // Pré-computa joins pra ordenação alfabética por primeira pessoa.
+  for (const t of tours) {
+    t.attendeeNamesJoined = (t.attendeeNames || []).join(', ');
+    t.newcomerNamesJoined = (t.newcomerNames || []).join(', ');
+  }
   const rows = tours.map(t => {
     const intensityCell = t.intensity
       ? `<span class="intensity" data-c="${t.intensity}">${t.intensity}</span>`
@@ -321,12 +401,15 @@ function renderTable(tours) {
         `<td class="num">${fmtKJ(t.energy)}</td>` +
         `<td class="num">${fmtKJ(t.totalKj)}</td>` +
         `<td>${intensityCell}</td>` +
+        `<td class="col-attendee-list"${showLists ? '' : ' hidden'} title="${escapeHtml(t.attendeeNamesJoined)}">${escapeHtml(t.attendeeNamesJoined) || '<span class="muted">—</span>'}</td>` +
+        `<td class="col-newcomer-list"${showLists ? '' : ' hidden'} title="${escapeHtml(t.newcomerNamesJoined)}">${escapeHtml(t.newcomerNamesJoined) || '<span class="muted">—</span>'}</td>` +
         `<td><a class="edit-btn" href="${editHref}" title="Editar este passeio em upload_tour.html">Editar</a></td>` +
       `</tr>`
     );
   });
   tbody.innerHTML = rows.join('');
   $('.table-wrap').hidden = false;
+  $('.table-toolbar').hidden = false;
 }
 
 function escapeHtml(s) {

@@ -275,6 +275,42 @@ ph:TourShape a sh:NodeShape ;
         sh:maxCount 1 ;
         sh:class qudt:QuantityValue ;
         sh:message "Ideal: estimativa de energia (qudt:QuantityValue)."@pt ;
+    ] ;
+    # Listas nominais de participantes / iniciantes (opcionais — só
+    # aparecem quando a feature de "listar attendees" está ligada nas
+    # Ajustes do app).
+    sh:property [
+        sh:path schema:attendee ;
+        sh:severity sh:Warning ;
+        sh:class schema:Person ;
+        sh:message "Cada participante nominal deve ser schema:Person."@pt ;
+    ] ;
+    sh:property [
+        sh:path ph:hasNewcomer ;
+        sh:severity sh:Warning ;
+        sh:class schema:Person ;
+        sh:message "Cada iniciante nominal deve ser schema:Person."@pt ;
+    ] ;
+    # Constraint cross-tour: a mesma pessoa não pode ser iniciante em
+    # dois passeios da mesma série. Avalia sobre o grafo mesclado
+    # (validador já mescla catálogo + TTL recebido), então enxerga
+    # passeios previamente registrados.
+    sh:sparql [
+        sh:severity sh:Violation ;
+        sh:message "Pessoa já é iniciante em outro passeio da mesma série."@pt ;
+        sh:prefixes [
+            sh:declare [ sh:prefix "ph"     ; sh:namespace "https://pedalhidrografi.co/terms#"^^xsd:anyURI ] ;
+        ] ;
+        sh:select """
+            PREFIX ph: <https://pedalhidrografi.co/terms#>
+            SELECT $this ?value ?series WHERE {
+                $this ph:hasNewcomer ?value ;
+                      ph:inSeriesEdition/ph:inEventSeries ?series .
+                ?other ph:hasNewcomer ?value ;
+                       ph:inSeriesEdition/ph:inEventSeries ?series .
+                FILTER (?other != $this)
+            }
+        """ ;
     ] .
 
 ph:RouteReferenceShape a sh:NodeShape ;

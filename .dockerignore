@@ -1,12 +1,15 @@
 # Excluído do build context: estado mutável + lixo de dev.
 # (O estado vive no STORE: filesystem ou GCS, não no container.)
 
-# Mutável: vive no STORE
+# Mutável: vive no STORE. Tudo em web/clips/ (transcodes do build-clips.py
+# inclusive) é redirecionado pelo backend pra gs://<bucket>/clips/, então
+# não precisa entrar no container. Pra povoar o bucket, rode
+# `scripts/deploy-cloudrun.sh --state`.
 web/photos/
 web/data/uploads.ttl
 web/data/data_graphs.ttl
 web/data/photos.ttl
-web/clips/raw/
+web/clips/
 
 # Repo / tooling
 .git/
