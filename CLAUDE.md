@@ -12,8 +12,11 @@ local-first.
   `manifest.json`, icons, `lib/` (vendored deps: `utils.js`, `n3.min.js`,
   `energy-worker.js`, `tom-select.complete.min.js`, `tom-select.min.css`).
   Leaflet-based map. Also hosts `upload_images.html` (per-photo upload
-  form) and the `data/`, `photos/`, and `clips/` directories the app
-  reads from at runtime.
+  form), `upload_tour.html` (per-tour upsert form), `censo.html`
+  (aggregated tour metrics + roster, opened as a modal iframe from the
+  main app), `upload_videos.html` (permanent redirect stub →
+  `upload_images.html`), and the `data/`, `photos/`, `clips/`, and
+  `tour_assets/<tour_id>/` directories the app reads from at runtime.
 - `backend/pi/` — the self-hosted backend. One Flask service (`main.py`)
   that serves `web/` as static files **and** validates+stores incoming
   photos. No SQLite; state lives in `web/data/uploads.ttl` (per-image
@@ -23,25 +26,29 @@ local-first.
   `requirements.txt`, `README.md`. Runs on a Raspberry Pi or macOS.
 - `research/photos-rdf/` — the RDF research lab. Currently holds
   `build-tours.py` (writes `web/data/tours.ttl` from `data/tours.csv`),
-  the seed `data/initial-data.ttl`, `decisions.ttl`, `design.ttl`, and
-  the legacy `upload-form.html` (kit-download form — superseded in
-  production by `web/upload_images.html`). The active SHACL `shapes.ttl`
-  and `ontology.ttl` live alongside the data in `web/data/`; the Pi reads
-  them from there at startup. `DESIGN.md` documents the substrate.
-- `ontology/` — older RDF vocabulary (`pedalhidrografico.ttl`, v1.1) with a
-  JSON-LD context. Superseded by `web/data/ontology.ttl`; kept for
-  reference.
+  the seed `data/initial-data.ttl`, `decisions.ttl`, `design.ttl`,
+  `conversion-notes.md`, and the legacy `upload-form.html` (kit-download
+  form — superseded in production by `web/upload_images.html`). The
+  active SHACL `shapes.ttl` and `ontology.ttl` live alongside the data
+  in `web/data/`; the Pi reads them from there at startup. The
+  former top-level `ontology/` dir (v1.1 `pedalhidrografico.ttl` +
+  JSON-LD context) was removed — git history is the only reference.
 - `scripts/` — `build-routes.py` (bakes `routes.json` from
   `web/data/tours.ttl` + RideWithGPS), `build-clips.py` (re-encodes raw
   videos in `web/clips/raw/` to 360p/720p mp4 + `.m4a` audio + thumbnail
   and writes the triples directly into `web/data/uploads.ttl` as
   `ph:Video`), `deploy.sh` (legacy GCS static mirror),
   `deploy-cloudrun.sh` (Cloud Run deploy + `--state` flag to sync mutable
-  state), `deploy-amora.sh` / `pull-amora.sh` / `pi-deploy.sh` /
+  state), `pull-cloudrun.sh` (pull mutable state from the GCS bucket
+  back to local), `dev-cloudrun.sh` (run the Cloud Run image locally),
+  `deploy-amora.sh` / `pull-amora.sh` / `pi-deploy.sh` /
   `gcloud-ssh-rsync.sh` / `push-clips.sh` (Pi/amora deploy helpers),
-  `gen-synthetic-rdf.py`, `exiftool_ph.config`. `coletor_*.py` /
-  `build-photos.py` / `build-routes.mjs` are legacy artefacts pending
-  removal — see "Open loose ends".
+  `gen-synthetic-rdf.py`, `exiftool_ph.config`. `build-photos.py` and
+  `build-routes.mjs` are legacy artefacts pending removal — see "Open
+  loose ends".
+- `docs/` — design-reference notes not loaded at runtime. `DESIGN.md`
+  (RDF substrate / ontology design rationale) and `ICON_DESIGN.md` (PWA
+  icon decisions). Excluded from the Cloud Run container.
 
 ## Architecture
 
@@ -121,6 +128,32 @@ Key flows:
   bnodes) from `uploads.ttl` AND delete the underlying blobs from the
   store. The frontend popups have a red-orange Excluir button gated by a
   `confirm()` dialog.
+- **Tour CRUD & Censo.** `POST /upload-tour` accepts a TTL fragment
+  describing exactly one `phd:tour_<id> a ph:Tour` (plus any new
+  `phd:pessoa*` / `phd:assoc_*` declarations it references) and upserts
+  it into `web/data/tours.ttl`. An optional `announcement` file field
+  is saved under `tour_assets/<tour_id>/announcement.<ext>` and wired
+  in as `schema:image <URL>` before the triples are persisted.
+  `POST /delete-tour/<tour_id>` removes the tour's triples + reachable
+  bnodes and purges `tour_assets/<tour_id>/`; it deliberately does NOT
+  delete referenced `phd:pessoa*` or series — git history preserves
+  those and they may be referenced by other tours.
+  `web/upload_tour.html` is the per-tour form (series, sequence, energy
+  estimate, intensity, attendee/newcomer counts, announcement art);
+  `web/censo.html` shows aggregated metrics + a sortable tour roster
+  with "Editar" links pointing at `upload_tour.html?id=<tour_id>`.
+  The main app exposes Censo through a modal iframe — opened by the
+  "Censo →" sidebar link in the Routes panel — and the iframe is
+  re-pointed to `./censo.html` on every open so navigating into the edit
+  form internally doesn't strand the user there on re-open.
+- **Backend endpoint summary.** Static: `GET /`, `GET /<path:p>`,
+  `GET /data/<filename>`, `GET /photos/<path:p>`, `GET /clips/<path:p>`,
+  `GET /tour_assets/<path:p>` (in `gcs` mode the last three 302-redirect
+  to the bucket's public URL). Ops: `GET /health`, `POST /reload` (force
+  re-read of the on-disk TTL catalog after an out-of-band edit).
+  Mutations: `POST /upload-image`, `POST /upload-video`,
+  `POST /upload-tour`, `POST /delete-image/<phash>`,
+  `POST /delete-video/<vhash>`, `POST /delete-tour/<tour_id>`.
 
 ## Clips workflow
 
@@ -230,10 +263,14 @@ writes RDF directly. App.js reads `ph:Video` from `uploads.ttl` only.
 ## Open loose ends
 
 - **Retire legacy build scripts.** `scripts/build-routes.mjs` (the old
-  Node port; `package.json`'s `build:routes` script still points at it),
-  `scripts/build-photos.py` (predates the upload form), and
-  `scripts/coletor_*.py` are all superseded. User-deletes when ready:
-  `git rm scripts/build-routes.mjs scripts/build-photos.py scripts/coletor_*.py`.
+  Node port; `package.json`'s `build:routes` script still points at it)
+  and `scripts/build-photos.py` (predates the upload form) are both
+  superseded. User-deletes when ready:
+  `git rm scripts/build-routes.mjs scripts/build-photos.py`. The
+  `coletor_*.py` family was already removed.
+- **Phantom path in ignore files.** `.gcloudignore` and `.dockerignore`
+  both list `web/data/photos.ttl`, which never existed under that name
+  (the catalog is `uploads.ttl`). Harmless but worth pruning.
 - **`research/photos-rdf/upload-form.html`** is the legacy "build a kit ZIP"
   form. Production uploads go through `web/upload_images.html`. Keep the
   research one only if you still use it for batch-export experiments.

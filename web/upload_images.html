@@ -1087,17 +1087,21 @@ async function videoFirstFrameBlob(file) {
 }
 
 // ===================== Vídeo: transcodificação =========================
-// MediaRecorder grava SÓ o canvas re-escalado (sem áudio — a faixa de
-// áudio sai em um arquivo separado em alta qualidade pra não passar duas
-// vezes pelo encoder lossy). Saída webm/vp9 ou vp8.
+// MediaRecorder grava o canvas re-escalado + a trilha de áudio do source
+// num webm único (vp9+opus ou vp8+opus). Áudio embutido garante som no
+// ghost-video player em iOS (iOS Safari muta MediaElementAudioSourceNode
+// em algumas configs — som embutido contorna isso). Mantemos extractAudio
+// gerando `<vhash>.audio.webm` separado pra o audio loop usar sem precisar
+// baixar o webm de vídeo cheio.
 async function transcodeAtShortSide(blob, startSec, endSec, shortSide, onProgress) {
   return new Promise(async (resolve, reject) => {
     const video = document.createElement('video');
     const url = URL.createObjectURL(blob);
     video.src = url;
-    video.muted = true;          // sem mixar áudio: webm sai apenas com vídeo
+    video.muted = false;
     video.playsInline = true;
     video.preload = 'auto';
+    let audioCtx = null, audioSrc = null;
     try {
       await new Promise((r, rej) => {
         video.addEventListener('loadedmetadata', r, { once: true });
@@ -1114,13 +1118,24 @@ async function transcodeAtShortSide(blob, startSec, endSec, shortSide, onProgres
       canvas.width = outW; canvas.height = outH;
       const ctx = canvas.getContext('2d');
       const videoStream = canvas.captureStream(30);
-      const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-        ? 'video/webm;codecs=vp9'
-        : (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')
-            ? 'video/webm;codecs=vp8' : 'video/webm');
-      const recorder = new MediaRecorder(videoStream, {
+      // Grafo de áudio: source → destination stream (sem tocar enquanto
+      // transcoda). Combinado com o videoStream num único MediaStream.
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      audioSrc = audioCtx.createMediaElementSource(video);
+      const audioDest = audioCtx.createMediaStreamDestination();
+      audioSrc.connect(audioDest);
+      const combined = new MediaStream([
+        ...videoStream.getVideoTracks(),
+        ...audioDest.stream.getAudioTracks(),
+      ]);
+      const mime = MediaRecorder.isTypeSupported('video/webm;codecs=vp9,opus')
+        ? 'video/webm;codecs=vp9,opus'
+        : (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')
+            ? 'video/webm;codecs=vp8,opus' : 'video/webm');
+      const recorder = new MediaRecorder(combined, {
         mimeType: mime,
         videoBitsPerSecond: shortSide >= 720 ? 1_600_000 : 700_000,
+        audioBitsPerSecond: 128_000,
       });
       const chunks = [];
       recorder.ondataavailable = (e) => { if (e.data?.size) chunks.push(e.data); };
@@ -1147,10 +1162,14 @@ async function transcodeAtShortSide(blob, startSec, endSec, shortSide, onProgres
       raf = requestAnimationFrame(render);
       recorder.onstop = () => {
         cancelAnimationFrame(raf);
+        try { audioSrc?.disconnect(); } catch (_) {}
+        try { audioCtx?.close(); } catch (_) {}
         URL.revokeObjectURL(url);
         resolve(new Blob(chunks, { type: 'video/webm' }));
       };
     } catch (e) {
+      try { audioSrc?.disconnect(); } catch (_) {}
+      try { audioCtx?.close(); } catch (_) {}
       URL.revokeObjectURL(url);
       reject(e);
     }

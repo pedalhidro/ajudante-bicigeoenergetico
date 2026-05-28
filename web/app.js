@@ -1326,9 +1326,12 @@ function renderClipPopupHtml(c) {
   const videoSrc = c.file  ? CLIPS_DIR + enc(c.file)  : '';
   const v720Src  = c.file720 && c.file720 !== c.file ? CLIPS_DIR + enc(c.file720) : '';
   const audioSrc = c.audio ? CLIPS_DIR + enc(c.audio) : '';
+  // `playsinline` é essencial em iOS Safari — sem ele, tap em ▶ tenta
+  // entrar em fullscreen e dentro de popup falha silenciosamente. O
+  // `webkit-playsinline` cobre iOS antigos pra garantia.
   const playerHtml = c.audioOnly
     ? (audioSrc ? `<audio controls preload="metadata" src="${audioSrc}"></audio>` : '')
-    : (videoSrc ? `<video controls preload="metadata" src="${videoSrc}"></video>` : '');
+    : (videoSrc ? `<video controls playsinline webkit-playsinline preload="metadata" src="${videoSrc}"></video>` : '');
   const dlChips = [];
   if (videoSrc) dlChips.push(`<a class="photo-dl" href="${videoSrc}" download="${escapeHtml(c.file)}">Vídeo 360p ↓</a>`);
   if (v720Src)  dlChips.push(`<a class="photo-dl" href="${v720Src}"  download="${escapeHtml(c.file720)}">Vídeo 720p ↓</a>`);
